@@ -1,0 +1,582 @@
+{
+  "version": 1,
+  "$comment": "Modifier / multicast / trigger cards. Semantics: specs/design/mechanic-spec.md §4-§6.",
+  "modifiers": [
+    {
+      "id": "double_cast",
+      "name": "Double Cast",
+      "desc": "Casts the next 2 spells together.",
+      "type": "multicast",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 0,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "count": 2,
+      "fanDeg": 12,
+      "visual": {
+        "element": "arcane",
+        "shape": "multicast-2"
+      }
+    },
+    {
+      "id": "triple_cast",
+      "name": "Triple Cast",
+      "desc": "Casts the next 3 spells together.",
+      "type": "multicast",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "mana": 5,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "count": 3,
+      "fanDeg": 20,
+      "visual": {
+        "element": "arcane",
+        "shape": "multicast-3"
+      }
+    },
+    {
+      "id": "quad_cast",
+      "name": "Quad Cast",
+      "desc": "Casts the next 4 spells together in a wide fan.",
+      "type": "multicast",
+      "rarity": "rare",
+      "minFloor": 2,
+      "mana": 12,
+      "castDelayAddMs": 50,
+      "rechargeAddMs": 0,
+      "count": 4,
+      "fanDeg": 30,
+      "visual": {
+        "element": "arcane",
+        "shape": "multicast-4"
+      }
+    },
+    {
+      "id": "trigger_hit",
+      "name": "Trigger: Impact",
+      "desc": "Next spell carries the one after it; releases it on first impact.",
+      "type": "trigger",
+      "rarity": "uncommon",
+      "minFloor": 2,
+      "mana": 10,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "event": "hit",
+      "visual": {
+        "element": "arcane",
+        "shape": "trigger-hit"
+      }
+    },
+    {
+      "id": "trigger_expire",
+      "name": "Trigger: Expire",
+      "desc": "Next spell carries the one after it; releases it when it ends.",
+      "type": "trigger",
+      "rarity": "uncommon",
+      "minFloor": 2,
+      "mana": 10,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "event": "expire",
+      "visual": {
+        "element": "arcane",
+        "shape": "trigger-expire"
+      }
+    },
+    {
+      "id": "trigger_timer",
+      "name": "Trigger: Timer",
+      "desc": "Next spell carries the one after it; releases it after 0.25s.",
+      "type": "trigger",
+      "rarity": "uncommon",
+      "minFloor": 2,
+      "mana": 10,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "event": "timer",
+      "timerMs": 250,
+      "visual": {
+        "element": "arcane",
+        "shape": "trigger-timer"
+      }
+    },
+    {
+      "id": "damage_up",
+      "name": "Empower",
+      "desc": "x1.4 damage.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 10,
+      "castDelayAddMs": 50,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "damage",
+          "op": "mult",
+          "value": 1.4
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "fist"
+      }
+    },
+    {
+      "id": "speed_up",
+      "name": "Swiftness",
+      "desc": "x1.6 projectile speed.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 3,
+      "castDelayAddMs": -20,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "speed",
+          "op": "mult",
+          "value": 1.6
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "arrow"
+      }
+    },
+    {
+      "id": "size_up",
+      "name": "Enlarge",
+      "desc": "x1.6 size, x1.2 damage, a little slower.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 8,
+      "castDelayAddMs": 40,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "radius",
+          "op": "mult",
+          "value": 1.6
+        },
+        {
+          "key": "damage",
+          "op": "mult",
+          "value": 1.2
+        },
+        {
+          "key": "speed",
+          "op": "mult",
+          "value": 0.85
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "grow"
+      }
+    },
+    {
+      "id": "accuracy",
+      "name": "Focus",
+      "desc": "-10 degrees spread.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 2,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "spreadDeg",
+          "op": "add",
+          "value": -10
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "crosshair"
+      }
+    },
+    {
+      "id": "range_up",
+      "name": "Long Reach",
+      "desc": "x1.6 lifetime (range).",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 3,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "lifetimeMs",
+          "op": "mult",
+          "value": 1.6
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "hourglass"
+      }
+    },
+    {
+      "id": "heavy",
+      "name": "Heavy Hand",
+      "desc": "+60 knockback then x2.5, x1.1 damage.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 5,
+      "castDelayAddMs": 40,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "knockback",
+          "op": "add",
+          "value": 60
+        },
+        {
+          "key": "knockback",
+          "op": "mult",
+          "value": 2.5
+        },
+        {
+          "key": "damage",
+          "op": "mult",
+          "value": 1.1
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "anvil"
+      }
+    },
+    {
+      "id": "rapid_cast",
+      "name": "Rapid Cast",
+      "desc": "-120ms cast delay, x0.85 damage.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 4,
+      "castDelayAddMs": -120,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "damage",
+          "op": "mult",
+          "value": 0.85
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "feather"
+      }
+    },
+    {
+      "id": "quickening",
+      "name": "Quickening",
+      "desc": "-200ms wand recharge time.",
+      "type": "modifier",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "mana": 8,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": -200,
+      "effects": [],
+      "visual": {
+        "element": "arcane",
+        "shape": "cog"
+      }
+    },
+    {
+      "id": "homing",
+      "name": "Seeking",
+      "desc": "Projectile steers toward foes (+240 deg/s turn).",
+      "type": "modifier",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "mana": 10,
+      "castDelayAddMs": 30,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "homing",
+          "op": "add",
+          "value": 240
+        },
+        {
+          "key": "damage",
+          "op": "mult",
+          "value": 0.9
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "eye"
+      }
+    },
+    {
+      "id": "pierce",
+      "name": "Piercing",
+      "desc": "Passes through 2 more foes.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 8,
+      "castDelayAddMs": 20,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "pierce",
+          "op": "add",
+          "value": 2
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "needle"
+      }
+    },
+    {
+      "id": "bounce",
+      "name": "Ricochet",
+      "desc": "Bounces off walls 3 more times, lasts x1.3 longer.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 5,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "bounce",
+          "op": "add",
+          "value": 3
+        },
+        {
+          "key": "lifetimeMs",
+          "op": "mult",
+          "value": 1.3
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "zigzag"
+      }
+    },
+    {
+      "id": "split",
+      "name": "Splinter",
+      "desc": "When it ends, splits into 3 shards at half damage.",
+      "type": "modifier",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "mana": 12,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "onExpire",
+          "op": "append",
+          "value": {
+            "type": "split",
+            "count": 3,
+            "arcDeg": 50,
+            "damageMult": 0.5
+          }
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "fork"
+      }
+    },
+    {
+      "id": "explosive",
+      "name": "Volatile",
+      "desc": "Explodes when it ends (radius 28, x0.8 damage).",
+      "type": "modifier",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "mana": 16,
+      "castDelayAddMs": 60,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "onExpire",
+          "op": "append",
+          "value": {
+            "type": "explode",
+            "radius": 28,
+            "damageMult": 0.8
+          }
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "burst"
+      }
+    },
+    {
+      "id": "chain",
+      "name": "Arc Link",
+      "desc": "On each hit, arcs to 2 more foes at x0.6 damage.",
+      "type": "modifier",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "mana": 12,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "onHit",
+          "op": "append",
+          "value": {
+            "type": "chain",
+            "jumps": 2,
+            "range": 56,
+            "damageMult": 0.6
+          }
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "link"
+      }
+    },
+    {
+      "id": "crit_up",
+      "name": "Keen Edge",
+      "desc": "+25% critical chance.",
+      "type": "modifier",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "mana": 6,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "critChance",
+          "op": "add",
+          "value": 0.25
+        }
+      ],
+      "visual": {
+        "element": "arcane",
+        "shape": "gem"
+      }
+    },
+    {
+      "id": "infuse_fire",
+      "name": "Infuse: Fire",
+      "desc": "Spell becomes Fire; +50% status chance.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 6,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "element",
+          "op": "set",
+          "value": "fire"
+        },
+        {
+          "key": "statusChance",
+          "op": "add",
+          "value": 0.5
+        }
+      ],
+      "visual": {
+        "element": "fire",
+        "shape": "drop-fire"
+      }
+    },
+    {
+      "id": "infuse_frost",
+      "name": "Infuse: Frost",
+      "desc": "Spell becomes Frost; +50% status chance.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 6,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "element",
+          "op": "set",
+          "value": "frost"
+        },
+        {
+          "key": "statusChance",
+          "op": "add",
+          "value": 0.5
+        }
+      ],
+      "visual": {
+        "element": "frost",
+        "shape": "drop-frost"
+      }
+    },
+    {
+      "id": "infuse_shock",
+      "name": "Infuse: Shock",
+      "desc": "Spell becomes Shock; +50% status chance.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 6,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "element",
+          "op": "set",
+          "value": "shock"
+        },
+        {
+          "key": "statusChance",
+          "op": "add",
+          "value": 0.5
+        }
+      ],
+      "visual": {
+        "element": "shock",
+        "shape": "drop-shock"
+      }
+    },
+    {
+      "id": "infuse_poison",
+      "name": "Infuse: Poison",
+      "desc": "Spell becomes Poison; +50% status chance.",
+      "type": "modifier",
+      "rarity": "common",
+      "minFloor": 1,
+      "mana": 6,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "effects": [
+        {
+          "key": "element",
+          "op": "set",
+          "value": "poison"
+        },
+        {
+          "key": "statusChance",
+          "op": "add",
+          "value": 0.5
+        }
+      ],
+      "visual": {
+        "element": "poison",
+        "shape": "drop-poison"
+      }
+    }
+  ]
+}

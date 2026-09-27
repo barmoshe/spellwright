@@ -1,0 +1,529 @@
+{
+  "version": 1,
+  "$comment": "Passive relics. Effect types: specs/design/mechanic-spec.md §7.",
+  "relics": [
+    {
+      "id": "arcane_whetstone",
+      "name": "Arcane Whetstone",
+      "desc": "All spells deal x1.15 damage.",
+      "rarity": "common",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "damage",
+          "op": "mult",
+          "value": 1.15
+        }
+      ],
+      "visual": {
+        "shape": "stone"
+      }
+    },
+    {
+      "id": "winged_boots",
+      "name": "Winged Boots",
+      "desc": "Move 12% faster.",
+      "rarity": "common",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "moveSpeedMult",
+          "op": "mult",
+          "value": 1.12
+        }
+      ],
+      "visual": {
+        "shape": "boots"
+      }
+    },
+    {
+      "id": "magnet_charm",
+      "name": "Magnet Charm",
+      "desc": "Double pickup and coin-magnet radius.",
+      "rarity": "common",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "pickupRadiusMult",
+          "op": "mult",
+          "value": 2.0
+        }
+      ],
+      "visual": {
+        "shape": "magnet"
+      }
+    },
+    {
+      "id": "mana_font",
+      "name": "Mana Font",
+      "desc": "All wands regenerate mana x1.3 faster.",
+      "rarity": "common",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "manaRegenMult",
+          "op": "mult",
+          "value": 1.3
+        }
+      ],
+      "visual": {
+        "shape": "chalice"
+      }
+    },
+    {
+      "id": "deep_well",
+      "name": "Deep Well",
+      "desc": "All wands hold x1.4 max mana.",
+      "rarity": "common",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "manaMaxMult",
+          "op": "mult",
+          "value": 1.4
+        }
+      ],
+      "visual": {
+        "shape": "flask"
+      }
+    },
+    {
+      "id": "heart_vessel",
+      "name": "Heart Vessel",
+      "desc": "+2 max HP (one heart), and heal 2.",
+      "rarity": "common",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "maxHp",
+          "op": "add",
+          "value": 2
+        }
+      ],
+      "visual": {
+        "shape": "heart"
+      }
+    },
+    {
+      "id": "greed_ring",
+      "name": "Greed Ring",
+      "desc": "Enemies drop x1.5 coins.",
+      "rarity": "common",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "economy",
+          "field": "coinMult",
+          "op": "mult",
+          "value": 1.5
+        }
+      ],
+      "visual": {
+        "shape": "ring"
+      }
+    },
+    {
+      "id": "ember_heart",
+      "name": "Ember Heart",
+      "desc": "Fire spells: +25% status chance; burn deals x1.5.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "statusChance",
+          "op": "add",
+          "value": 0.25,
+          "element": "fire"
+        },
+        {
+          "type": "status_rule",
+          "status": "burn",
+          "field": "tickDamage",
+          "op": "mult",
+          "value": 1.5
+        }
+      ],
+      "visual": {
+        "shape": "ember"
+      }
+    },
+    {
+      "id": "frost_crown",
+      "name": "Frost Crown",
+      "desc": "Enemies freeze at 2 chill stacks instead of 3.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "status_rule",
+          "status": "chill",
+          "field": "freezeStacks",
+          "op": "set",
+          "value": 2
+        }
+      ],
+      "visual": {
+        "shape": "crown"
+      }
+    },
+    {
+      "id": "storm_battery",
+      "name": "Storm Battery",
+      "desc": "Every chain effect jumps 1 extra time.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "effect_param",
+          "effect": "chain",
+          "field": "jumps",
+          "op": "add",
+          "value": 1
+        }
+      ],
+      "visual": {
+        "shape": "battery"
+      }
+    },
+    {
+      "id": "plague_vial",
+      "name": "Plague Vial",
+      "desc": "Poison stacks up to 16 (from 10).",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "status_rule",
+          "status": "poison",
+          "field": "maxStacks",
+          "op": "add",
+          "value": 6
+        }
+      ],
+      "visual": {
+        "shape": "vial"
+      }
+    },
+    {
+      "id": "glass_lens",
+      "name": "Glass Lens",
+      "desc": "+10% critical chance on all spells.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "critChance",
+          "op": "add",
+          "value": 0.1
+        }
+      ],
+      "visual": {
+        "shape": "lens"
+      }
+    },
+    {
+      "id": "quickened_quill",
+      "name": "Quickened Quill",
+      "desc": "All wands: cast delay x0.85.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "castDelayMult",
+          "op": "mult",
+          "value": 0.85
+        }
+      ],
+      "visual": {
+        "shape": "quill"
+      }
+    },
+    {
+      "id": "sand_hourglass",
+      "name": "Sand Hourglass",
+      "desc": "All wands: recharge time x0.75.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "rechargeMult",
+          "op": "mult",
+          "value": 0.75
+        }
+      ],
+      "visual": {
+        "shape": "hourglass"
+      }
+    },
+    {
+      "id": "echo_chamber",
+      "name": "Echo Chamber",
+      "desc": "When a wand finishes recharging, restore 15 mana to it.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "wand_recharge",
+          "action": {
+            "type": "mana",
+            "amount": 15
+          }
+        }
+      ],
+      "visual": {
+        "shape": "shell"
+      }
+    },
+    {
+      "id": "blast_boots",
+      "name": "Blast Boots",
+      "desc": "Dashing leaves an explosion where you started (radius 32).",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "dash_start",
+          "action": {
+            "type": "explode",
+            "radius": 32,
+            "damage": 8,
+            "element": "arcane"
+          }
+        }
+      ],
+      "visual": {
+        "shape": "boots-fire"
+      }
+    },
+    {
+      "id": "merchant_seal",
+      "name": "Merchant's Seal",
+      "desc": "Shop prices x0.8 and one free reroll per shop.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "economy",
+          "field": "shopPriceMult",
+          "op": "mult",
+          "value": 0.8
+        },
+        {
+          "type": "economy",
+          "field": "freeRerollsPerShop",
+          "op": "add",
+          "value": 1
+        }
+      ],
+      "visual": {
+        "shape": "seal"
+      }
+    },
+    {
+      "id": "thorn_mantle",
+      "name": "Thorn Mantle",
+      "desc": "When hurt, release a ring of 12 Spark Bolts.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "hurt",
+          "action": {
+            "type": "spawn_spell",
+            "spellId": "spark_bolt",
+            "pattern": {
+              "type": "ring",
+              "count": 12
+            }
+          }
+        }
+      ],
+      "visual": {
+        "shape": "cloak"
+      }
+    },
+    {
+      "id": "shatter_heart",
+      "name": "Shatter Heart",
+      "desc": "Frozen enemies burst into 6 Ice Shards when killed.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "kill",
+          "filter": {
+            "status": "frozen"
+          },
+          "action": {
+            "type": "spawn_spell",
+            "spellId": "ice_shard",
+            "pattern": {
+              "type": "ring",
+              "count": 6
+            }
+          }
+        }
+      ],
+      "visual": {
+        "shape": "crystal"
+      }
+    },
+    {
+      "id": "kindling",
+      "name": "Kindling",
+      "desc": "Burning enemies explode on death (radius 28).",
+      "rarity": "rare",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "kill",
+          "filter": {
+            "status": "burn"
+          },
+          "action": {
+            "type": "explode",
+            "radius": 28,
+            "damage": 10,
+            "element": "fire"
+          }
+        }
+      ],
+      "visual": {
+        "shape": "log"
+      }
+    },
+    {
+      "id": "shadow_cloak",
+      "name": "Shadow Cloak",
+      "desc": "+1 dash charge.",
+      "rarity": "rare",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "dashCharges",
+          "op": "add",
+          "value": 1
+        }
+      ],
+      "visual": {
+        "shape": "cloak-dark"
+      }
+    },
+    {
+      "id": "vampiric_fang",
+      "name": "Vampiric Fang",
+      "desc": "Every 30 kills, heal 1 HP.",
+      "rarity": "rare",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "kill",
+          "every": 30,
+          "action": {
+            "type": "heal",
+            "amount": 1
+          }
+        }
+      ],
+      "visual": {
+        "shape": "fang"
+      }
+    },
+    {
+      "id": "alchemist_stone",
+      "name": "Alchemist's Stone",
+      "desc": "Elemental reactions deal x1.5 damage.",
+      "rarity": "rare",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "status_rule",
+          "status": "reactions",
+          "field": "damageMult",
+          "op": "mult",
+          "value": 1.5
+        }
+      ],
+      "visual": {
+        "shape": "stone-philo"
+      }
+    },
+    {
+      "id": "prism_shard",
+      "name": "Prism Shard",
+      "desc": "Every split effect makes 1 extra shard.",
+      "rarity": "rare",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "effect_param",
+          "effect": "split",
+          "field": "count",
+          "op": "add",
+          "value": 1
+        }
+      ],
+      "visual": {
+        "shape": "prism"
+      }
+    },
+    {
+      "id": "warding_sigil",
+      "name": "Warding Sigil",
+      "desc": "Entering a room grants a shield that blocks 1 hit.",
+      "rarity": "rare",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "room_enter",
+          "action": {
+            "type": "shield",
+            "charges": 1
+          }
+        }
+      ],
+      "visual": {
+        "shape": "sigil"
+      }
+    },
+    {
+      "id": "phoenix_feather",
+      "name": "Phoenix Feather",
+      "desc": "Once per run, survive a lethal hit and revive with 3 HP.",
+      "rarity": "legendary",
+      "minFloor": 1,
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "lethal",
+          "once": true,
+          "action": {
+            "type": "revive",
+            "hp": 3
+          }
+        }
+      ],
+      "visual": {
+        "shape": "feather"
+      }
+    }
+  ]
+}

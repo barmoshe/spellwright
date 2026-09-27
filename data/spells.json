@@ -1,0 +1,761 @@
+{
+  "version": 1,
+  "$comment": "Projectile cards. Card ids share one namespace with modifiers.json. Effect vocabulary: specs/design/mechanic-spec.md §6.",
+  "spells": [
+    {
+      "id": "spark_bolt",
+      "name": "Spark Bolt",
+      "desc": "A quick, cheap arcane bolt.",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 5,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 5,
+        "speed": 300,
+        "lifetimeMs": 700,
+        "radius": 3,
+        "spreadDeg": 2,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 40,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "dart"
+      }
+    },
+    {
+      "id": "magic_missile",
+      "name": "Magic Missile",
+      "desc": "A slower bolt that curves toward the nearest foe.",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 12,
+      "castDelayAddMs": 60,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 8,
+        "speed": 200,
+        "lifetimeMs": 1400,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 200,
+        "knockback": 60,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "orb"
+      }
+    },
+    {
+      "id": "bouncing_burst",
+      "name": "Bouncing Burst",
+      "desc": "Ricochets off walls up to 4 times.",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 7,
+      "castDelayAddMs": 20,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 4,
+        "speed": 260,
+        "lifetimeMs": 1500,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 4,
+        "homing": 0,
+        "knockback": 40,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "orb"
+      }
+    },
+    {
+      "id": "fire_bolt",
+      "name": "Fire Bolt",
+      "desc": "A burning bolt. Often ignites.",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "fire",
+      "mana": 9,
+      "castDelayAddMs": 40,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 7,
+        "speed": 240,
+        "lifetimeMs": 800,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 50,
+        "statusChance": 0.6,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "flame"
+      }
+    },
+    {
+      "id": "fireball",
+      "name": "Fireball",
+      "desc": "Slow orb that explodes where it lands.",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "fire",
+      "mana": 22,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 10,
+        "speed": 170,
+        "lifetimeMs": 1100,
+        "radius": 6,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 120,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 32,
+          "damageMult": 1.0
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "flame-orb"
+      }
+    },
+    {
+      "id": "ice_shard",
+      "name": "Ice Shard",
+      "desc": "A piercing shard that chills.",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "frost",
+      "mana": 8,
+      "castDelayAddMs": 20,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 5,
+        "speed": 280,
+        "lifetimeMs": 700,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 1,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 30,
+        "statusChance": 0.5,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "frost",
+        "shape": "shard"
+      }
+    },
+    {
+      "id": "frost_nova",
+      "name": "Frost Nova",
+      "desc": "A ring of eight short-range shards around you.",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "frost",
+      "mana": 20,
+      "castDelayAddMs": 120,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "ring",
+        "count": 8
+      },
+      "stats": {
+        "damage": 5,
+        "speed": 180,
+        "lifetimeMs": 350,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 80,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "frost",
+        "shape": "shard"
+      }
+    },
+    {
+      "id": "frost_lance",
+      "name": "Frost Lance",
+      "desc": "A very fast lance that pierces four foes and always chills.",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 2,
+      "element": "frost",
+      "mana": 20,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 14,
+        "speed": 480,
+        "lifetimeMs": 600,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 4,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 60,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "frost",
+        "shape": "lance"
+      }
+    },
+    {
+      "id": "chain_lightning",
+      "name": "Chain Lightning",
+      "desc": "A crackling bolt that leaps to 3 more foes.",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "shock",
+      "mana": 16,
+      "castDelayAddMs": 80,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 6,
+        "speed": 420,
+        "lifetimeMs": 450,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 20,
+        "statusChance": 0.4,
+        "critChance": 0.0
+      },
+      "onHit": [
+        {
+          "type": "chain",
+          "jumps": 3,
+          "range": 64,
+          "damageMult": 0.8
+        }
+      ],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "shock",
+        "shape": "spark"
+      }
+    },
+    {
+      "id": "thunder_orb",
+      "name": "Thunder Orb",
+      "desc": "A drifting orb that zaps up to 2 nearby foes every 0.35s.",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 2,
+      "element": "shock",
+      "mana": 30,
+      "castDelayAddMs": 250,
+      "rechargeAddMs": 200,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 4,
+        "speed": 70,
+        "lifetimeMs": 2500,
+        "radius": 7,
+        "spreadDeg": 0,
+        "pierce": 10,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 0,
+        "statusChance": 0.5,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": {
+        "everyMs": 350,
+        "effects": [
+          {
+            "type": "zap",
+            "radius": 56,
+            "damageMult": 1.0,
+            "maxTargets": 2
+          }
+        ]
+      },
+      "visual": {
+        "element": "shock",
+        "shape": "big-orb"
+      }
+    },
+    {
+      "id": "venom_dart",
+      "name": "Venom Dart",
+      "desc": "A tiny, fast dart that always poisons.",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "poison",
+      "mana": 6,
+      "castDelayAddMs": -30,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 2,
+        "speed": 340,
+        "lifetimeMs": 600,
+        "radius": 2,
+        "spreadDeg": 3,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 10,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "poison",
+        "shape": "dart"
+      }
+    },
+    {
+      "id": "toxic_flask",
+      "name": "Toxic Flask",
+      "desc": "Shatters into a poison pool that lasts 3s.",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "poison",
+      "mana": 18,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 3,
+        "speed": 160,
+        "lifetimeMs": 600,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 20,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "zone",
+          "radius": 26,
+          "durationMs": 3000,
+          "tickMs": 500,
+          "damageMult": 0.5
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "poison",
+        "shape": "flask"
+      }
+    },
+    {
+      "id": "boomerang_blade",
+      "name": "Boomerang Blade",
+      "desc": "Flies out, then returns to you, cutting everything twice.",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 14,
+      "castDelayAddMs": 120,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "boomerang",
+        "outMs": 400,
+        "returnSpeedMult": 1.2
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 7,
+        "speed": 260,
+        "lifetimeMs": 1600,
+        "radius": 5,
+        "spreadDeg": 0,
+        "pierce": 10,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 40,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "blade"
+      }
+    },
+    {
+      "id": "arcane_orbit",
+      "name": "Arcane Orbit",
+      "desc": "Three orbs circle you for 4 seconds.",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 24,
+      "castDelayAddMs": 200,
+      "rechargeAddMs": 200,
+      "behavior": {
+        "type": "orbit",
+        "orbitRadius": 26,
+        "angularSpeed": 300
+      },
+      "pattern": {
+        "type": "ring",
+        "count": 3
+      },
+      "stats": {
+        "damage": 6,
+        "speed": 0,
+        "lifetimeMs": 4000,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 60,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "orb"
+      }
+    },
+    {
+      "id": "rune_mine",
+      "name": "Rune Mine",
+      "desc": "Lays a mine that explodes when a foe steps near.",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "fire",
+      "mana": 20,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "mine",
+        "settleMs": 250,
+        "armMs": 300,
+        "triggerRadius": 20
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 14,
+        "speed": 200,
+        "lifetimeMs": 6000,
+        "radius": 5,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 160,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 40,
+          "damageMult": 1.0
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "rune"
+      }
+    },
+    {
+      "id": "blink_bolt",
+      "name": "Blink Bolt",
+      "desc": "Teleports you to wherever the bolt ends.",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 25,
+      "castDelayAddMs": 100,
+      "rechargeAddMs": 300,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 2,
+        "speed": 400,
+        "lifetimeMs": 300,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 0,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "teleport_caster"
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "dart"
+      }
+    },
+    {
+      "id": "comet",
+      "name": "Comet",
+      "desc": "A huge, slow comet. Pierces 3, explodes massively.",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 2,
+      "element": "fire",
+      "mana": 40,
+      "castDelayAddMs": 400,
+      "rechargeAddMs": 300,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 30,
+        "speed": 150,
+        "lifetimeMs": 1500,
+        "radius": 8,
+        "spreadDeg": 0,
+        "pierce": 3,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 250,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 48,
+          "damageMult": 1.0
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "big-orb"
+      }
+    },
+    {
+      "id": "vortex",
+      "name": "Vortex",
+      "desc": "A slow singularity that drags foes in, then bursts.",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 2,
+      "element": "arcane",
+      "mana": 30,
+      "castDelayAddMs": 250,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 2,
+        "speed": 90,
+        "lifetimeMs": 2200,
+        "radius": 6,
+        "spreadDeg": 0,
+        "pierce": 10,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 0,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 36,
+          "damageMult": 2.0
+        }
+      ],
+      "onTick": {
+        "everyMs": 100,
+        "effects": [
+          {
+            "type": "pull",
+            "radius": 72,
+            "strength": 90
+          }
+        ]
+      },
+      "visual": {
+        "element": "arcane",
+        "shape": "swirl"
+      }
+    }
+  ]
+}

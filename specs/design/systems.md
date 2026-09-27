@@ -1,0 +1,159 @@
+# Spellwright — systems, resource flow and emergent depth
+
+**Owner:** Game Designer · **Status:** Wave 1, v1 · **Consumers:** Game Developer (loot, shop, economy code), UX Designer (§6 legibility surface → `hud-layout`, wand-editor UX), Audio Director (reaction and reward beats).
+**Sources of truth:** rules in `data/rules.json`, prices in `data/economy.json`, content in `data/*.json`. This doc explains *why* those numbers produce the intended system. It adds no new numbers except derived ones (marked ≈).
+
+---
+
+## §1 Resource graph (Machinations vocabulary)
+
+```text
+                       ┌──────────── salvage (30% of price) ◄───────────┐
+                       ▼                                                 │
+ [enemy kills]──coins──►( COINS )──buy──►[SHOP]──► cards / relic / wand / potion
+ [coin door]───coins──►    │                          │
+ [boss]────────coins──►    └─reroll (10, +10 each)──► │
+                                                      ▼
+ [draft pedestal]──card──►( BAG ≤12 )──slot──►( WAND SLOTS )──program──►[CAST]
+ [treasure]──wand/relic                                 ▲                  │
+                                                        │            mana per card
+ ( MANA per wand ) ◄──regen 25–70/s──[time]             └── edit = forced recharge
+        │ drain: card.mana, as drawn
+        ▼
+     [SHOTS] ──damage──► ( ENEMY HP ) ──kill──► coins, `kill` relic events, room-clear progress
+                                  ▲
+ ( PLAYER HP ≤ maxHp ) ◄──heal door +2 / potion +2 / boss +4 / fang / phoenix
+        │ drain: enemy hits 1 or 2
+        ▼
+     [DEATH → run end]           ( DASH CHARGES ) ◄── refill 600 ms each
+```
+
+| Resource | Sources (rate × magnitude) | Drains | Converters / traders |
+|---|---|---|---|
+| **Coins** | Kills: `enemy.coins` [min,max] × `floor.coinMult` (1.0/1.3/1.6) × elite ×3 × `greed_ring` ×1.5 ≈ **0.47–0.53 coins per threat point**. Coin door: `25 + 15·floor`. Boss: 60. Crates: 25% × 1. Salvage: 30% of a card's price. | Shop purchases (`economy.prices` × `floorPriceMult` 1.0/1.15/1.3 × `merchant_seal` 0.8), rerolls (10, then +10 per reroll per shop). | Salvage converts cards → coins at a 70% loss, so there is no arbitrage. |
+| **Cards** (spells/modifiers) | Draft pedestal after a room with a `spell`/`modifier` reward (1 of 3; skippable). Treasure bonus card. Shop (3 card slots). Wand presets. | Discard, salvage. | Slotting turns cards into wand program. |
+| **Wands** | Treasure `wand` door (≤ 1 per floor), shop wand slot (floor ≥ 2), loadout. | Swap-drop (its cards go to the bag; overflow drops as pickups). | — |
+| **Relics** | Elite room (1 of 2), treasure `relic` (1 of 2), boss (1 of 3), shop (1 slot). | None (permanent for the run). | — |
+| **Mana** (per wand) | `manaRegen`/s, always, all wands. `echo_chamber` +15 on recharge. | `card.mana` per paid card, as drawn (mechanic-spec §4). | Mana converts into damage at the rates in §4. |
+| **Player HP** | Heal door +2 (≤ 1/floor), potion +2 (shop), boss kill +4 (F1, F2), `heart_vessel` +2, `vampiric_fang` +1 per 30 kills, `phoenix_feather` revive 3. | Enemy hits (1; heavy attacks 2). | — |
+| **Dash charges** | 1 + `shadow_cloak`; each refills 600 ms after use. | A dash. | — |
+| **Time** (implicit) | — | Rooms have no timer. Pressure comes from waves: the next wave arrives when ≤ 2 remain alive after 8 s. | — |
+
+---
+
+## §2 Feedback loops
+
+| Loop | Type | Chain | Outcome | Counter-pressure |
+|---|---|---|---|---|
+| L1 **Build snowball** | positive | better wand → faster kills → less damage taken → more HP to spend on greedy doors (elite/relic instead of heal) → stronger build | "The run is working" feeling; the intended roguelite high | **Floor scaling** (enemy HP ×1.75 / ×2.8, extra waves); build power must keep pace. Bosses' HP is absolute and tuned against the *median* build (`progression-and-pacing.md` §4). |
+| L2 **Death spiral** | positive (negative for the player) | low HP → forced heal doors → fewer relics and cards → weaker build → more damage | Runs that go wrong stay wrong, *slowly* | Heal is offered on **every** floor's late steps. Boss kill heals 4. Shop potion. Damage per hit is fixed at 1 (half-heart), so a weak build takes longer, not proportionally more hurt. `warding_sigil` pity unlock. |
+| L3 **Mana throttle** | negative | bigger program → more mana per cycle → sputter → lower sustained DPS | Caps runaway wands in sustained fights | Designed; `mana_font`, `deep_well` and `echo_chamber` are the player's deliberate answer. |
+| L4 **Coin economy** | positive, bounded | more kills → more coins → shop power → more kills | Mild; coins per threat stays ~0.5 | Shop prices scale by floor (×1.15, ×1.3). Stock is 6 items. Reroll cost escalates. |
+| L5 **Reaction loop** | positive, bounded | applying statuses → reactions → faster kills | "Aha" combos | Reactions consume their status (no chains of reactions). Immunities (imp: burn; frost mage: chill/freeze; wraith: poison; golem: stun). |
+| L6 **Summon pressure** | positive (enemy side) | necromancer alive → skulls → more pressure | Target-priority lesson | `maxAlive` 4; summons die with the summoner. |
+
+Every positive loop has at least one named negative counter-pressure, or ends with a win condition: L1's natural end is the final boss.
+
+---
+
+## §3 Economy steady-state (spreadsheet pass, typical path)
+
+Assumption: the player takes combat doors mostly, 1 elite per floor, no coin door, and spends at each shop. Threat totals are computed from `floors.json` budgets (budget = ⌊base + perStep·step⌋ × (1 + 0.25·waveIndex), floored per wave). The pool-weighted coin yield is computed from `enemies.json` (≈ 0.47 / 0.49 / 0.53 coins per threat).
+
+| | F1 | F2 | F3 |
+|---|---|---|---|
+| Threat before the shop | 66 (s1–4, incl. elite 27) | 153 | 334 (shop at step 7) |
+| Coins earned before the shop | ≈ 36 | ≈ 102 (+ carry ≈ 97) | ≈ 300 (+ carry ≈ 100) |
+| Coins at the shop | **≈ 36** (+40 with a coin door) | **≈ 200** | **≈ 400** |
+| Shop stock total (6 items, floor mult) | ≈ 20+20+35 (cards) + 35 (relic) + card + 35 (heal) ≈ 165 | ≈ 325 | ≈ 570 |
+| Share of stock affordable | ≈ 20–45% (1–2 items) | ≈ 60% (3 items) | ≈ 70% (3–4 items + rerolls) |
+| Coins after the shop → end of floor | + boss 60 → carry ≈ 97 | + boss 60 → carry ≈ 100 | spent at the final shop (pre-boss) |
+
+**Equilibrium:** the median player is **solvent** (can always afford a heal potion or a common card at every shop) but **never saturated** (can't clear a shop until the F3 cash-out). The F3 shop sits at step 7 so late coins have a sink. **Rate cliffs that would break it:** coin yield above ~0.7/threat makes shops trivial by F2; card prices above ~1.5× current make F1 shops dead (0 purchases). `greed_ring` (×1.5) pushes toward the upper cliff deliberately; it is a build choice that trades a relic slot for shop power.
+
+**HP steady-state (median):** expected damage taken ≈ 0.5 HP per F1 combat room, ≈ 1 HP per F2 room, ≈ 1–1.5 per F3 room, and 2–3 per boss (`progression-and-pacing.md` §4). Across 7 rooms that is ≈ 3.5 / 7 / 9 HP per floor. Sources per floor (heal door 2 + potion 2 + boss 4) ≈ 8. The median player reaches each boss at roughly 50–70% HP. A below-median player uses heal doors and potions, trading build growth for survival (L2), which is the right pressure for a roguelite.
+
+---
+
+## §4 Damage throughput reference (derived; for review and tuning)
+
+DPS = Σ shot damage per cycle ÷ cycle time. Cycle = Σ cast delays + final max(delay, recharge) (mechanic-spec §4).
+
+| Build (no relics) | Cycle | Shots/cycle | ≈ DPS (single target) | Mana/s vs regen |
+|---|---|---|---|---|
+| Starter [spark, spark] | 650 ms | 2 × 5 | **15** | 15 / 25 ✔ |
+| Starter + double_cast | 400 ms | 2 × 5 | **25** | 25 / 25 ✔ |
+| ember_rod [fire, fire, damage_up, fire] | 260 + 260 + max(310, 450) = 970 ms | 7 + 7 + 9.8 | ≈ 25 + burn 4 | ≈ 38 / 28 ✘ (~8 s from full) |
+| twin_fork [damage_up, triple, fire, fire, ice] (2 groups/cast) | group 2 wraps → all drawn → fizzles; recharge max(450, 650) = 650 ms | 9.8 + 9.8 + 7 | ≈ 41 + burn | ≈ 63 / 32 ✘ (burst) |
+| stormcaller preset [chain, double, spark, spark] | 280 + max(200, 600) = 880 ms | 6 (+3 jumps × 4.8) + 2 × 5 | ≈ 18 single / ≈ 35 multi-target | ≈ 30 / 45 ✔ |
+| glass_needle [venom, speed_up, venom] | 60 + max(50, 300) = 360 ms | 2 × 2 + poison | ≈ 11 direct + poison 15 at 10 stacks (F1) | ≈ 42 / 34 ✘ |
+| oak_staff trigger preset | 900 ms | spark 5 + fireball 10 + explode 10 | ≈ 28 (AoE) | 41 / 28 ✘ (~14 s) |
+| archmage [triple, damage_up, fire, fire, fire, …] | ≈ 700 ms | 3 × 9.8 × up to 1.4… | 80–200+ | endgame |
+
+Note the twin_fork row: putting damage_up *last* (e.g. [triple, fire, fire, ice, damage_up]) wastes it, because the second group wraps, finds every card drawn, and fizzles with the modifier pending. The editor preview (§7) must show "Empower: no spell follows" for this case.
+
+Target band per floor (median build): **F1 15 → 40 · F2 50 → 90 · F3 100 → 180**. Enemy HP bands per floor (pool-weighted average): 18.5 / 35.8 / 77.3. So the average enemy TTK stays ≈ 0.4–1.0 s on a median build across the whole run: the flow channel holds (`progression-and-pacing.md` §4).
+
+---
+
+## §5 Emergent strategies (predicted; none are pre-authored features)
+
+| # | Name | Mechanic-combination signature | Why it emerges |
+|---|---|---|---|
+| S1 | **Trigger artillery** | `trigger_hit` + fast carrier (`spark_bolt` + `speed_up`) + heavy payload (`fireball`, `comet`, `toxic_flask`) | Payloads inherit nothing, so the player learns to put *speed* on the carrier and *power* in the payload: a slow nuke arriving at bolt speed. |
+| S2 | **Vortex pit** | `vortex` (pull) + `toxic_flask` pool, or a `rune_mine` placed first | Pull is a knockback-channel impulse, so enemies are dragged into pre-placed zones or mines. Zone control out of two unrelated cards. |
+| S3 | **Kamikaze blink** | `blink_bolt` + `explosive` (+ `blast_boots`) | Explosive appends `explode` to the blink bolt's `onExpire`, so you teleport *and* detonate at the arrival point. With blast_boots, dash out afterwards for a second blast. There's no self-damage, so it is safe but costs mana and recharge. |
+| S4 | **Alchemist swap** | Wand A frost (`ice_shard`/`frost_nova`) + Wand B fire; or A poison stream + B fire finisher | Reactions only fire on an *existing* status, so the two-wand swap (120 ms) is the natural way to set up Melt ×2 or Blight bursts. This rewards carrying specialized wands. |
+| S5 | **Boomerang shredder** | `boomerang_blade` + `split` + `chain` | Boomerang ends at your hand, and split fires on end, so a shard fan radiates *from the player* on every catch: a defensive nova for free. |
+| S6 | **Overload engine** | `double_cast` [`fire_bolt`, `chain_lightning`] | Fire bolt burns the target, then the chain from the same cast arcs through burning enemies, each one Overloading (radius-32 AoE). A crowd-clear engine from two commons. |
+| S7 | **Shatter cascade** | `frost_nova` + `frost_crown` + `shatter_heart` | Freezes at 2 stacks; frozen kills burst into 6 ice shards that chill neighbours toward freeze. A chain reaction without the reaction system. |
+| S8 | **Ricochet cell** | `bouncing_burst` + `bounce` + `split` in small rooms | 7 bounces and a split on end fills 24×14 rooms. Room geometry (small crypt cells) changes the best wand. |
+| S9 | **Orbit furnace** | `arcane_orbit` + `infuse_fire` + `kindling` | Burning orbs ignite everything that touches you; kindling turns every melee kill into an explosion. A melee-range "armor" build. |
+| S10 | **Mine layer** | `triple_cast` + `rune_mine` + `range_up`, fired during retreat | Mines settle behind you as you kite. It turns chasers' pathing against them. |
+
+---
+
+## §6 Cross-mechanic dominance check
+
+Pairs where one combination could be strictly better at every skill level:
+
+| Pair | Strictly dominant? | Answer |
+|---|---|---|
+| `damage_up` vs `double_cast` on cheap spells | No | Double adds a shot (+100% vs +40%) but needs a second spell card and a slot. damage_up wins on single big spells (comet, fireball). The choice depends on deck composition. |
+| `homing` vs `accuracy` | No | Homing −10% damage and can't see through walls. Accuracy is cheap and precise for skilled aim. Skill-expressive: low-skill → homing, high-skill → accuracy + damage. |
+| `pierce` vs `chain` | No | Pierce needs enemies in a line (corridors, chargers). Chain needs clusters (swarms). Room geometry decides. |
+| `explosive` vs `split` | No | Explosive is AoE at the end point; split is directional coverage. Explosive is better in open rooms vs clusters; split is better in bouncy small rooms. |
+| Trigger payload vs plain multicast | No | The trigger delays the power by the travel time but delivers it at range, and it costs +10 mana plus a card. Multicast is immediate. |
+| Fire vs other elements | Watched | Fire has the most content (4 cards, 2 relics) and two reactions (Melt, Blight). Counter: imps are burn-immune, Quench (frost removes burn) punishes careless mixing, and floor 3 adds many burn-irrelevant high-HP targets. **Declared:** fire is the "default strong" element, and frost, shock and poison offer control that fire lacks. |
+| Glass needle (fast) vs archmage (big) | No | They are different shapes of play (stream vs burst, mechanic-spec §15). Archmage is legendary and floor 3 only. |
+| Any relic strictly dominant | Watched: `sand_hourglass` and `quickened_quill` are universally good | Accepted as universally good *uncommons* (knobs, not new verbs). They are capped by `minCastDelayMs` 50 and `minRechargeMs` 60. |
+
+---
+
+## §7 Legibility surface (→ UX `hud-layout` and the wand editor)
+
+**Must be visible (as game state or HUD):**
+- HP (hearts, halves), shield pip, dash charges (refilling ring).
+- **Active wand:** mana bar, a cast/recharge progress ring, **its slot strip with a "next card" cursor** (which card fires next is the central readable of the verb), and the two inactive wands as small icons with their ready state.
+- Coins, bag fill (n/12), relic icons (hover or long-press for text).
+- **Enemy status overlays:** burn, chill stacks (1–3 pips), frozen shell, shock sparks, poison stack count. Elite outline. Summoner tether (optional). Boss HP bar with phase-threshold ticks.
+- Telegraphs for every attack (Animator), spawn portals, hazard marks, slam circles.
+- Door reward icons (room kind + reward kind) when the room clears.
+- **Wand editor preview (critical):** for the current slot order, show the per-cast shot list for one full cycle (cast 1: ×2 spark; cast 2: …), effective cast delay per cast, effective recharge, mana per cycle vs regen (a "sustainable ✔ / N s of fire ✘" readout), and ≈DPS. The data needed is exactly a dry-run of mechanic-spec §4 with the `spell` RNG sampled on a copy.
+- First-time reaction toast (name + one line), recorded in the codex.
+
+**Should stay hidden (system noise):**
+- RNG streams and seed (the seed appears only on the run-end screen).
+- Threat budgets, wave thresholds, flow fields, attack cooldown timers (the telegraphs carry that information).
+- Crit rolls (the result shows as a bigger number; the chance is shown only in the editor's stat panel).
+- The exact per-enemy statusChance roll outcomes.
+
+---
+
+## §8 Room economy and the shop
+
+- **Room order:** clear → reward pedestal or pickup at room centre (draft 1 of N or a coin burst or heart) → doors open showing their options → walk through a door (the choice is committed on entry).
+- **Rewards per room kind:** combat/elite → the door's reward; treasure → a wand (1 offered, swap-or-skip) or a relic (1 of 2), plus a bonus random card (`economy.rewards.treasureBonusCard`); shop → stock; boss → relic draft (3), coins 60, heal 4.
+- **Draft rules:** N distinct ids of the reward kind, each rarity rolled from `economy.rarity.weightsByFloor[floor]` (loot stream), filtered to *unlocked* ids with `minFloor ≤ floor`. If a rarity bucket is empty, fall back to the next lower rarity. Duplicate cards in the bag are allowed; relics never repeat in a run.
+- **Shop:** 6 pedestals per `economy.shopStock` (3 cards, 1 relic, 1 wand from floor 2 on (else a card), 1 heal potion). Price = base × `floorPriceMult[floor-1]` × relic mults, rounded to an integer. Reroll replaces all unsold card, relic and wand slots (heal stays). Cost 10, +10 per reroll in that shop; `merchant_seal` makes the first one free.
+- **Salvage:** from the bag, any time: + ⌊0.3 × price at the current floor⌋.

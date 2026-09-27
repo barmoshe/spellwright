@@ -1,0 +1,517 @@
+{
+  "version": 1,
+  "$comment": "Absolute HP (no floor mult). Phase i active while hpFrac > untilHpFrac. Patterns loop in order.",
+  "bosses": [
+    {
+      "id": "ossuary_knight",
+      "name": "The Ossuary Knight",
+      "title": "Warden of the Sunken Crypt",
+      "floor": 1,
+      "hp": 700,
+      "radius": 12,
+      "speed": 50,
+      "kbResist": 1.0,
+      "contactDamage": 1,
+      "immune": [
+        "stun",
+        "freeze"
+      ],
+      "movement": {
+        "type": "chaser",
+        "stopRange": 40
+      },
+      "attacks": [
+        {
+          "id": "cleave",
+          "type": "melee_swipe",
+          "windupMs": 800,
+          "recoverMs": 600,
+          "damage": 2,
+          "range": 44,
+          "arcDeg": 140,
+          "approachMs": 1200,
+          "approachRange": 40
+        },
+        {
+          "id": "bone_ring",
+          "type": "ring",
+          "windupMs": 700,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 14,
+          "speed": 85,
+          "offsetDeg": 0,
+          "volleys": 1,
+          "volleyIntervalMs": 0,
+          "volleyOffsetDeg": 0,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "bone_ring_double",
+          "type": "ring",
+          "windupMs": 700,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 14,
+          "speed": 85,
+          "offsetDeg": 0,
+          "volleys": 2,
+          "volleyIntervalMs": 250,
+          "volleyOffsetDeg": 12.9,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "charge",
+          "type": "charge",
+          "windupMs": 900,
+          "recoverMs": 300,
+          "damage": 2,
+          "speed": 260,
+          "durationMs": 800,
+          "wallStunMs": 1200
+        },
+        {
+          "id": "bone_fan",
+          "type": "shoot",
+          "windupMs": 600,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 5,
+          "spreadDeg": 40,
+          "speed": 110,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "raise_dead",
+          "type": "summon",
+          "windupMs": 900,
+          "recoverMs": 400,
+          "damage": 0,
+          "enemyId": "skeleton",
+          "count": 2,
+          "maxAlive": 3
+        }
+      ],
+      "phases": [
+        {
+          "untilHpFrac": 0.5,
+          "idleMs": 700,
+          "pattern": [
+            "cleave",
+            "bone_ring",
+            "charge",
+            "cleave",
+            "bone_fan"
+          ],
+          "onEnter": null
+        },
+        {
+          "untilHpFrac": 0.0,
+          "idleMs": 550,
+          "pattern": [
+            "cleave",
+            "charge",
+            "bone_ring_double",
+            "raise_dead",
+            "bone_fan"
+          ],
+          "onEnter": {
+            "invulnMs": 1200,
+            "clearProjectiles": true,
+            "shockwaveKnockback": 200,
+            "summon": {
+              "enemyId": "skeleton",
+              "count": 3
+            }
+          }
+        }
+      ],
+      "rewards": {
+        "relicDraft": 3,
+        "coins": 60,
+        "heal": 4
+      }
+    },
+    {
+      "id": "mire_queen",
+      "name": "The Mire Queen",
+      "title": "Mother of the Drowned Halls",
+      "floor": 2,
+      "hp": 1500,
+      "radius": 12,
+      "speed": 35,
+      "kbResist": 1.0,
+      "contactDamage": 1,
+      "immune": [
+        "stun",
+        "freeze"
+      ],
+      "movement": {
+        "type": "chaser",
+        "stopRange": 70
+      },
+      "attacks": [
+        {
+          "id": "spiral_spray",
+          "type": "spiral",
+          "windupMs": 700,
+          "recoverMs": 500,
+          "damage": 1,
+          "arms": 3,
+          "shotsPerArm": 10,
+          "intervalMs": 120,
+          "rotateDegPerShot": 11,
+          "speed": 90,
+          "projectile": {
+            "radius": 4,
+            "element": "poison",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "spiral_spray_4",
+          "type": "spiral",
+          "windupMs": 700,
+          "recoverMs": 500,
+          "damage": 1,
+          "arms": 4,
+          "shotsPerArm": 10,
+          "intervalMs": 120,
+          "rotateDegPerShot": 11,
+          "speed": 90,
+          "projectile": {
+            "radius": 4,
+            "element": "poison",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "leap_slam",
+          "type": "slam",
+          "windupMs": 600,
+          "recoverMs": 700,
+          "damage": 2,
+          "radius": 48,
+          "at": "target",
+          "travelMs": 900,
+          "ring": {
+            "count": 10,
+            "speed": 80,
+            "projectile": {
+              "radius": 4,
+              "element": "poison",
+              "lifetimeMs": 3000
+            }
+          }
+        },
+        {
+          "id": "double_leap",
+          "type": "sequence",
+          "windupMs": 0,
+          "recoverMs": 0,
+          "damage": 0,
+          "steps": [
+            "leap_slam",
+            "leap_slam"
+          ],
+          "gapMs": 300
+        },
+        {
+          "id": "acid_pools",
+          "type": "hazard",
+          "windupMs": 900,
+          "recoverMs": 300,
+          "damage": 1,
+          "count": 4,
+          "radius": 24,
+          "durationMs": 5000,
+          "tickMs": 800,
+          "element": "poison",
+          "placement": "player+random"
+        },
+        {
+          "id": "brood",
+          "type": "summon",
+          "windupMs": 800,
+          "recoverMs": 400,
+          "damage": 0,
+          "enemyId": "slime",
+          "count": 2,
+          "maxAlive": 4
+        },
+        {
+          "id": "aimed_glob",
+          "type": "shoot",
+          "windupMs": 500,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 3,
+          "spreadDeg": 30,
+          "speed": 120,
+          "projectile": {
+            "radius": 6,
+            "element": "poison",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "phases": [
+        {
+          "untilHpFrac": 0.5,
+          "idleMs": 650,
+          "pattern": [
+            "spiral_spray",
+            "leap_slam",
+            "acid_pools",
+            "brood",
+            "aimed_glob"
+          ],
+          "onEnter": null
+        },
+        {
+          "untilHpFrac": 0.0,
+          "idleMs": 500,
+          "pattern": [
+            "spiral_spray_4",
+            "double_leap",
+            "acid_pools",
+            "aimed_glob",
+            "brood"
+          ],
+          "onEnter": {
+            "invulnMs": 1200,
+            "clearProjectiles": true,
+            "shockwaveKnockback": 200,
+            "summon": null
+          }
+        }
+      ],
+      "rewards": {
+        "relicDraft": 3,
+        "coins": 60,
+        "heal": 4
+      }
+    },
+    {
+      "id": "archlich",
+      "name": "Vorn, the Archlich",
+      "title": "Author of the Last Spell",
+      "floor": 3,
+      "hp": 2600,
+      "radius": 12,
+      "speed": 40,
+      "kbResist": 1.0,
+      "contactDamage": 1,
+      "immune": [
+        "stun",
+        "freeze"
+      ],
+      "movement": {
+        "type": "kiter",
+        "minRange": 110,
+        "maxRange": 170
+      },
+      "attacks": [
+        {
+          "id": "arcane_volley",
+          "type": "shoot",
+          "windupMs": 550,
+          "recoverMs": 350,
+          "damage": 1,
+          "count": 5,
+          "spreadDeg": 40,
+          "speed": 130,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "arcane_volley_7",
+          "type": "shoot",
+          "windupMs": 550,
+          "recoverMs": 350,
+          "damage": 1,
+          "count": 7,
+          "spreadDeg": 60,
+          "speed": 130,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "lich_blink",
+          "type": "blink",
+          "windupMs": 500,
+          "recoverMs": 200,
+          "damage": 0,
+          "minDist": 120,
+          "maxDist": 160
+        },
+        {
+          "id": "frost_ring",
+          "type": "ring",
+          "windupMs": 700,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 16,
+          "speed": 80,
+          "offsetDeg": 0,
+          "volleys": 1,
+          "volleyIntervalMs": 0,
+          "volleyOffsetDeg": 0,
+          "projectile": {
+            "radius": 4,
+            "element": "frost",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "spiral_hex",
+          "type": "spiral",
+          "windupMs": 800,
+          "recoverMs": 500,
+          "damage": 1,
+          "arms": 4,
+          "shotsPerArm": 14,
+          "intervalMs": 100,
+          "rotateDegPerShot": 9,
+          "speed": 95,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "spiral_hex_5",
+          "type": "spiral",
+          "windupMs": 800,
+          "recoverMs": 500,
+          "damage": 1,
+          "arms": 5,
+          "shotsPerArm": 14,
+          "intervalMs": 100,
+          "rotateDegPerShot": 9,
+          "speed": 95,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "fire_zones",
+          "type": "hazard",
+          "windupMs": 1000,
+          "recoverMs": 300,
+          "damage": 1,
+          "count": 5,
+          "radius": 28,
+          "durationMs": 4000,
+          "tickMs": 800,
+          "element": "fire",
+          "placement": "cross"
+        },
+        {
+          "id": "summon_wraiths",
+          "type": "summon",
+          "windupMs": 900,
+          "recoverMs": 400,
+          "damage": 0,
+          "enemyId": "wraith",
+          "count": 2,
+          "maxAlive": 2
+        },
+        {
+          "id": "soul_storm",
+          "type": "ring",
+          "windupMs": 900,
+          "recoverMs": 600,
+          "damage": 1,
+          "count": 20,
+          "speed": 90,
+          "offsetDeg": 0,
+          "volleys": 3,
+          "volleyIntervalMs": 300,
+          "volleyOffsetDeg": 9,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "phases": [
+        {
+          "untilHpFrac": 0.66,
+          "idleMs": 650,
+          "pattern": [
+            "arcane_volley",
+            "lich_blink",
+            "frost_ring",
+            "arcane_volley",
+            "lich_blink"
+          ],
+          "onEnter": null
+        },
+        {
+          "untilHpFrac": 0.33,
+          "idleMs": 550,
+          "pattern": [
+            "spiral_hex",
+            "fire_zones",
+            "summon_wraiths",
+            "arcane_volley",
+            "lich_blink"
+          ],
+          "onEnter": {
+            "invulnMs": 1500,
+            "clearProjectiles": true,
+            "shockwaveKnockback": 220,
+            "summon": null
+          }
+        },
+        {
+          "untilHpFrac": 0.0,
+          "idleMs": 450,
+          "pattern": [
+            "soul_storm",
+            "lich_blink",
+            "spiral_hex_5",
+            "arcane_volley_7",
+            "fire_zones",
+            "frost_ring"
+          ],
+          "onEnter": {
+            "invulnMs": 1500,
+            "clearProjectiles": true,
+            "shockwaveKnockback": 220,
+            "summon": null
+          },
+          "windupMult": 0.9
+        }
+      ],
+      "rewards": {
+        "relicDraft": 0,
+        "coins": 0,
+        "heal": 0
+      }
+    }
+  ]
+}

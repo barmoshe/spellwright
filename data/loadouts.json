@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "$comment": "Starting loadouts. cards[] override the wand's presetCards.",
+  "loadouts": [
+    {
+      "id": "apprentice",
+      "name": "Apprentice",
+      "desc": "Two spark bolts and room to grow.",
+      "unlockedByDefault": true,
+      "wands": [
+        {
+          "wandId": "apprentice_wand",
+          "cards": [
+            "spark_bolt",
+            "spark_bolt"
+          ]
+        }
+      ],
+      "bag": [],
+      "relics": []
+    },
+    {
+      "id": "pyromancer",
+      "name": "Pyromancer",
+      "desc": "Starts with the Ember Rod and Fireball in the bag.",
+      "unlockedByDefault": false,
+      "wands": [
+        {
+          "wandId": "ember_rod",
+          "cards": [
+            "fire_bolt",
+            "fire_bolt"
+          ]
+        }
+      ],
+      "bag": [
+        "fireball",
+        "rapid_cast"
+      ],
+      "relics": []
+    },
+    {
+      "id": "stormcaller",
+      "name": "Stormcaller",
+      "desc": "Chains lightning from the first room.",
+      "unlockedByDefault": false,
+      "wands": [
+        {
+          "wandId": "apprentice_wand",
+          "cards": [
+            "chain_lightning",
+            "spark_bolt"
+          ]
+        }
+      ],
+      "bag": [
+        "infuse_shock"
+      ],
+      "relics": [
+        "storm_battery"
+      ]
+    },
+    {
+      "id": "hexer",
+      "name": "Hexer",
+      "desc": "Glass Needle full of venom. Fragile, relentless.",
+      "unlockedByDefault": false,
+      "wands": [
+        {
+          "wandId": "glass_needle",
+          "cards": [
+            "venom_dart",
+            "venom_dart"
+          ]
+        },
+        {
+          "wandId": "apprentice_wand",
+          "cards": [
+            "toxic_flask"
+          ]
+        }
+      ],
+      "bag": [],
+      "relics": []
+    }
+  ]
+}

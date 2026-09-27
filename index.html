@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spellwright</title>
+  <link rel="icon" href="data:," />
+  <style>
+    :root { color-scheme: dark; }
+    html, body {
+      margin: 0; padding: 0; width: 100%; height: 100%;
+      background: #0b0a10; overflow: hidden;
+      -webkit-user-select: none; user-select: none; overscroll-behavior: none;
+    }
+    /* Integer-zoomed canvas is centred here; the page background is the letterbox. */
+    #game-root { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+    #game-root canvas { display: block; image-rendering: pixelated; image-rendering: crisp-edges; }
+    /* Perf overlay (F3). DOM, not canvas: costs zero draw calls and ignores scene order. */
+    #perf {
+      position: fixed; left: 6px; top: 6px; z-index: 10; display: none;
+      font: 12px/1.35 ui-monospace, Menlo, Consolas, monospace; color: #cfe;
+      background: rgba(0,0,0,.6); padding: 4px 6px; border-radius: 3px; white-space: pre; pointer-events: none;
+    }
+    #dev-banner {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 11; display: none;
+      font: 12px/1.4 ui-monospace, Menlo, Consolas, monospace; color: #fff; background: #7a1030;
+      padding: 4px 8px; white-space: pre-wrap; max-height: 30vh; overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-root"></div>
+  <div id="perf"></div>
+  <div id="dev-banner"></div>
+  <!-- Runtime origin: HTTP (python3 -m http.server 8741). ES modules + Phaser 4.1.0 (lib/).
+       Do NOT open via file:// — module scripts and loader JSON/text fetches require http. -->
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

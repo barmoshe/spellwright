@@ -1,0 +1,773 @@
+{
+  "version": 1,
+  "$comment": "Door-choice run graph. Budget per wave = floor(budgetBase + budgetPerStep*stepIndex) * (1 + waveGrowth*waveIndex).",
+  "floors": [
+    {
+      "id": "f1",
+      "index": 1,
+      "name": "The Sunken Crypt",
+      "hpMult": 1.0,
+      "enemyProjSpeedMult": 1.0,
+      "coinMult": 1.0,
+      "startRoom": "sanctum",
+      "shopRoom": "shop",
+      "treasureRoom": "vault",
+      "bossRoom": "arena_ossuary",
+      "boss": "ossuary_knight",
+      "combatRooms": [
+        "crypt_small_a",
+        "crypt_small_b",
+        "hall_pillars",
+        "pit_cross",
+        "twin_pools"
+      ],
+      "eliteRooms": [
+        "elite_arena"
+      ],
+      "enemyPool": [
+        {
+          "id": "bat",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "skeleton",
+          "weight": 4,
+          "minStep": 1
+        },
+        {
+          "id": "slime",
+          "weight": 3,
+          "minStep": 2
+        },
+        {
+          "id": "cultist",
+          "weight": 3,
+          "minStep": 2
+        },
+        {
+          "id": "brute",
+          "weight": 2,
+          "minStep": 4
+        },
+        {
+          "id": "fire_imp",
+          "weight": 2,
+          "minStep": 6
+        }
+      ],
+      "eliteCandidates": [
+        "skeleton",
+        "brute",
+        "cultist",
+        "slime"
+      ],
+      "waves": {
+        "combat": {
+          "count": 2,
+          "budgetBase": 5,
+          "budgetPerStep": 0.8
+        },
+        "elite": {
+          "count": 2,
+          "budgetBase": 10,
+          "budgetPerStep": 0.6,
+          "elites": 1
+        }
+      },
+      "limits": {
+        "heal": 1,
+        "wand": 1
+      },
+      "steps": [
+        {
+          "fixed": {
+            "room": "start",
+            "reward": null
+          }
+        },
+        {
+          "fixed": {
+            "room": "combat",
+            "reward": "modifier"
+          },
+          "tutorialTemplate": "tut_first_blood"
+        },
+        {
+          "fixed": {
+            "room": "combat",
+            "reward": "spell"
+          },
+          "tutorialTemplate": "tut_gauntlet"
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "coins",
+              "weight": 2
+            },
+            {
+              "room": "treasure",
+              "reward": "wand",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "fixed": {
+            "room": "shop",
+            "reward": null
+          }
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 2
+            },
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "coins",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "treasure",
+              "reward": "relic",
+              "weight": 2
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "treasure",
+              "reward": "wand",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "fixed": {
+            "room": "boss",
+            "reward": "boss"
+          }
+        }
+      ]
+    },
+    {
+      "id": "f2",
+      "index": 2,
+      "name": "The Drowned Halls",
+      "hpMult": 1.75,
+      "enemyProjSpeedMult": 1.08,
+      "coinMult": 1.3,
+      "startRoom": "landing",
+      "shopRoom": "shop",
+      "treasureRoom": "vault",
+      "bossRoom": "arena_mire",
+      "boss": "mire_queen",
+      "combatRooms": [
+        "crypt_small_a",
+        "crypt_small_b",
+        "hall_pillars",
+        "pit_cross",
+        "twin_pools",
+        "great_hall",
+        "ring_pit",
+        "ruins",
+        "long_gallery"
+      ],
+      "eliteRooms": [
+        "elite_arena"
+      ],
+      "enemyPool": [
+        {
+          "id": "bat",
+          "weight": 2,
+          "minStep": 1
+        },
+        {
+          "id": "skeleton",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "cultist",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "frost_mage",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "slime",
+          "weight": 2,
+          "minStep": 1
+        },
+        {
+          "id": "brute",
+          "weight": 2,
+          "minStep": 1
+        },
+        {
+          "id": "fire_imp",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "eye_turret",
+          "weight": 2,
+          "minStep": 2
+        },
+        {
+          "id": "wraith",
+          "weight": 2,
+          "minStep": 3
+        },
+        {
+          "id": "necromancer",
+          "weight": 1,
+          "minStep": 5
+        }
+      ],
+      "eliteCandidates": [
+        "brute",
+        "cultist",
+        "frost_mage",
+        "wraith",
+        "eye_turret"
+      ],
+      "waves": {
+        "combat": {
+          "count": 3,
+          "budgetBase": 8,
+          "budgetPerStep": 1.0
+        },
+        "elite": {
+          "count": 2,
+          "budgetBase": 16,
+          "budgetPerStep": 0.8,
+          "elites": 1
+        }
+      },
+      "limits": {
+        "heal": 1,
+        "wand": 1
+      },
+      "steps": [
+        {
+          "fixed": {
+            "room": "start",
+            "reward": null
+          }
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "treasure",
+              "reward": "wand",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "coins",
+              "weight": 2
+            },
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "treasure",
+              "reward": "relic",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 2
+            },
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "fixed": {
+            "room": "shop",
+            "reward": null
+          }
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "coins",
+              "weight": 2
+            },
+            {
+              "room": "treasure",
+              "reward": "wand",
+              "weight": 1
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 3
+            },
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "fixed": {
+            "room": "boss",
+            "reward": "boss"
+          }
+        }
+      ]
+    },
+    {
+      "id": "f3",
+      "index": 3,
+      "name": "The Last Library",
+      "hpMult": 2.8,
+      "enemyProjSpeedMult": 1.15,
+      "coinMult": 1.6,
+      "startRoom": "landing",
+      "shopRoom": "shop",
+      "treasureRoom": "vault",
+      "bossRoom": "arena_lich",
+      "boss": "archlich",
+      "combatRooms": [
+        "hall_pillars",
+        "pit_cross",
+        "twin_pools",
+        "great_hall",
+        "ring_pit",
+        "ruins",
+        "long_gallery",
+        "catacombs"
+      ],
+      "eliteRooms": [
+        "elite_arena"
+      ],
+      "enemyPool": [
+        {
+          "id": "bat",
+          "weight": 2,
+          "minStep": 1
+        },
+        {
+          "id": "skeleton",
+          "weight": 2,
+          "minStep": 1
+        },
+        {
+          "id": "cultist",
+          "weight": 2,
+          "minStep": 1
+        },
+        {
+          "id": "frost_mage",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "brute",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "fire_imp",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "eye_turret",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "wraith",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "necromancer",
+          "weight": 2,
+          "minStep": 2
+        },
+        {
+          "id": "stone_golem",
+          "weight": 2,
+          "minStep": 3
+        },
+        {
+          "id": "slime",
+          "weight": 1,
+          "minStep": 1
+        }
+      ],
+      "eliteCandidates": [
+        "brute",
+        "wraith",
+        "necromancer",
+        "stone_golem",
+        "frost_mage"
+      ],
+      "waves": {
+        "combat": {
+          "count": 3,
+          "budgetBase": 11,
+          "budgetPerStep": 1.2
+        },
+        "elite": {
+          "count": 2,
+          "budgetBase": 22,
+          "budgetPerStep": 1.0,
+          "elites": 1
+        }
+      },
+      "limits": {
+        "heal": 1,
+        "wand": 1
+      },
+      "steps": [
+        {
+          "fixed": {
+            "room": "start",
+            "reward": null
+          }
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "treasure",
+              "reward": "wand",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "coins",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "treasure",
+              "reward": "relic",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 2
+            },
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "spell",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 2
+            },
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            }
+          ]
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 3
+            },
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "treasure",
+              "reward": "wand",
+              "weight": 1
+            },
+            {
+              "room": "combat",
+              "reward": "coins",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "fixed": {
+            "room": "shop",
+            "reward": null
+          }
+        },
+        {
+          "choose": 2,
+          "from": [
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 3
+            },
+            {
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3
+            },
+            {
+              "room": "combat",
+              "reward": "modifier",
+              "weight": 2
+            }
+          ]
+        },
+        {
+          "fixed": {
+            "room": "boss",
+            "reward": "victory"
+          }
+        }
+      ]
+    }
+  ]
+}

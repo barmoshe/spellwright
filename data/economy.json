@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "$comment": "Prices, drafts, rarity weights. One record per section.",
+  "economy": [
+    {
+      "id": "rarity",
+      "weightsByFloor": {
+        "1": {
+          "common": 70,
+          "uncommon": 25,
+          "rare": 5,
+          "legendary": 0
+        },
+        "2": {
+          "common": 55,
+          "uncommon": 33,
+          "rare": 11,
+          "legendary": 1
+        },
+        "3": {
+          "common": 40,
+          "uncommon": 35,
+          "rare": 21,
+          "legendary": 4
+        }
+      }
+    },
+    {
+      "id": "drafts",
+      "spell": 3,
+      "modifier": 3,
+      "relic": 2,
+      "bossRelic": 3,
+      "skipAllowed": true
+    },
+    {
+      "id": "prices",
+      "card": {
+        "common": 20,
+        "uncommon": 35,
+        "rare": 60,
+        "legendary": 100
+      },
+      "relic": {
+        "common": 35,
+        "uncommon": 55,
+        "rare": 90,
+        "legendary": 140
+      },
+      "wand": {
+        "common": 50,
+        "uncommon": 80,
+        "rare": 120,
+        "legendary": 180
+      },
+      "healPotion": 35,
+      "healPotionAmount": 2,
+      "floorPriceMult": [
+        1.0,
+        1.15,
+        1.3
+      ]
+    },
+    {
+      "id": "reroll",
+      "base": 10,
+      "step": 10
+    },
+    {
+      "id": "salvage",
+      "frac": 0.3
+    },
+    {
+      "id": "rewards",
+      "coinsBase": 25,
+      "coinsPerFloor": 15,
+      "healAmount": 2,
+      "crateCoinChance": 0.25,
+      "treasureBonusCard": true
+    },
+    {
+      "id": "shopStock",
+      "slots": [
+        {
+          "slot": "card"
+        },
+        {
+          "slot": "card"
+        },
+        {
+          "slot": "card"
+        },
+        {
+          "slot": "relic"
+        },
+        {
+          "slot": "wand",
+          "minFloor": 2,
+          "fallback": "card"
+        },
+        {
+          "slot": "heal"
+        }
+      ]
+    }
+  ]
+}

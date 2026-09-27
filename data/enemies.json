@@ -1,0 +1,567 @@
+{
+  "version": 1,
+  "$comment": "Base (floor-1) stats; hp x floor.hpMult. Attack vocabulary: mechanic-spec §9.",
+  "enemies": [
+    {
+      "id": "bat",
+      "name": "Crypt Bat",
+      "desc": "Fast, fragile, erratic. Comes in flocks.",
+      "archetype": "swarm",
+      "movement": {
+        "type": "swarm",
+        "wobbleAmpPx": 16,
+        "wobblePeriodMs": 800,
+        "retreatMs": 450,
+        "retreatSpeedMult": 0.8
+      },
+      "hp": 6,
+      "speed": 72,
+      "radius": 4,
+      "kbResist": 0.0,
+      "flying": true,
+      "contactDamage": 1,
+      "threat": 1,
+      "coins": [
+        0,
+        1
+      ],
+      "immune": [],
+      "attacks": [],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "bat"
+      }
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton",
+      "desc": "Walks at you and swings a rusty blade.",
+      "archetype": "chaser",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 18,
+      "speed": 44,
+      "radius": 6,
+      "kbResist": 0.1,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 2,
+      "coins": [
+        1,
+        1
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "swipe",
+          "type": "melee_swipe",
+          "windupMs": 450,
+          "recoverMs": 450,
+          "cooldownMs": 1400,
+          "triggerRange": 26,
+          "needsLos": false,
+          "damage": 1,
+          "range": 24,
+          "arcDeg": 110
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "skeleton"
+      }
+    },
+    {
+      "id": "cultist",
+      "name": "Cultist",
+      "desc": "Keeps its distance and fires single bolts.",
+      "archetype": "ranged_shooter",
+      "movement": {
+        "type": "kiter",
+        "minRange": 90,
+        "maxRange": 150
+      },
+      "hp": 16,
+      "speed": 40,
+      "radius": 6,
+      "kbResist": 0.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 3,
+      "coins": [
+        1,
+        2
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "bolt",
+          "type": "shoot",
+          "windupMs": 550,
+          "recoverMs": 300,
+          "cooldownMs": 1900,
+          "triggerRange": 220,
+          "needsLos": true,
+          "damage": 1,
+          "count": 1,
+          "spreadDeg": 0,
+          "speed": 110,
+          "projectile": {
+            "radius": 3,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "robed"
+      }
+    },
+    {
+      "id": "frost_mage",
+      "name": "Frost Mage",
+      "desc": "Fires three chilling orbs that slow you.",
+      "archetype": "ranged_shooter",
+      "movement": {
+        "type": "kiter",
+        "minRange": 100,
+        "maxRange": 170
+      },
+      "hp": 18,
+      "speed": 38,
+      "radius": 6,
+      "kbResist": 0.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 3,
+      "coins": [
+        1,
+        2
+      ],
+      "immune": [
+        "chill",
+        "freeze"
+      ],
+      "attacks": [
+        {
+          "id": "frost_orbs",
+          "type": "shoot",
+          "windupMs": 650,
+          "recoverMs": 350,
+          "cooldownMs": 2400,
+          "triggerRange": 230,
+          "needsLos": true,
+          "damage": 1,
+          "count": 3,
+          "spreadDeg": 24,
+          "speed": 95,
+          "projectile": {
+            "radius": 4,
+            "element": "frost",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "robed-frost"
+      }
+    },
+    {
+      "id": "brute",
+      "name": "Grave Brute",
+      "desc": "Winds up, then charges in a straight line. Stuns itself on walls.",
+      "archetype": "charger",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 40,
+      "speed": 32,
+      "radius": 8,
+      "kbResist": 0.6,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 4,
+      "coins": [
+        2,
+        3
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "charge",
+          "type": "charge",
+          "windupMs": 700,
+          "recoverMs": 500,
+          "cooldownMs": 2600,
+          "triggerRange": 170,
+          "needsLos": true,
+          "damage": 1,
+          "speed": 250,
+          "durationMs": 650,
+          "wallStunMs": 1000
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "brute"
+      }
+    },
+    {
+      "id": "slime",
+      "name": "Bog Slime",
+      "desc": "Splits into two slimelets when killed.",
+      "archetype": "splitter",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 24,
+      "speed": 30,
+      "radius": 7,
+      "kbResist": 0.2,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 3,
+      "coins": [
+        1,
+        1
+      ],
+      "immune": [],
+      "attacks": [],
+      "onDeath": {
+        "type": "spawn",
+        "enemyId": "slimelet",
+        "count": 2
+      },
+      "summonOnly": false,
+      "visual": {
+        "shape": "slime"
+      }
+    },
+    {
+      "id": "slimelet",
+      "name": "Slimelet",
+      "desc": "A small, quick piece of slime.",
+      "archetype": "splitter",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 8,
+      "speed": 52,
+      "radius": 4,
+      "kbResist": 0.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 0,
+      "coins": [
+        0,
+        1
+      ],
+      "immune": [],
+      "attacks": [],
+      "onDeath": null,
+      "summonOnly": true,
+      "visual": {
+        "shape": "slime-small"
+      }
+    },
+    {
+      "id": "fire_imp",
+      "name": "Fire Imp",
+      "desc": "Rushes you and self-destructs. Kill it early, or kill it mid-fuse near its friends.",
+      "archetype": "bomber",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 12,
+      "speed": 62,
+      "radius": 5,
+      "kbResist": 0.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 3,
+      "coins": [
+        1,
+        1
+      ],
+      "immune": [
+        "burn"
+      ],
+      "attacks": [
+        {
+          "id": "fuse",
+          "type": "self_destruct",
+          "windupMs": 600,
+          "recoverMs": 0,
+          "cooldownMs": 0,
+          "triggerRange": 26,
+          "needsLos": false,
+          "damage": 1,
+          "radius": 36,
+          "enemyDamage": 10,
+          "explodeIfKilledDuringWindup": true
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "imp"
+      }
+    },
+    {
+      "id": "eye_turret",
+      "name": "Watcher Eye",
+      "desc": "Rooted in place. Alternates a ring and an aimed burst.",
+      "archetype": "turret",
+      "movement": {
+        "type": "stationary"
+      },
+      "hp": 30,
+      "speed": 0,
+      "radius": 7,
+      "kbResist": 1.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 4,
+      "coins": [
+        2,
+        2
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "eye_ring",
+          "type": "ring",
+          "windupMs": 650,
+          "recoverMs": 300,
+          "cooldownMs": 2400,
+          "triggerRange": 260,
+          "needsLos": false,
+          "damage": 1,
+          "count": 8,
+          "speed": 80,
+          "offsetDeg": 0,
+          "volleys": 1,
+          "volleyIntervalMs": 0,
+          "volleyOffsetDeg": 0,
+          "projectile": {
+            "radius": 3,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "eye_burst",
+          "type": "shoot",
+          "windupMs": 500,
+          "recoverMs": 300,
+          "cooldownMs": 2400,
+          "triggerRange": 260,
+          "needsLos": true,
+          "damage": 1,
+          "count": 3,
+          "spreadDeg": 20,
+          "speed": 120,
+          "projectile": {
+            "radius": 3,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "eye"
+      }
+    },
+    {
+      "id": "wraith",
+      "name": "Wraith",
+      "desc": "Fades out, reappears near you, then fires a 3-shot spread.",
+      "archetype": "teleporter",
+      "movement": {
+        "type": "drifter"
+      },
+      "hp": 22,
+      "speed": 30,
+      "radius": 6,
+      "kbResist": 0.3,
+      "flying": true,
+      "contactDamage": 1,
+      "threat": 5,
+      "coins": [
+        2,
+        3
+      ],
+      "immune": [
+        "poison"
+      ],
+      "attacks": [
+        {
+          "id": "wraith_blink",
+          "type": "blink",
+          "windupMs": 500,
+          "recoverMs": 150,
+          "cooldownMs": 400,
+          "triggerRange": 400,
+          "needsLos": false,
+          "damage": 0,
+          "minDist": 70,
+          "maxDist": 110
+        },
+        {
+          "id": "wraith_volley",
+          "type": "shoot",
+          "windupMs": 450,
+          "recoverMs": 300,
+          "cooldownMs": 2200,
+          "triggerRange": 260,
+          "needsLos": true,
+          "damage": 1,
+          "count": 3,
+          "spreadDeg": 30,
+          "speed": 120,
+          "projectile": {
+            "radius": 3,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "ghost"
+      }
+    },
+    {
+      "id": "necromancer",
+      "name": "Necromancer",
+      "desc": "Hangs back and raises flying skulls. Its skulls die with it.",
+      "archetype": "summoner",
+      "movement": {
+        "type": "kiter",
+        "minRange": 120,
+        "maxRange": 180
+      },
+      "hp": 34,
+      "speed": 34,
+      "radius": 6,
+      "kbResist": 0.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 6,
+      "coins": [
+        3,
+        4
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "raise",
+          "type": "summon",
+          "windupMs": 900,
+          "recoverMs": 400,
+          "cooldownMs": 5000,
+          "triggerRange": 320,
+          "needsLos": false,
+          "damage": 0,
+          "enemyId": "skull",
+          "count": 2,
+          "maxAlive": 4
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "robed-dark"
+      }
+    },
+    {
+      "id": "skull",
+      "name": "Flying Skull",
+      "desc": "A cackling skull. Dies with its necromancer.",
+      "archetype": "swarm",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 5,
+      "speed": 78,
+      "radius": 4,
+      "kbResist": 0.0,
+      "flying": true,
+      "contactDamage": 1,
+      "threat": 0,
+      "coins": [
+        0,
+        0
+      ],
+      "immune": [],
+      "attacks": [],
+      "onDeath": null,
+      "summonOnly": true,
+      "visual": {
+        "shape": "skull"
+      }
+    },
+    {
+      "id": "stone_golem",
+      "name": "Stone Golem",
+      "desc": "Slow and massive. Its stomp shakes loose a ring of rocks.",
+      "archetype": "tank",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 90,
+      "speed": 24,
+      "radius": 10,
+      "kbResist": 0.9,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 8,
+      "coins": [
+        4,
+        6
+      ],
+      "immune": [
+        "stun"
+      ],
+      "attacks": [
+        {
+          "id": "stomp",
+          "type": "slam",
+          "windupMs": 850,
+          "recoverMs": 700,
+          "cooldownMs": 3200,
+          "triggerRange": 50,
+          "needsLos": false,
+          "damage": 2,
+          "radius": 44,
+          "at": "self",
+          "travelMs": 0,
+          "ring": {
+            "count": 8,
+            "speed": 90,
+            "projectile": {
+              "radius": 4,
+              "element": "arcane",
+              "lifetimeMs": 3000
+            }
+          }
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "golem"
+      }
+    }
+  ]
+}

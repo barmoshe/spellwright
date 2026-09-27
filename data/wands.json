@@ -1,0 +1,256 @@
+{
+  "version": 1,
+  "$comment": "Times in ms (engine converts to 60 Hz steps: round(ms*60/1000)). rarity 'starter' = never in loot pools.",
+  "wands": [
+    {
+      "id": "apprentice_wand",
+      "name": "Apprentice Wand",
+      "desc": "A reliable first wand. Two empty slots to grow into.",
+      "rarity": "starter",
+      "minFloor": 0,
+      "capacity": 4,
+      "manaMax": 60,
+      "manaRegen": 25,
+      "castDelayMs": 250,
+      "rechargeMs": 400,
+      "spreadDeg": 3,
+      "speedMult": 1.0,
+      "spellsPerCast": 1,
+      "shuffle": false,
+      "alwaysCast": [],
+      "presetCards": [
+        "spark_bolt",
+        "spark_bolt"
+      ],
+      "visual": {
+        "shape": "wand-short"
+      }
+    },
+    {
+      "id": "ember_rod",
+      "name": "Ember Rod",
+      "desc": "Quick and warm. Loves fire.",
+      "rarity": "common",
+      "minFloor": 1,
+      "capacity": 4,
+      "manaMax": 80,
+      "manaRegen": 28,
+      "castDelayMs": 220,
+      "rechargeMs": 450,
+      "spreadDeg": 4,
+      "speedMult": 1.0,
+      "spellsPerCast": 1,
+      "shuffle": false,
+      "alwaysCast": [],
+      "presetCards": [
+        "fire_bolt",
+        "fire_bolt"
+      ],
+      "visual": {
+        "shape": "rod"
+      }
+    },
+    {
+      "id": "glass_needle",
+      "name": "Glass Needle",
+      "desc": "Tiny deck, blistering cast rate.",
+      "rarity": "common",
+      "minFloor": 1,
+      "capacity": 3,
+      "manaMax": 50,
+      "manaRegen": 34,
+      "castDelayMs": 90,
+      "rechargeMs": 300,
+      "spreadDeg": 1,
+      "speedMult": 1.25,
+      "spellsPerCast": 1,
+      "shuffle": false,
+      "alwaysCast": [],
+      "presetCards": [
+        "venom_dart",
+        "venom_dart"
+      ],
+      "visual": {
+        "shape": "needle"
+      }
+    },
+    {
+      "id": "twin_fork",
+      "name": "Twin Fork",
+      "desc": "Casts 2 spells per pull of the trigger.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "capacity": 5,
+      "manaMax": 100,
+      "manaRegen": 32,
+      "castDelayMs": 300,
+      "rechargeMs": 650,
+      "spreadDeg": 7,
+      "speedMult": 0.95,
+      "spellsPerCast": 2,
+      "shuffle": false,
+      "alwaysCast": [],
+      "presetCards": [
+        "fire_bolt",
+        "ice_shard"
+      ],
+      "visual": {
+        "shape": "fork"
+      }
+    },
+    {
+      "id": "stormcaller_staff",
+      "name": "Stormcaller Staff",
+      "desc": "Fast projectiles, deep mana.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "capacity": 6,
+      "manaMax": 140,
+      "manaRegen": 45,
+      "castDelayMs": 200,
+      "rechargeMs": 600,
+      "spreadDeg": 4,
+      "speedMult": 1.15,
+      "spellsPerCast": 1,
+      "shuffle": false,
+      "alwaysCast": [],
+      "presetCards": [
+        "chain_lightning",
+        "double_cast",
+        "spark_bolt",
+        "spark_bolt"
+      ],
+      "visual": {
+        "shape": "staff"
+      }
+    },
+    {
+      "id": "oak_staff",
+      "name": "Old Oak Staff",
+      "desc": "A long, slow staff built for combos.",
+      "rarity": "uncommon",
+      "minFloor": 2,
+      "capacity": 7,
+      "manaMax": 180,
+      "manaRegen": 28,
+      "castDelayMs": 380,
+      "rechargeMs": 900,
+      "spreadDeg": 2,
+      "speedMult": 0.9,
+      "spellsPerCast": 1,
+      "shuffle": false,
+      "alwaysCast": [],
+      "presetCards": [
+        "trigger_hit",
+        "spark_bolt",
+        "fireball"
+      ],
+      "visual": {
+        "shape": "staff"
+      }
+    },
+    {
+      "id": "grave_scepter",
+      "name": "Grave Scepter",
+      "desc": "Heavy, precise, instant recharge.",
+      "rarity": "rare",
+      "minFloor": 2,
+      "capacity": 6,
+      "manaMax": 220,
+      "manaRegen": 36,
+      "castDelayMs": 450,
+      "rechargeMs": 350,
+      "spreadDeg": 0,
+      "speedMult": 0.8,
+      "spellsPerCast": 1,
+      "shuffle": false,
+      "alwaysCast": [],
+      "presetCards": [
+        "heavy",
+        "fireball"
+      ],
+      "visual": {
+        "shape": "scepter"
+      }
+    },
+    {
+      "id": "chaos_branch",
+      "name": "Chaos Branch",
+      "desc": "Huge capacity and speed, but it shuffles its deck.",
+      "rarity": "rare",
+      "minFloor": 2,
+      "capacity": 8,
+      "manaMax": 160,
+      "manaRegen": 55,
+      "castDelayMs": 110,
+      "rechargeMs": 280,
+      "spreadDeg": 10,
+      "speedMult": 1.05,
+      "spellsPerCast": 1,
+      "shuffle": true,
+      "alwaysCast": [],
+      "presetCards": [
+        "spark_bolt",
+        "fire_bolt",
+        "ice_shard",
+        "venom_dart",
+        "bouncing_burst"
+      ],
+      "visual": {
+        "shape": "branch"
+      }
+    },
+    {
+      "id": "echo_wand",
+      "name": "Echo Wand",
+      "desc": "Always casts Double Cast for free.",
+      "rarity": "rare",
+      "minFloor": 2,
+      "capacity": 4,
+      "manaMax": 110,
+      "manaRegen": 40,
+      "castDelayMs": 300,
+      "rechargeMs": 600,
+      "spreadDeg": 6,
+      "speedMult": 1.0,
+      "spellsPerCast": 1,
+      "shuffle": false,
+      "alwaysCast": [
+        "double_cast"
+      ],
+      "presetCards": [
+        "spark_bolt",
+        "magic_missile"
+      ],
+      "visual": {
+        "shape": "wand-ring"
+      }
+    },
+    {
+      "id": "archmage_scepter",
+      "name": "Archmage's Scepter",
+      "desc": "Ten slots. The endgame.",
+      "rarity": "legendary",
+      "minFloor": 3,
+      "capacity": 10,
+      "manaMax": 320,
+      "manaRegen": 70,
+      "castDelayMs": 180,
+      "rechargeMs": 700,
+      "spreadDeg": 3,
+      "speedMult": 1.1,
+      "spellsPerCast": 1,
+      "shuffle": false,
+      "alwaysCast": [],
+      "presetCards": [
+        "triple_cast",
+        "spark_bolt",
+        "fire_bolt",
+        "ice_shard"
+      ],
+      "visual": {
+        "shape": "scepter-gem"
+      }
+    }
+  ]
+}

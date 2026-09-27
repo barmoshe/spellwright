@@ -1,0 +1,210 @@
+{
+  "version": 1,
+  "$comment": "Designer rule constants (non-feel). One record per section.",
+  "rules": [
+    {
+      "id": "player",
+      "maxHp": 6,
+      "maxHpCap": 12,
+      "startCoins": 0,
+      "bagCapacity": 12,
+      "wandSlots": 3,
+      "shieldMaxCharges": 1
+    },
+    {
+      "id": "crit",
+      "baseChance": 0.05,
+      "mult": 2.0
+    },
+    {
+      "id": "casting",
+      "modifierScope": "next_group",
+      "wrapMode": "wrap_once_skip_drawn",
+      "minCastDelayMs": 50,
+      "minRechargeMs": 60,
+      "maxShotsPerCast": 32,
+      "maxTriggerDepth": 3,
+      "maxPlayerProjectiles": 220,
+      "maxOrbitShots": 12,
+      "modifierDamageMultCap": 5.0,
+      "childLifetimeMult": 0.6,
+      "rehitCooldownMs": 400,
+      "payloadSpawnBackoffPx": 2,
+      "editForcesRecharge": true,
+      "wandSwapCarriesTimers": true,
+      "homingAcquireRangePx": 160,
+      "maxZones": 24,
+      "boomerangCatchRadiusPx": 8,
+      "teleportSearchTiles": 2
+    },
+    {
+      "id": "shotClamps",
+      "damage": [
+        0.5,
+        9999
+      ],
+      "speed": [
+        40,
+        640
+      ],
+      "lifetimeMs": [
+        100,
+        6000
+      ],
+      "radius": [
+        2,
+        24
+      ],
+      "spreadDeg": [
+        0,
+        45
+      ],
+      "pierce": [
+        0,
+        10
+      ],
+      "bounce": [
+        0,
+        10
+      ],
+      "homing": [
+        0,
+        720
+      ],
+      "knockback": [
+        0,
+        400
+      ],
+      "statusChance": [
+        0,
+        1
+      ],
+      "critChance": [
+        0,
+        1
+      ]
+    },
+    {
+      "id": "status",
+      "tickDamageScalesWithFloorHp": true,
+      "burn": {
+        "tickMs": 500,
+        "tickDamage": 2,
+        "durationMs": 3000
+      },
+      "chill": {
+        "slowPerStack": 0.2,
+        "maxStacks": 3,
+        "durationMs": 2500,
+        "freezeStacks": 3
+      },
+      "freeze": {
+        "freezeMs": 1500,
+        "immunityMs": 2000,
+        "damageTakenMult": 1.5
+      },
+      "shock": {
+        "stunMs": 250,
+        "stunImmunityMs": 1000,
+        "vulnerableMs": 2000,
+        "vulnerableMult": 1.25,
+        "interruptCooldownFrac": 0.5
+      },
+      "poison": {
+        "tickMs": 1000,
+        "damagePerStack": 1.5,
+        "maxStacks": 10,
+        "durationMs": 4000
+      },
+      "playerSlow": {
+        "slowFrac": 0.4,
+        "durationMs": 1500
+      },
+      "boss": {
+        "slowCap": 0.2
+      }
+    },
+    {
+      "id": "reactions",
+      "damageMult": 1.0,
+      "melt": {
+        "damageMult": 2.0
+      },
+      "overload": {
+        "radius": 32,
+        "damageMult": 1.5
+      },
+      "blight": {
+        "damagePerStack": 4
+      },
+      "superconduct": {
+        "damageMult": 1.5,
+        "chillRadius": 40
+      },
+      "quench": {}
+    },
+    {
+      "id": "enemies",
+      "spawnPortalMs": 700,
+      "minSpawnDistPx": 64,
+      "aimLockBeforeReleaseMs": 150,
+      "telegraphMinMs": 350,
+      "heavyTelegraphMinMs": 600,
+      "bossTelegraphMinMs": 450,
+      "flowFieldHz": 4,
+      "maxAlive": 14,
+      "summonsDieWithSummoner": true,
+      "kiterStrafeFlipMs": 1500,
+      "drifterTurnMs": 1200,
+      "bossActivateDelayMs": 1200,
+      "crateHp": 6,
+      "selfDestructDropsCoins": false,
+      "hazardMinSpacingPx": 48,
+      "hazardCrossOffsetPx": 64,
+      "summonRingRadiusPx": 24,
+      "blinkWallClearTiles": 2,
+      "eliteThreatMult": 2,
+      "attackRequiresOnScreen": true,
+      "onScreenInsetPx": 8,
+      "elite": {
+        "hpMult": 2.5,
+        "coinMult": 3,
+        "kbResistAdd": 0.3
+      }
+    },
+    {
+      "id": "waves",
+      "roomEnterGraceMs": 500,
+      "nextWaveWhenAliveAtMost": 2,
+      "nextWaveMinElapsedMs": 8000,
+      "waveGrowth": 0.25,
+      "maxPerWave": 8
+    },
+    {
+      "id": "curses",
+      "levels": [
+        {
+          "level": 1,
+          "enemyHpMult": 1.2,
+          "windupMult": 1.0,
+          "playerMaxHpAdd": 0,
+          "eliteExtraBudget": 0
+        },
+        {
+          "level": 2,
+          "enemyHpMult": 1.2,
+          "windupMult": 0.9,
+          "playerMaxHpAdd": 0,
+          "eliteExtraBudget": 4
+        },
+        {
+          "level": 3,
+          "enemyHpMult": 1.35,
+          "windupMult": 0.9,
+          "playerMaxHpAdd": -2,
+          "eliteExtraBudget": 4
+        }
+      ]
+    }
+  ]
+}

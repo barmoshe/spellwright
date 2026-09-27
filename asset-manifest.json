@@ -1,0 +1,2833 @@
+{
+ "version": 1,
+ "game": "spellwright",
+ "buildHash": "ec25c138",
+ "keyContract": "assets/ATLAS-KEYS.md",
+ "premultipliedAlpha": false,
+ "pixelArt": true,
+ "atlases": {
+  "world": {
+   "image": "assets/atlases/world-dbae3862.png",
+   "data": "assets/atlases/world-dbae3862.json",
+   "format": "phaser-json",
+   "pageWidth": 1024,
+   "pageHeight": 1024,
+   "pageMB": 4.0,
+   "padding": 2,
+   "extrude": 1,
+   "premultipliedAlpha": false,
+   "frameCount": 705,
+   "uniqueRects": 552,
+   "frames": [
+    "authored.ebullet_arcane_13_f0",
+    "authored.ebullet_arcane_13_f1",
+    "authored.ebullet_arcane_7_f0",
+    "authored.ebullet_arcane_7_f1",
+    "authored.ebullet_arcane_9_f0",
+    "authored.ebullet_arcane_9_f1",
+    "authored.ebullet_fire_13_f0",
+    "authored.ebullet_fire_13_f1",
+    "authored.ebullet_fire_7_f0",
+    "authored.ebullet_fire_7_f1",
+    "authored.ebullet_fire_9_f0",
+    "authored.ebullet_fire_9_f1",
+    "authored.ebullet_frost_13_f0",
+    "authored.ebullet_frost_13_f1",
+    "authored.ebullet_frost_7_f0",
+    "authored.ebullet_frost_7_f1",
+    "authored.ebullet_frost_9_f0",
+    "authored.ebullet_frost_9_f1",
+    "authored.ebullet_poison_13_f0",
+    "authored.ebullet_poison_13_f1",
+    "authored.ebullet_poison_7_f0",
+    "authored.ebullet_poison_7_f1",
+    "authored.ebullet_poison_9_f0",
+    "authored.ebullet_poison_9_f1",
+    "authored.eye_turret_f0",
+    "authored.eye_turret_f1",
+    "authored.glow_16",
+    "authored.glow_32",
+    "authored.glow_64",
+    "authored.shadow_10x3",
+    "authored.shadow_22x5",
+    "authored.slimelet_f0",
+    "authored.slimelet_f1",
+    "authored.tile_pit_void",
+    "bosses.archlich.idle.0",
+    "bosses.archlich.idle.1",
+    "bosses.archlich.idle.2",
+    "bosses.archlich.idle.3",
+    "bosses.archlich.move.0",
+    "bosses.archlich.move.1",
+    "bosses.archlich.move.2",
+    "bosses.archlich.move.3",
+    "bosses.archlich.shadow.0",
+    "bosses.archlich.weapon_overlay.boss_lich_staff.0",
+    "bosses.mire_queen.idle.0",
+    "bosses.mire_queen.idle.1",
+    "bosses.mire_queen.idle.2",
+    "bosses.mire_queen.idle.3",
+    "bosses.mire_queen.move.0",
+    "bosses.mire_queen.move.1",
+    "bosses.mire_queen.move.2",
+    "bosses.mire_queen.move.3",
+    "bosses.mire_queen.shadow.0",
+    "bosses.ossuary_knight.idle.0",
+    "bosses.ossuary_knight.idle.1",
+    "bosses.ossuary_knight.idle.2",
+    "bosses.ossuary_knight.idle.3",
+    "bosses.ossuary_knight.move.0",
+    "bosses.ossuary_knight.move.1",
+    "bosses.ossuary_knight.move.2",
+    "bosses.ossuary_knight.move.3",
+    "bosses.ossuary_knight.shadow.0",
+    "bosses.ossuary_knight.weapon_overlay.boss_knight_blade.0",
+    "enemies.bat.idle.0",
+    "enemies.bat.idle.1",
+    "enemies.bat.move.0",
+    "enemies.bat.move.1",
+    "enemies.bat.shadow.0",
+    "enemies.brute.idle.0",
+    "enemies.brute.idle.1",
+    "enemies.brute.idle.2",
+    "enemies.brute.idle.3",
+    "enemies.brute.idle_elite.0",
+    "enemies.brute.idle_elite.1",
+    "enemies.brute.idle_elite.2",
+    "enemies.brute.idle_elite.3",
+    "enemies.brute.move.0",
+    "enemies.brute.move.1",
+    "enemies.brute.move.2",
+    "enemies.brute.move.3",
+    "enemies.brute.move_elite.0",
+    "enemies.brute.move_elite.1",
+    "enemies.brute.move_elite.2",
+    "enemies.brute.move_elite.3",
+    "enemies.brute.shadow.0",
+    "enemies.cultist.idle.0",
+    "enemies.cultist.idle.1",
+    "enemies.cultist.idle.2",
+    "enemies.cultist.idle.3",
+    "enemies.cultist.idle_elite.0",
+    "enemies.cultist.idle_elite.1",
+    "enemies.cultist.idle_elite.2",
+    "enemies.cultist.idle_elite.3",
+    "enemies.cultist.move.0",
+    "enemies.cultist.move.1",
+    "enemies.cultist.move.2",
+    "enemies.cultist.move.3",
+    "enemies.cultist.move_elite.0",
+    "enemies.cultist.move_elite.1",
+    "enemies.cultist.move_elite.2",
+    "enemies.cultist.move_elite.3",
+    "enemies.cultist.shadow.0",
+    "enemies.eye_turret.idle.0",
+    "enemies.eye_turret.idle_elite.0",
+    "enemies.eye_turret.move.0",
+    "enemies.eye_turret.move_elite.0",
+    "enemies.eye_turret.shadow.0",
+    "enemies.eye_turret.windup_frame.0",
+    "enemies.eye_turret.windup_frame_elite.0",
+    "enemies.fire_imp.idle.0",
+    "enemies.fire_imp.idle.1",
+    "enemies.fire_imp.idle.2",
+    "enemies.fire_imp.idle.3",
+    "enemies.fire_imp.move.0",
+    "enemies.fire_imp.move.1",
+    "enemies.fire_imp.move.2",
+    "enemies.fire_imp.move.3",
+    "enemies.fire_imp.shadow.0",
+    "enemies.frost_mage.idle.0",
+    "enemies.frost_mage.idle.1",
+    "enemies.frost_mage.idle.2",
+    "enemies.frost_mage.idle.3",
+    "enemies.frost_mage.idle_elite.0",
+    "enemies.frost_mage.idle_elite.1",
+    "enemies.frost_mage.idle_elite.2",
+    "enemies.frost_mage.idle_elite.3",
+    "enemies.frost_mage.move.0",
+    "enemies.frost_mage.move.1",
+    "enemies.frost_mage.move.2",
+    "enemies.frost_mage.move.3",
+    "enemies.frost_mage.move_elite.0",
+    "enemies.frost_mage.move_elite.1",
+    "enemies.frost_mage.move_elite.2",
+    "enemies.frost_mage.move_elite.3",
+    "enemies.frost_mage.shadow.0",
+    "enemies.necromancer.idle.0",
+    "enemies.necromancer.idle.1",
+    "enemies.necromancer.idle.2",
+    "enemies.necromancer.idle.3",
+    "enemies.necromancer.idle_elite.0",
+    "enemies.necromancer.idle_elite.1",
+    "enemies.necromancer.idle_elite.2",
+    "enemies.necromancer.idle_elite.3",
+    "enemies.necromancer.move.0",
+    "enemies.necromancer.move.1",
+    "enemies.necromancer.move.2",
+    "enemies.necromancer.move.3",
+    "enemies.necromancer.move_elite.0",
+    "enemies.necromancer.move_elite.1",
+    "enemies.necromancer.move_elite.2",
+    "enemies.necromancer.move_elite.3",
+    "enemies.necromancer.shadow.0",
+    "enemies.skeleton.idle.0",
+    "enemies.skeleton.idle.1",
+    "enemies.skeleton.idle.2",
+    "enemies.skeleton.idle.3",
+    "enemies.skeleton.idle_elite.0",
+    "enemies.skeleton.idle_elite.1",
+    "enemies.skeleton.idle_elite.2",
+    "enemies.skeleton.idle_elite.3",
+    "enemies.skeleton.move.0",
+    "enemies.skeleton.move.1",
+    "enemies.skeleton.move.2",
+    "enemies.skeleton.move.3",
+    "enemies.skeleton.move_elite.0",
+    "enemies.skeleton.move_elite.1",
+    "enemies.skeleton.move_elite.2",
+    "enemies.skeleton.move_elite.3",
+    "enemies.skeleton.shadow.0",
+    "enemies.skull.idle.0",
+    "enemies.skull.move.0",
+    "enemies.skull.shadow.0",
+    "enemies.slime.idle.0",
+    "enemies.slime.idle.1",
+    "enemies.slime.idle.2",
+    "enemies.slime.idle.3",
+    "enemies.slime.idle_elite.0",
+    "enemies.slime.idle_elite.1",
+    "enemies.slime.idle_elite.2",
+    "enemies.slime.idle_elite.3",
+    "enemies.slime.move.0",
+    "enemies.slime.move.1",
+    "enemies.slime.move.2",
+    "enemies.slime.move.3",
+    "enemies.slime.move_elite.0",
+    "enemies.slime.move_elite.1",
+    "enemies.slime.move_elite.2",
+    "enemies.slime.move_elite.3",
+    "enemies.slime.shadow.0",
+    "enemies.slimelet.idle.0",
+    "enemies.slimelet.idle.1",
+    "enemies.slimelet.move.0",
+    "enemies.slimelet.move.1",
+    "enemies.slimelet.shadow.0",
+    "enemies.stone_golem.idle.0",
+    "enemies.stone_golem.idle.1",
+    "enemies.stone_golem.idle.2",
+    "enemies.stone_golem.idle.3",
+    "enemies.stone_golem.idle_elite.0",
+    "enemies.stone_golem.idle_elite.1",
+    "enemies.stone_golem.idle_elite.2",
+    "enemies.stone_golem.idle_elite.3",
+    "enemies.stone_golem.move.0",
+    "enemies.stone_golem.move.1",
+    "enemies.stone_golem.move.2",
+    "enemies.stone_golem.move.3",
+    "enemies.stone_golem.move_elite.0",
+    "enemies.stone_golem.move_elite.1",
+    "enemies.stone_golem.move_elite.2",
+    "enemies.stone_golem.move_elite.3",
+    "enemies.stone_golem.shadow.0",
+    "enemies.wraith.idle.0",
+    "enemies.wraith.idle.1",
+    "enemies.wraith.idle.2",
+    "enemies.wraith.idle.3",
+    "enemies.wraith.idle_elite.0",
+    "enemies.wraith.idle_elite.1",
+    "enemies.wraith.idle_elite.2",
+    "enemies.wraith.idle_elite.3",
+    "enemies.wraith.move.0",
+    "enemies.wraith.move.1",
+    "enemies.wraith.move.2",
+    "enemies.wraith.move.3",
+    "enemies.wraith.move_elite.0",
+    "enemies.wraith.move_elite.1",
+    "enemies.wraith.move_elite.2",
+    "enemies.wraith.move_elite.3",
+    "enemies.wraith.shadow.0",
+    "enemy_bullets.arcane.13.0",
+    "enemy_bullets.arcane.13.1",
+    "enemy_bullets.arcane.7.0",
+    "enemy_bullets.arcane.7.1",
+    "enemy_bullets.arcane.9.0",
+    "enemy_bullets.arcane.9.1",
+    "enemy_bullets.fire.13.0",
+    "enemy_bullets.fire.13.1",
+    "enemy_bullets.fire.7.0",
+    "enemy_bullets.fire.7.1",
+    "enemy_bullets.fire.9.0",
+    "enemy_bullets.fire.9.1",
+    "enemy_bullets.frost.13.0",
+    "enemy_bullets.frost.13.1",
+    "enemy_bullets.frost.7.0",
+    "enemy_bullets.frost.7.1",
+    "enemy_bullets.frost.9.0",
+    "enemy_bullets.frost.9.1",
+    "enemy_bullets.poison.13.0",
+    "enemy_bullets.poison.13.1",
+    "enemy_bullets.poison.7.0",
+    "enemy_bullets.poison.7.1",
+    "enemy_bullets.poison.9.0",
+    "enemy_bullets.poison.9.1",
+    "fx.blink_puff.0",
+    "fx.blink_puff.1",
+    "fx.blink_puff.10",
+    "fx.blink_puff.11",
+    "fx.blink_puff.12",
+    "fx.blink_puff.2",
+    "fx.blink_puff.3",
+    "fx.blink_puff.4",
+    "fx.blink_puff.5",
+    "fx.blink_puff.6",
+    "fx.blink_puff.7",
+    "fx.blink_puff.8",
+    "fx.blink_puff.9",
+    "fx.cast_glyph.0",
+    "fx.cast_glyph.1",
+    "fx.cast_glyph.10",
+    "fx.cast_glyph.11",
+    "fx.cast_glyph.12",
+    "fx.cast_glyph.13",
+    "fx.cast_glyph.14",
+    "fx.cast_glyph.15",
+    "fx.cast_glyph.2",
+    "fx.cast_glyph.3",
+    "fx.cast_glyph.4",
+    "fx.cast_glyph.5",
+    "fx.cast_glyph.6",
+    "fx.cast_glyph.7",
+    "fx.cast_glyph.8",
+    "fx.cast_glyph.9",
+    "fx.chain_arc.0",
+    "fx.chain_arc.1",
+    "fx.crate_break.0",
+    "fx.crate_break.1",
+    "fx.crate_break.2",
+    "fx.ebullet_pop.0",
+    "fx.ebullet_pop.1",
+    "fx.ebullet_pop.2",
+    "fx.ebullet_pop.3",
+    "fx.enemy_slash.0",
+    "fx.enemy_slash.1",
+    "fx.enemy_slash.2",
+    "fx.enemy_slash.3",
+    "fx.enemy_slash.4",
+    "fx.enemy_slash.5",
+    "fx.enemy_slash.6",
+    "fx.explosion.0",
+    "fx.explosion.1",
+    "fx.explosion.2",
+    "fx.explosion.3",
+    "fx.explosion.4",
+    "fx.freeze_shatter.0",
+    "fx.freeze_shatter.1",
+    "fx.freeze_shatter.2",
+    "fx.freeze_shatter.3",
+    "fx.hit_ring.0",
+    "fx.hit_ring.1",
+    "fx.hit_ring.2",
+    "fx.hit_ring.3",
+    "fx.hit_ring.4",
+    "fx.hit_ring.5",
+    "fx.hit_ring_large.0",
+    "fx.hit_ring_large.1",
+    "fx.hit_ring_large.2",
+    "fx.hit_ring_large.3",
+    "fx.hit_ring_large.4",
+    "fx.hit_ring_large.5",
+    "fx.hit_ring_large.6",
+    "fx.hit_ring_large.7",
+    "fx.muzzle.star",
+    "fx.phase_burst.0",
+    "fx.phase_burst.1",
+    "fx.phase_burst.10",
+    "fx.phase_burst.11",
+    "fx.phase_burst.12",
+    "fx.phase_burst.13",
+    "fx.phase_burst.14",
+    "fx.phase_burst.15",
+    "fx.phase_burst.16",
+    "fx.phase_burst.17",
+    "fx.phase_burst.18",
+    "fx.phase_burst.19",
+    "fx.phase_burst.2",
+    "fx.phase_burst.20",
+    "fx.phase_burst.3",
+    "fx.phase_burst.4",
+    "fx.phase_burst.5",
+    "fx.phase_burst.6",
+    "fx.phase_burst.7",
+    "fx.phase_burst.8",
+    "fx.phase_burst.9",
+    "fx.poison_burst.0",
+    "fx.poison_burst.1",
+    "fx.poison_burst.2",
+    "fx.poison_burst.3",
+    "fx.poison_burst.4",
+    "fx.soul_release.0",
+    "fx.soul_release.1",
+    "fx.soul_release.10",
+    "fx.soul_release.11",
+    "fx.soul_release.12",
+    "fx.soul_release.2",
+    "fx.soul_release.3",
+    "fx.soul_release.4",
+    "fx.soul_release.5",
+    "fx.soul_release.6",
+    "fx.soul_release.7",
+    "fx.soul_release.8",
+    "fx.soul_release.9",
+    "fx.spawn_portal.0",
+    "fx.spawn_portal.1",
+    "fx.spawn_portal.2",
+    "fx.spawn_portal.3",
+    "fx.spawn_portal.4",
+    "fx.spawn_portal.5",
+    "fx.spawn_portal.6",
+    "fx.spawn_portal.7",
+    "fx.spawn_portal.8",
+    "fx.spawn_portal.9",
+    "fx.sputter_puff.0",
+    "fx.sputter_puff.1",
+    "fx.summon_sigil.0",
+    "fx.summon_sigil.1",
+    "fx.summon_sigil.10",
+    "fx.summon_sigil.11",
+    "fx.summon_sigil.12",
+    "fx.summon_sigil.13",
+    "fx.summon_sigil.14",
+    "fx.summon_sigil.15",
+    "fx.summon_sigil.2",
+    "fx.summon_sigil.3",
+    "fx.summon_sigil.4",
+    "fx.summon_sigil.5",
+    "fx.summon_sigil.6",
+    "fx.summon_sigil.7",
+    "fx.summon_sigil.8",
+    "fx.summon_sigil.9",
+    "fx.zap_bolt.0",
+    "icon16.modifiers.accuracy",
+    "icon16.modifiers.bounce",
+    "icon16.modifiers.chain",
+    "icon16.modifiers.crit_up",
+    "icon16.modifiers.damage_up",
+    "icon16.modifiers.double_cast",
+    "icon16.modifiers.explosive",
+    "icon16.modifiers.heavy",
+    "icon16.modifiers.homing",
+    "icon16.modifiers.infuse_fire",
+    "icon16.modifiers.infuse_frost",
+    "icon16.modifiers.infuse_poison",
+    "icon16.modifiers.infuse_shock",
+    "icon16.modifiers.pierce",
+    "icon16.modifiers.quad_cast",
+    "icon16.modifiers.quickening",
+    "icon16.modifiers.range_up",
+    "icon16.modifiers.rapid_cast",
+    "icon16.modifiers.size_up",
+    "icon16.modifiers.speed_up",
+    "icon16.modifiers.split",
+    "icon16.modifiers.trigger_expire",
+    "icon16.modifiers.trigger_hit",
+    "icon16.modifiers.trigger_timer",
+    "icon16.modifiers.triple_cast",
+    "icon16.relics.alchemist_stone",
+    "icon16.relics.arcane_whetstone",
+    "icon16.relics.blast_boots",
+    "icon16.relics.deep_well",
+    "icon16.relics.echo_chamber",
+    "icon16.relics.ember_heart",
+    "icon16.relics.frost_crown",
+    "icon16.relics.glass_lens",
+    "icon16.relics.greed_ring",
+    "icon16.relics.heart_vessel",
+    "icon16.relics.kindling",
+    "icon16.relics.magnet_charm",
+    "icon16.relics.mana_font",
+    "icon16.relics.merchant_seal",
+    "icon16.relics.phoenix_feather",
+    "icon16.relics.plague_vial",
+    "icon16.relics.prism_shard",
+    "icon16.relics.quickened_quill",
+    "icon16.relics.sand_hourglass",
+    "icon16.relics.shadow_cloak",
+    "icon16.relics.shatter_heart",
+    "icon16.relics.storm_battery",
+    "icon16.relics.thorn_mantle",
+    "icon16.relics.vampiric_fang",
+    "icon16.relics.warding_sigil",
+    "icon16.relics.winged_boots",
+    "icon16.reward_kind.modifier",
+    "icon16.reward_kind.relic",
+    "icon16.reward_kind.shop",
+    "icon16.reward_kind.spell",
+    "icon16.reward_kind.treasure",
+    "icon16.reward_kind.wand",
+    "icon16.spells.arcane_orbit",
+    "icon16.spells.blink_bolt",
+    "icon16.spells.boomerang_blade",
+    "icon16.spells.bouncing_burst",
+    "icon16.spells.chain_lightning",
+    "icon16.spells.comet",
+    "icon16.spells.fire_bolt",
+    "icon16.spells.fireball",
+    "icon16.spells.frost_lance",
+    "icon16.spells.frost_nova",
+    "icon16.spells.ice_shard",
+    "icon16.spells.magic_missile",
+    "icon16.spells.rune_mine",
+    "icon16.spells.spark_bolt",
+    "icon16.spells.thunder_orb",
+    "icon16.spells.toxic_flask",
+    "icon16.spells.venom_dart",
+    "icon16.spells.vortex",
+    "icon16.wands.apprentice_wand",
+    "icon16.wands.archmage_scepter",
+    "icon16.wands.chaos_branch",
+    "icon16.wands.echo_wand",
+    "icon16.wands.ember_rod",
+    "icon16.wands.glass_needle",
+    "icon16.wands.grave_scepter",
+    "icon16.wands.oak_staff",
+    "icon16.wands.stormcaller_staff",
+    "icon16.wands.twin_fork",
+    "loadouts.apprentice.portrait.0",
+    "loadouts.apprentice.portrait.1",
+    "loadouts.apprentice.portrait.2",
+    "loadouts.apprentice.portrait.3",
+    "loadouts.hexer.portrait.0",
+    "loadouts.hexer.portrait.1",
+    "loadouts.hexer.portrait.2",
+    "loadouts.hexer.portrait.3",
+    "loadouts.pyromancer.portrait.0",
+    "loadouts.pyromancer.portrait.1",
+    "loadouts.pyromancer.portrait.2",
+    "loadouts.pyromancer.portrait.3",
+    "loadouts.stormcaller.portrait.0",
+    "loadouts.stormcaller.portrait.1",
+    "loadouts.stormcaller.portrait.2",
+    "loadouts.stormcaller.portrait.3",
+    "pickups.coin.0",
+    "pickups.coin.1",
+    "pickups.coin.2",
+    "pickups.coin.3",
+    "pickups.heal_potion_shop.0",
+    "pickups.heart_drop.0",
+    "player.shield_overlay.0",
+    "player.shield_overlay.1",
+    "player.shield_overlay.10",
+    "player.shield_overlay.11",
+    "player.shield_overlay.12",
+    "player.shield_overlay.13",
+    "player.shield_overlay.14",
+    "player.shield_overlay.15",
+    "player.shield_overlay.2",
+    "player.shield_overlay.3",
+    "player.shield_overlay.4",
+    "player.shield_overlay.5",
+    "player.shield_overlay.6",
+    "player.shield_overlay.7",
+    "player.shield_overlay.8",
+    "player.shield_overlay.9",
+    "player.wizzard_f.hit.0",
+    "player.wizzard_f.idle.0",
+    "player.wizzard_f.idle.1",
+    "player.wizzard_f.idle.2",
+    "player.wizzard_f.idle.3",
+    "player.wizzard_f.run.0",
+    "player.wizzard_f.run.1",
+    "player.wizzard_f.run.2",
+    "player.wizzard_f.run.3",
+    "player.wizzard_m.hit.0",
+    "player.wizzard_m.idle.0",
+    "player.wizzard_m.idle.1",
+    "player.wizzard_m.idle.2",
+    "player.wizzard_m.idle.3",
+    "player.wizzard_m.run.0",
+    "player.wizzard_m.run.1",
+    "player.wizzard_m.run.2",
+    "player.wizzard_m.run.3",
+    "spells.arcane_orbit.projectile.0",
+    "spells.blink_bolt.projectile.0",
+    "spells.blink_bolt.projectile.1",
+    "spells.blink_bolt.projectile.2",
+    "spells.blink_bolt.projectile.3",
+    "spells.blink_bolt.projectile.4",
+    "spells.blink_bolt.projectile.5",
+    "spells.boomerang_blade.projectile.0",
+    "spells.bouncing_burst.projectile.0",
+    "spells.chain_lightning.projectile.0",
+    "spells.chain_lightning.projectile.1",
+    "spells.chain_lightning.projectile.2",
+    "spells.chain_lightning.projectile.3",
+    "spells.chain_lightning.projectile.4",
+    "spells.chain_lightning.projectile.5",
+    "spells.comet.projectile.0",
+    "spells.fire_bolt.projectile.0",
+    "spells.fire_bolt.projectile.1",
+    "spells.fire_bolt.projectile.2",
+    "spells.fire_bolt.projectile.3",
+    "spells.fire_bolt.projectile.4",
+    "spells.fire_bolt.projectile.5",
+    "spells.fireball.projectile.0",
+    "spells.fireball.projectile.1",
+    "spells.fireball.projectile.2",
+    "spells.fireball.projectile.3",
+    "spells.fireball.projectile.4",
+    "spells.fireball.projectile.5",
+    "spells.frost_lance.projectile.0",
+    "spells.frost_lance.projectile.1",
+    "spells.frost_lance.projectile.2",
+    "spells.frost_lance.projectile.3",
+    "spells.frost_nova.projectile.0",
+    "spells.ice_shard.projectile.0",
+    "spells.magic_missile.projectile.0",
+    "spells.magic_missile.projectile.1",
+    "spells.magic_missile.projectile.2",
+    "spells.magic_missile.projectile.3",
+    "spells.magic_missile.projectile.4",
+    "spells.magic_missile.projectile.5",
+    "spells.rune_mine.projectile.0",
+    "spells.rune_mine.projectile.1",
+    "spells.spark_bolt.projectile.0",
+    "spells.spark_bolt.projectile.1",
+    "spells.spark_bolt.projectile.2",
+    "spells.spark_bolt.projectile.3",
+    "spells.spark_bolt.projectile.4",
+    "spells.spark_bolt.projectile.5",
+    "spells.thunder_orb.projectile.0",
+    "spells.thunder_orb.projectile.1",
+    "spells.toxic_flask.projectile.0",
+    "spells.venom_dart.projectile.0",
+    "spells.vortex.projectile.0",
+    "spells.vortex.projectile.1",
+    "spells.vortex.projectile.10",
+    "spells.vortex.projectile.11",
+    "spells.vortex.projectile.12",
+    "spells.vortex.projectile.2",
+    "spells.vortex.projectile.3",
+    "spells.vortex.projectile.4",
+    "spells.vortex.projectile.5",
+    "spells.vortex.projectile.6",
+    "spells.vortex.projectile.7",
+    "spells.vortex.projectile.8",
+    "spells.vortex.projectile.9",
+    "status.burn.overlay.0",
+    "status.burn.overlay.1",
+    "status.frozen.overlay.0",
+    "status.poison.overlay.0",
+    "status.poison.overlay.1",
+    "status.shocked.overlay.0",
+    "status.shocked.overlay.1",
+    "status.shocked.overlay.2",
+    "status.shocked.overlay.3",
+    "status.shocked.overlay.4",
+    "status.shocked.overlay.5",
+    "tiles.chest.0",
+    "tiles.chest.1",
+    "tiles.chest.2",
+    "tiles.crate.0",
+    "tiles.door.frame.0",
+    "tiles.door.frame.0@f2",
+    "tiles.door.frame.0@f3",
+    "tiles.door.frame.1",
+    "tiles.door.frame.1@f2",
+    "tiles.door.frame.1@f3",
+    "tiles.door.frame.2",
+    "tiles.door.frame.2@f2",
+    "tiles.door.frame.2@f3",
+    "tiles.door.states.closed.0",
+    "tiles.door.states.closed.0@f2",
+    "tiles.door.states.closed.0@f3",
+    "tiles.door.states.locked.0",
+    "tiles.door.states.locked.0@f2",
+    "tiles.door.states.locked.0@f3",
+    "tiles.door.states.open.0",
+    "tiles.door.states.open.0@f2",
+    "tiles.door.states.open.0@f3",
+    "tiles.pedestal.0",
+    "tiles.pillar.0",
+    "tiles.pillar.0@f2",
+    "tiles.pillar.0@f3",
+    "tiles.pit.interior.0",
+    "tiles.pit.lip.0",
+    "tiles.spikes.0",
+    "tiles.spikes.1",
+    "tiles.spikes.2",
+    "tiles.spikes.3",
+    "tiles.stairs_exit.0",
+    "tiles.stairs_exit.1",
+    "tiles.stairs_exit.2",
+    "tiles.stairs_exit.3",
+    "tiles.stairs_exit_use.0",
+    "tiles.stairs_exit_use.1",
+    "tiles.stairs_exit_use.2",
+    "tiles.stairs_exit_use.3",
+    "tiles.stairs_exit_use.4",
+    "tiles.stairs_exit_use.5",
+    "tiles.torch.0",
+    "tiles.torch.1",
+    "tiles.torch.2",
+    "tiles.torch.3",
+    "tiles.torch.4",
+    "tiles.torch.5",
+    "tiles.torch.6",
+    "tiles.torch.7",
+    "tiles.wall_decor.0",
+    "tiles.wall_decor.1",
+    "tiles.wall_decor.2",
+    "tiles.wall_decor.3",
+    "tiles.wall_decor.4",
+    "tiles.wall_decor.5",
+    "tiles.wall_decor.6",
+    "tiles.wall_decor.7",
+    "tiles.wall_fountain.0",
+    "tiles.wall_fountain.1",
+    "tiles.wall_fountain.2",
+    "tiles.wall_fountain.3",
+    "tiles.wall_fountain.4",
+    "tiles.wall_fountain.5",
+    "tiles.wall_fountain.6",
+    "ui.badge_20",
+    "ui.badge_20_equipped",
+    "ui.card_modifier_18",
+    "ui.card_multicast_18",
+    "ui.card_spell_18",
+    "ui.card_trigger_18",
+    "ui.cell_empty_18",
+    "ui.chip_7x7",
+    "ui.pip3_arcane",
+    "ui.pip3_fire",
+    "ui.pip3_frost",
+    "ui.pip3_poison",
+    "ui.pip3_shock",
+    "util.px2",
+    "wands.apprentice_wand.drop",
+    "wands.apprentice_wand.held.0",
+    "wands.archmage_scepter.drop",
+    "wands.archmage_scepter.held.0",
+    "wands.chaos_branch.drop",
+    "wands.chaos_branch.held.0",
+    "wands.echo_wand.drop",
+    "wands.echo_wand.held.0",
+    "wands.ember_rod.drop",
+    "wands.ember_rod.held.0",
+    "wands.glass_needle.drop",
+    "wands.glass_needle.held.0",
+    "wands.grave_scepter.drop",
+    "wands.grave_scepter.held.0",
+    "wands.oak_staff.drop",
+    "wands.oak_staff.held.0",
+    "wands.stormcaller_staff.drop",
+    "wands.stormcaller_staff.held.0",
+    "wands.twin_fork.drop",
+    "wands.twin_fork.held.0"
+   ]
+  },
+  "ui": {
+   "image": "assets/atlases/ui-3b8301c3.png",
+   "data": "assets/atlases/ui-3b8301c3.json",
+   "format": "phaser-json",
+   "pageWidth": 1024,
+   "pageHeight": 256,
+   "pageMB": 1.0,
+   "padding": 2,
+   "extrude": 1,
+   "premultipliedAlpha": false,
+   "frameCount": 258,
+   "uniqueRects": 249,
+   "frames": [
+    "font.body",
+    "font.body_outline",
+    "font.heading",
+    "font.heading_outline",
+    "font.small",
+    "font.small_outline",
+    "icon16.modifiers.accuracy",
+    "icon16.modifiers.bounce",
+    "icon16.modifiers.chain",
+    "icon16.modifiers.crit_up",
+    "icon16.modifiers.damage_up",
+    "icon16.modifiers.double_cast",
+    "icon16.modifiers.explosive",
+    "icon16.modifiers.heavy",
+    "icon16.modifiers.homing",
+    "icon16.modifiers.infuse_fire",
+    "icon16.modifiers.infuse_frost",
+    "icon16.modifiers.infuse_poison",
+    "icon16.modifiers.infuse_shock",
+    "icon16.modifiers.pierce",
+    "icon16.modifiers.quad_cast",
+    "icon16.modifiers.quickening",
+    "icon16.modifiers.range_up",
+    "icon16.modifiers.rapid_cast",
+    "icon16.modifiers.size_up",
+    "icon16.modifiers.speed_up",
+    "icon16.modifiers.split",
+    "icon16.modifiers.trigger_expire",
+    "icon16.modifiers.trigger_hit",
+    "icon16.modifiers.trigger_timer",
+    "icon16.modifiers.triple_cast",
+    "icon16.relics.alchemist_stone",
+    "icon16.relics.arcane_whetstone",
+    "icon16.relics.blast_boots",
+    "icon16.relics.deep_well",
+    "icon16.relics.echo_chamber",
+    "icon16.relics.ember_heart",
+    "icon16.relics.frost_crown",
+    "icon16.relics.glass_lens",
+    "icon16.relics.greed_ring",
+    "icon16.relics.heart_vessel",
+    "icon16.relics.kindling",
+    "icon16.relics.magnet_charm",
+    "icon16.relics.mana_font",
+    "icon16.relics.merchant_seal",
+    "icon16.relics.phoenix_feather",
+    "icon16.relics.plague_vial",
+    "icon16.relics.prism_shard",
+    "icon16.relics.quickened_quill",
+    "icon16.relics.sand_hourglass",
+    "icon16.relics.shadow_cloak",
+    "icon16.relics.shatter_heart",
+    "icon16.relics.storm_battery",
+    "icon16.relics.thorn_mantle",
+    "icon16.relics.vampiric_fang",
+    "icon16.relics.warding_sigil",
+    "icon16.relics.winged_boots",
+    "icon16.reward_kind.modifier",
+    "icon16.reward_kind.relic",
+    "icon16.reward_kind.shop",
+    "icon16.reward_kind.spell",
+    "icon16.reward_kind.treasure",
+    "icon16.reward_kind.wand",
+    "icon16.spells.arcane_orbit",
+    "icon16.spells.blink_bolt",
+    "icon16.spells.boomerang_blade",
+    "icon16.spells.bouncing_burst",
+    "icon16.spells.chain_lightning",
+    "icon16.spells.comet",
+    "icon16.spells.fire_bolt",
+    "icon16.spells.fireball",
+    "icon16.spells.frost_lance",
+    "icon16.spells.frost_nova",
+    "icon16.spells.ice_shard",
+    "icon16.spells.magic_missile",
+    "icon16.spells.rune_mine",
+    "icon16.spells.spark_bolt",
+    "icon16.spells.thunder_orb",
+    "icon16.spells.toxic_flask",
+    "icon16.spells.venom_dart",
+    "icon16.spells.vortex",
+    "icon16.wands.apprentice_wand",
+    "icon16.wands.archmage_scepter",
+    "icon16.wands.chaos_branch",
+    "icon16.wands.echo_wand",
+    "icon16.wands.ember_rod",
+    "icon16.wands.glass_needle",
+    "icon16.wands.grave_scepter",
+    "icon16.wands.oak_staff",
+    "icon16.wands.stormcaller_staff",
+    "icon16.wands.twin_fork",
+    "icon32.modifiers.accuracy",
+    "icon32.modifiers.bounce",
+    "icon32.modifiers.chain",
+    "icon32.modifiers.crit_up",
+    "icon32.modifiers.damage_up",
+    "icon32.modifiers.double_cast",
+    "icon32.modifiers.explosive",
+    "icon32.modifiers.heavy",
+    "icon32.modifiers.homing",
+    "icon32.modifiers.infuse_fire",
+    "icon32.modifiers.infuse_frost",
+    "icon32.modifiers.infuse_poison",
+    "icon32.modifiers.infuse_shock",
+    "icon32.modifiers.pierce",
+    "icon32.modifiers.quad_cast",
+    "icon32.modifiers.quickening",
+    "icon32.modifiers.range_up",
+    "icon32.modifiers.rapid_cast",
+    "icon32.modifiers.size_up",
+    "icon32.modifiers.speed_up",
+    "icon32.modifiers.split",
+    "icon32.modifiers.trigger_expire",
+    "icon32.modifiers.trigger_hit",
+    "icon32.modifiers.trigger_timer",
+    "icon32.modifiers.triple_cast",
+    "icon32.relics.alchemist_stone",
+    "icon32.relics.arcane_whetstone",
+    "icon32.relics.blast_boots",
+    "icon32.relics.deep_well",
+    "icon32.relics.echo_chamber",
+    "icon32.relics.ember_heart",
+    "icon32.relics.frost_crown",
+    "icon32.relics.glass_lens",
+    "icon32.relics.greed_ring",
+    "icon32.relics.heart_vessel",
+    "icon32.relics.kindling",
+    "icon32.relics.magnet_charm",
+    "icon32.relics.mana_font",
+    "icon32.relics.merchant_seal",
+    "icon32.relics.phoenix_feather",
+    "icon32.relics.plague_vial",
+    "icon32.relics.prism_shard",
+    "icon32.relics.quickened_quill",
+    "icon32.relics.sand_hourglass",
+    "icon32.relics.shadow_cloak",
+    "icon32.relics.shatter_heart",
+    "icon32.relics.storm_battery",
+    "icon32.relics.thorn_mantle",
+    "icon32.relics.vampiric_fang",
+    "icon32.relics.warding_sigil",
+    "icon32.relics.winged_boots",
+    "icon32.reward_kind.modifier",
+    "icon32.reward_kind.relic",
+    "icon32.reward_kind.shop",
+    "icon32.reward_kind.spell",
+    "icon32.reward_kind.treasure",
+    "icon32.reward_kind.wand",
+    "icon32.spells.arcane_orbit",
+    "icon32.spells.blink_bolt",
+    "icon32.spells.boomerang_blade",
+    "icon32.spells.bouncing_burst",
+    "icon32.spells.chain_lightning",
+    "icon32.spells.comet",
+    "icon32.spells.fire_bolt",
+    "icon32.spells.fireball",
+    "icon32.spells.frost_lance",
+    "icon32.spells.frost_nova",
+    "icon32.spells.ice_shard",
+    "icon32.spells.magic_missile",
+    "icon32.spells.rune_mine",
+    "icon32.spells.spark_bolt",
+    "icon32.spells.thunder_orb",
+    "icon32.spells.toxic_flask",
+    "icon32.spells.venom_dart",
+    "icon32.spells.vortex",
+    "icon32.wands.apprentice_wand",
+    "icon32.wands.archmage_scepter",
+    "icon32.wands.chaos_branch",
+    "icon32.wands.echo_wand",
+    "icon32.wands.ember_rod",
+    "icon32.wands.glass_needle",
+    "icon32.wands.grave_scepter",
+    "icon32.wands.oak_staff",
+    "icon32.wands.stormcaller_staff",
+    "icon32.wands.twin_fork",
+    "ui.aim_pip_5x5",
+    "ui.badge_20",
+    "ui.badge_20_equipped",
+    "ui.bag_8",
+    "ui.banner.0",
+    "ui.banner.1",
+    "ui.banner.2",
+    "ui.bar_frame_6",
+    "ui.button",
+    "ui.button.hover",
+    "ui.button_primary",
+    "ui.button_primary.hover",
+    "ui.card_always_36",
+    "ui.card_modifier_18",
+    "ui.card_modifier_36",
+    "ui.card_multicast_18",
+    "ui.card_multicast_36",
+    "ui.card_spell_18",
+    "ui.card_spell_36",
+    "ui.card_trigger_18",
+    "ui.card_trigger_36",
+    "ui.cell_empty_18",
+    "ui.cell_empty_36",
+    "ui.cell_next_18",
+    "ui.cell_next_36",
+    "ui.cell_valid_36",
+    "ui.chip_7x7",
+    "ui.coin_icon.0",
+    "ui.elem_arcane",
+    "ui.elem_fire",
+    "ui.elem_frost",
+    "ui.elem_poison",
+    "ui.elem_shock",
+    "ui.focus_22",
+    "ui.focus_40",
+    "ui.g_arrow",
+    "ui.g_chevron_5x3",
+    "ui.g_down",
+    "ui.g_hand",
+    "ui.g_lock_7x7",
+    "ui.g_new_5x5",
+    "ui.g_no",
+    "ui.g_ok",
+    "ui.g_plus_5x5",
+    "ui.g_recharge",
+    "ui.g_stop",
+    "ui.g_trigger",
+    "ui.g_up",
+    "ui.g_vuln_5x3",
+    "ui.g_warn",
+    "ui.g_wrap",
+    "ui.hatch_4",
+    "ui.hearts.0",
+    "ui.hearts.1",
+    "ui.hearts.2",
+    "ui.keycap_12",
+    "ui.panel_dark",
+    "ui.panel_ornate",
+    "ui.pip3_arcane",
+    "ui.pip3_fire",
+    "ui.pip3_frost",
+    "ui.pip3_poison",
+    "ui.pip3_shock",
+    "ui.pip_boss_9",
+    "ui.pip_chill_5",
+    "ui.pip_combat",
+    "ui.pip_current_9",
+    "ui.pip_elite",
+    "ui.pip_future",
+    "ui.pip_shop",
+    "ui.pip_start",
+    "ui.pip_treasure",
+    "ui.reticle_9x9",
+    "ui.reward_kind_icons.boss.0",
+    "ui.reward_kind_icons.coins.0",
+    "ui.reward_kind_icons.heal.0",
+    "ui.shield_hex_13x12",
+    "ui.slash_18",
+    "ui.slash_36",
+    "ui.tab",
+    "ui.tab.selected",
+    "util.px2"
+   ]
+  }
+ },
+ "images": {
+  "tiles_f1": {
+   "image": "assets/tiles/tiles_f1-23b1c3b6.png",
+   "kind": "tileset",
+   "tileWidth": 16,
+   "tileHeight": 16,
+   "margin": 1,
+   "spacing": 2,
+   "pageMB": 0.198
+  },
+  "tiles_f2": {
+   "image": "assets/tiles/tiles_f2-83e18649.png",
+   "kind": "tileset",
+   "tileWidth": 16,
+   "tileHeight": 16,
+   "margin": 1,
+   "spacing": 2,
+   "pageMB": 0.198
+  },
+  "tiles_f3": {
+   "image": "assets/tiles/tiles_f3-d00c0308.png",
+   "kind": "tileset",
+   "tileWidth": 16,
+   "tileHeight": 16,
+   "margin": 1,
+   "spacing": 2,
+   "pageMB": 0.198
+  }
+ },
+ "json": {
+  "anims": {
+   "url": "assets/anims-bbb535dc.json",
+   "use": "this.anims.fromJSON(cache.json.get('anims'))"
+  },
+  "tileset": {
+   "url": "assets/tiles/tileset-cd629cc4.json",
+   "use": "tile index table + wall autotile lookup"
+  }
+ },
+ "xml": {
+  "font.body": {
+   "url": "assets/fonts/font.body-45a3af32.xml"
+  },
+  "font.body_outline": {
+   "url": "assets/fonts/font.body_outline-3e990dde.xml"
+  },
+  "font.heading": {
+   "url": "assets/fonts/font.heading-b8def807.xml"
+  },
+  "font.heading_outline": {
+   "url": "assets/fonts/font.heading_outline-15ed1d41.xml"
+  },
+  "font.small": {
+   "url": "assets/fonts/font.small-170c9644.xml"
+  },
+  "font.small_outline": {
+   "url": "assets/fonts/font.small_outline-2e63c086.xml"
+  }
+ },
+ "bitmapFontsInAtlas": {
+  "font.body": {
+   "atlas": "ui",
+   "frame": "font.body",
+   "data": "assets/fonts/font.body-45a3af32.xml",
+   "size": 16,
+   "lineHeight": 12,
+   "base": 10,
+   "source": "Kenney Pixel"
+  },
+  "font.body_outline": {
+   "atlas": "ui",
+   "frame": "font.body_outline",
+   "data": "assets/fonts/font.body_outline-3e990dde.xml",
+   "size": 16,
+   "lineHeight": 14,
+   "base": 11,
+   "source": "Kenney Pixel + 1px #222222 stroke"
+  },
+  "font.heading": {
+   "atlas": "ui",
+   "frame": "font.heading",
+   "data": "assets/fonts/font.heading-b8def807.xml",
+   "size": 16,
+   "lineHeight": 14,
+   "base": 12,
+   "source": "Kenney High"
+  },
+  "font.heading_outline": {
+   "atlas": "ui",
+   "frame": "font.heading_outline",
+   "data": "assets/fonts/font.heading_outline-15ed1d41.xml",
+   "size": 16,
+   "lineHeight": 16,
+   "base": 13,
+   "source": "Kenney High + 1px #222222 stroke"
+  },
+  "font.small": {
+   "atlas": "ui",
+   "frame": "font.small",
+   "data": "assets/fonts/font.small-170c9644.xml",
+   "size": 8,
+   "lineHeight": 10,
+   "base": 8,
+   "source": "Kenney Mini"
+  },
+  "font.small_outline": {
+   "atlas": "ui",
+   "frame": "font.small_outline",
+   "data": "assets/fonts/font.small_outline-2e63c086.xml",
+   "size": 8,
+   "lineHeight": 12,
+   "base": 9,
+   "source": "Kenney Mini + 1px #222222 stroke"
+  }
+ },
+ "audio": {
+  "status": "rendered",
+  "cueSpec": "assets/audio/cue-spec.json",
+  "formats": [
+   "ogg",
+   "m4a"
+  ],
+  "formatRule": "load the .ogg where canPlayType('audio/ogg; codecs=vorbis') else the .m4a (Safari)",
+  "loadGroups": {
+   "boot": {
+    "policy": "all sfx, ui, stingers (~14 MB decoded)",
+    "cues": [
+     "cast_arcane",
+     "cast_fire",
+     "cast_frost",
+     "cast_shock",
+     "cast_poison",
+     "cast_multicast_layer",
+     "cast_heavy_layer",
+     "sputter",
+     "wand_recharge",
+     "wand_swap",
+     "dash",
+     "teleport",
+     "hit_arcane",
+     "hit_fire",
+     "hit_frost",
+     "hit_shock",
+     "hit_poison",
+     "crit",
+     "status_burn",
+     "status_chill",
+     "status_shock",
+     "status_poison",
+     "status_freeze",
+     "freeze_shatter",
+     "reaction_melt",
+     "reaction_overload",
+     "reaction_blight",
+     "reaction_superconduct",
+     "reaction_quench",
+     "chain_zap",
+     "payload_release",
+     "zone_open",
+     "explode_small",
+     "explode_big",
+     "kill_bone",
+     "kill_flesh",
+     "kill_slime",
+     "kill_spirit",
+     "kill_caster",
+     "kill_construct",
+     "elite_kill",
+     "player_hurt",
+     "shield_break",
+     "player_death",
+     "body_fall",
+     "revive",
+     "low_hp_heartbeat",
+     "heal",
+     "run_start",
+     "floor_descend",
+     "door_open",
+     "door_close",
+     "wave_spawn",
+     "chest_open",
+     "crate_break",
+     "pickup_coin",
+     "pickup_card",
+     "relic_gain",
+     "wand_pickup",
+     "reward_appear",
+     "windup_swipe",
+     "windup_shoot",
+     "windup_ring",
+     "windup_spiral",
+     "windup_charge",
+     "windup_slam",
+     "windup_summon",
+     "windup_blink",
+     "windup_self_destruct",
+     "windup_hazard_acid",
+     "windup_hazard_fire",
+     "enemy_lock",
+     "release_swipe",
+     "release_shoot",
+     "release_ring",
+     "enemy_charge_go",
+     "enemy_leap",
+     "enemy_summon_rise",
+     "enemy_blink_out",
+     "enemy_blink_in",
+     "hazard_on_acid",
+     "hazard_on_fire",
+     "enemy_interrupt",
+     "heavy_impact",
+     "heavy_step",
+     "boss_step",
+     "boss_intro_rise",
+     "boss_roar_knight",
+     "boss_roar_queen",
+     "boss_roar_lich",
+     "boss_death",
+     "stg_room_clear",
+     "stg_boss_intro",
+     "stg_boss_phase",
+     "stg_boss_clear",
+     "stg_victory",
+     "stg_death",
+     "stg_unlock",
+     "ui_move",
+     "ui_confirm",
+     "ui_back",
+     "ui_denied",
+     "ui_tab",
+     "ui_book_open",
+     "ui_book_close",
+     "ui_card_pick",
+     "ui_card_place",
+     "ui_card_swap",
+     "ui_salvage",
+     "ui_buy",
+     "ui_reroll",
+     "ui_unlock",
+     "ui_preview_up",
+     "reward_open"
+    ]
+   },
+   "title": {
+    "policy": "mus_title \u2014 unload when a run starts",
+    "cues": [
+     "mus_title"
+    ]
+   },
+   "run": {
+    "policy": "mus_explore, mus_combat_a, amb_cave \u2014 load at run start",
+    "cues": [
+     "mus_explore",
+     "mus_combat_a",
+     "amb_cave"
+    ]
+   },
+   "floor3": {
+    "policy": "mus_combat_b \u2014 load on floor 3 entry, unload mus_combat_a",
+    "cues": [
+     "mus_combat_b"
+    ]
+   },
+   "boss_a": {
+    "policy": "mus_boss_a_p1/p2 \u2014 load on floor 1-2 boss-room entry (during the 900 ms pan), unload after boss_death",
+    "cues": [
+     "mus_boss_a_p1",
+     "mus_boss_a_p2"
+    ]
+   },
+   "boss_final": {
+    "policy": "mus_boss_final_p1..p3 \u2014 load on floor 3 boss-room entry, unload mus_combat_b first",
+    "cues": [
+     "mus_boss_final_p1",
+     "mus_boss_final_p2",
+     "mus_boss_final_p3"
+    ]
+   }
+  },
+  "decodedBudget": "<= 128 MB decoded resident (mix-bus-topology \u00a78)",
+  "cues": {
+   "cast_arcane": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/cast_arcane_v1.ogg",
+      "assets/audio/cast_arcane_v1.m4a"
+     ],
+     [
+      "assets/audio/cast_arcane_v2.ogg",
+      "assets/audio/cast_arcane_v2.m4a"
+     ],
+     [
+      "assets/audio/cast_arcane_v3.ogg",
+      "assets/audio/cast_arcane_v3.m4a"
+     ]
+    ]
+   },
+   "cast_fire": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/cast_fire_v1.ogg",
+      "assets/audio/cast_fire_v1.m4a"
+     ],
+     [
+      "assets/audio/cast_fire_v2.ogg",
+      "assets/audio/cast_fire_v2.m4a"
+     ],
+     [
+      "assets/audio/cast_fire_v3.ogg",
+      "assets/audio/cast_fire_v3.m4a"
+     ]
+    ]
+   },
+   "cast_frost": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/cast_frost_v1.ogg",
+      "assets/audio/cast_frost_v1.m4a"
+     ],
+     [
+      "assets/audio/cast_frost_v2.ogg",
+      "assets/audio/cast_frost_v2.m4a"
+     ],
+     [
+      "assets/audio/cast_frost_v3.ogg",
+      "assets/audio/cast_frost_v3.m4a"
+     ]
+    ]
+   },
+   "cast_shock": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/cast_shock_v1.ogg",
+      "assets/audio/cast_shock_v1.m4a"
+     ],
+     [
+      "assets/audio/cast_shock_v2.ogg",
+      "assets/audio/cast_shock_v2.m4a"
+     ],
+     [
+      "assets/audio/cast_shock_v3.ogg",
+      "assets/audio/cast_shock_v3.m4a"
+     ]
+    ]
+   },
+   "cast_poison": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/cast_poison_v1.ogg",
+      "assets/audio/cast_poison_v1.m4a"
+     ],
+     [
+      "assets/audio/cast_poison_v2.ogg",
+      "assets/audio/cast_poison_v2.m4a"
+     ],
+     [
+      "assets/audio/cast_poison_v3.ogg",
+      "assets/audio/cast_poison_v3.m4a"
+     ]
+    ]
+   },
+   "cast_multicast_layer": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/cast_multicast_layer.ogg",
+      "assets/audio/cast_multicast_layer.m4a"
+     ]
+    ]
+   },
+   "cast_heavy_layer": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/cast_heavy_layer.ogg",
+      "assets/audio/cast_heavy_layer.m4a"
+     ]
+    ]
+   },
+   "sputter": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/sputter.ogg",
+      "assets/audio/sputter.m4a"
+     ]
+    ]
+   },
+   "wand_recharge": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/wand_recharge.ogg",
+      "assets/audio/wand_recharge.m4a"
+     ]
+    ]
+   },
+   "wand_swap": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/wand_swap.ogg",
+      "assets/audio/wand_swap.m4a"
+     ]
+    ]
+   },
+   "dash": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/dash_v1.ogg",
+      "assets/audio/dash_v1.m4a"
+     ],
+     [
+      "assets/audio/dash_v2.ogg",
+      "assets/audio/dash_v2.m4a"
+     ]
+    ]
+   },
+   "teleport": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/teleport.ogg",
+      "assets/audio/teleport.m4a"
+     ]
+    ]
+   },
+   "hit_arcane": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/hit_arcane_v1.ogg",
+      "assets/audio/hit_arcane_v1.m4a"
+     ],
+     [
+      "assets/audio/hit_arcane_v2.ogg",
+      "assets/audio/hit_arcane_v2.m4a"
+     ],
+     [
+      "assets/audio/hit_arcane_v3.ogg",
+      "assets/audio/hit_arcane_v3.m4a"
+     ]
+    ]
+   },
+   "hit_fire": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/hit_fire_v1.ogg",
+      "assets/audio/hit_fire_v1.m4a"
+     ],
+     [
+      "assets/audio/hit_fire_v2.ogg",
+      "assets/audio/hit_fire_v2.m4a"
+     ],
+     [
+      "assets/audio/hit_fire_v3.ogg",
+      "assets/audio/hit_fire_v3.m4a"
+     ]
+    ]
+   },
+   "hit_frost": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/hit_frost_v1.ogg",
+      "assets/audio/hit_frost_v1.m4a"
+     ],
+     [
+      "assets/audio/hit_frost_v2.ogg",
+      "assets/audio/hit_frost_v2.m4a"
+     ],
+     [
+      "assets/audio/hit_frost_v3.ogg",
+      "assets/audio/hit_frost_v3.m4a"
+     ]
+    ]
+   },
+   "hit_shock": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/hit_shock_v1.ogg",
+      "assets/audio/hit_shock_v1.m4a"
+     ],
+     [
+      "assets/audio/hit_shock_v2.ogg",
+      "assets/audio/hit_shock_v2.m4a"
+     ],
+     [
+      "assets/audio/hit_shock_v3.ogg",
+      "assets/audio/hit_shock_v3.m4a"
+     ]
+    ]
+   },
+   "hit_poison": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/hit_poison_v1.ogg",
+      "assets/audio/hit_poison_v1.m4a"
+     ],
+     [
+      "assets/audio/hit_poison_v2.ogg",
+      "assets/audio/hit_poison_v2.m4a"
+     ],
+     [
+      "assets/audio/hit_poison_v3.ogg",
+      "assets/audio/hit_poison_v3.m4a"
+     ]
+    ]
+   },
+   "crit": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/crit.ogg",
+      "assets/audio/crit.m4a"
+     ]
+    ]
+   },
+   "status_burn": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/status_burn.ogg",
+      "assets/audio/status_burn.m4a"
+     ]
+    ]
+   },
+   "status_chill": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/status_chill.ogg",
+      "assets/audio/status_chill.m4a"
+     ]
+    ]
+   },
+   "status_shock": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/status_shock.ogg",
+      "assets/audio/status_shock.m4a"
+     ]
+    ]
+   },
+   "status_poison": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/status_poison.ogg",
+      "assets/audio/status_poison.m4a"
+     ]
+    ]
+   },
+   "status_freeze": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/status_freeze.ogg",
+      "assets/audio/status_freeze.m4a"
+     ]
+    ]
+   },
+   "freeze_shatter": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/freeze_shatter.ogg",
+      "assets/audio/freeze_shatter.m4a"
+     ]
+    ]
+   },
+   "reaction_melt": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/reaction_melt.ogg",
+      "assets/audio/reaction_melt.m4a"
+     ]
+    ]
+   },
+   "reaction_overload": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/reaction_overload.ogg",
+      "assets/audio/reaction_overload.m4a"
+     ]
+    ]
+   },
+   "reaction_blight": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/reaction_blight.ogg",
+      "assets/audio/reaction_blight.m4a"
+     ]
+    ]
+   },
+   "reaction_superconduct": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/reaction_superconduct.ogg",
+      "assets/audio/reaction_superconduct.m4a"
+     ]
+    ]
+   },
+   "reaction_quench": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/reaction_quench.ogg",
+      "assets/audio/reaction_quench.m4a"
+     ]
+    ]
+   },
+   "chain_zap": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/chain_zap_v1.ogg",
+      "assets/audio/chain_zap_v1.m4a"
+     ],
+     [
+      "assets/audio/chain_zap_v2.ogg",
+      "assets/audio/chain_zap_v2.m4a"
+     ]
+    ]
+   },
+   "payload_release": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/payload_release.ogg",
+      "assets/audio/payload_release.m4a"
+     ]
+    ]
+   },
+   "zone_open": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/zone_open.ogg",
+      "assets/audio/zone_open.m4a"
+     ]
+    ]
+   },
+   "explode_small": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/explode_small_v1.ogg",
+      "assets/audio/explode_small_v1.m4a"
+     ],
+     [
+      "assets/audio/explode_small_v2.ogg",
+      "assets/audio/explode_small_v2.m4a"
+     ]
+    ]
+   },
+   "explode_big": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/explode_big.ogg",
+      "assets/audio/explode_big.m4a"
+     ]
+    ]
+   },
+   "kill_bone": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/kill_bone_v1.ogg",
+      "assets/audio/kill_bone_v1.m4a"
+     ],
+     [
+      "assets/audio/kill_bone_v2.ogg",
+      "assets/audio/kill_bone_v2.m4a"
+     ],
+     [
+      "assets/audio/kill_bone_v3.ogg",
+      "assets/audio/kill_bone_v3.m4a"
+     ]
+    ]
+   },
+   "kill_flesh": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/kill_flesh_v1.ogg",
+      "assets/audio/kill_flesh_v1.m4a"
+     ],
+     [
+      "assets/audio/kill_flesh_v2.ogg",
+      "assets/audio/kill_flesh_v2.m4a"
+     ]
+    ]
+   },
+   "kill_slime": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/kill_slime_v1.ogg",
+      "assets/audio/kill_slime_v1.m4a"
+     ],
+     [
+      "assets/audio/kill_slime_v2.ogg",
+      "assets/audio/kill_slime_v2.m4a"
+     ]
+    ]
+   },
+   "kill_spirit": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/kill_spirit.ogg",
+      "assets/audio/kill_spirit.m4a"
+     ]
+    ]
+   },
+   "kill_caster": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/kill_caster_v1.ogg",
+      "assets/audio/kill_caster_v1.m4a"
+     ],
+     [
+      "assets/audio/kill_caster_v2.ogg",
+      "assets/audio/kill_caster_v2.m4a"
+     ]
+    ]
+   },
+   "kill_construct": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/kill_construct.ogg",
+      "assets/audio/kill_construct.m4a"
+     ]
+    ]
+   },
+   "elite_kill": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/elite_kill.ogg",
+      "assets/audio/elite_kill.m4a"
+     ]
+    ]
+   },
+   "player_hurt": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/player_hurt_v1.ogg",
+      "assets/audio/player_hurt_v1.m4a"
+     ],
+     [
+      "assets/audio/player_hurt_v2.ogg",
+      "assets/audio/player_hurt_v2.m4a"
+     ]
+    ]
+   },
+   "shield_break": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/shield_break.ogg",
+      "assets/audio/shield_break.m4a"
+     ]
+    ]
+   },
+   "player_death": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/player_death.ogg",
+      "assets/audio/player_death.m4a"
+     ]
+    ]
+   },
+   "body_fall": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/body_fall.ogg",
+      "assets/audio/body_fall.m4a"
+     ]
+    ]
+   },
+   "revive": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/revive.ogg",
+      "assets/audio/revive.m4a"
+     ]
+    ]
+   },
+   "low_hp_heartbeat": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/low_hp_heartbeat.ogg",
+      "assets/audio/low_hp_heartbeat.m4a"
+     ]
+    ]
+   },
+   "heal": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/heal.ogg",
+      "assets/audio/heal.m4a"
+     ]
+    ]
+   },
+   "run_start": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/run_start.ogg",
+      "assets/audio/run_start.m4a"
+     ]
+    ]
+   },
+   "floor_descend": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/floor_descend.ogg",
+      "assets/audio/floor_descend.m4a"
+     ]
+    ]
+   },
+   "door_open": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/door_open_v1.ogg",
+      "assets/audio/door_open_v1.m4a"
+     ],
+     [
+      "assets/audio/door_open_v2.ogg",
+      "assets/audio/door_open_v2.m4a"
+     ]
+    ]
+   },
+   "door_close": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/door_close.ogg",
+      "assets/audio/door_close.m4a"
+     ]
+    ]
+   },
+   "wave_spawn": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/wave_spawn.ogg",
+      "assets/audio/wave_spawn.m4a"
+     ]
+    ]
+   },
+   "chest_open": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/chest_open.ogg",
+      "assets/audio/chest_open.m4a"
+     ]
+    ]
+   },
+   "crate_break": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/crate_break_v1.ogg",
+      "assets/audio/crate_break_v1.m4a"
+     ],
+     [
+      "assets/audio/crate_break_v2.ogg",
+      "assets/audio/crate_break_v2.m4a"
+     ]
+    ]
+   },
+   "pickup_coin": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/pickup_coin_v1.ogg",
+      "assets/audio/pickup_coin_v1.m4a"
+     ],
+     [
+      "assets/audio/pickup_coin_v2.ogg",
+      "assets/audio/pickup_coin_v2.m4a"
+     ],
+     [
+      "assets/audio/pickup_coin_v3.ogg",
+      "assets/audio/pickup_coin_v3.m4a"
+     ],
+     [
+      "assets/audio/pickup_coin_v4.ogg",
+      "assets/audio/pickup_coin_v4.m4a"
+     ]
+    ]
+   },
+   "pickup_card": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/pickup_card.ogg",
+      "assets/audio/pickup_card.m4a"
+     ]
+    ]
+   },
+   "relic_gain": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/relic_gain.ogg",
+      "assets/audio/relic_gain.m4a"
+     ]
+    ]
+   },
+   "wand_pickup": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/wand_pickup.ogg",
+      "assets/audio/wand_pickup.m4a"
+     ]
+    ]
+   },
+   "reward_appear": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/reward_appear.ogg",
+      "assets/audio/reward_appear.m4a"
+     ]
+    ]
+   },
+   "windup_swipe": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_swipe.ogg",
+      "assets/audio/windup_swipe.m4a"
+     ]
+    ]
+   },
+   "windup_shoot": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_shoot.ogg",
+      "assets/audio/windup_shoot.m4a"
+     ]
+    ]
+   },
+   "windup_ring": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_ring.ogg",
+      "assets/audio/windup_ring.m4a"
+     ]
+    ]
+   },
+   "windup_spiral": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_spiral.ogg",
+      "assets/audio/windup_spiral.m4a"
+     ]
+    ]
+   },
+   "windup_charge": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_charge.ogg",
+      "assets/audio/windup_charge.m4a"
+     ]
+    ]
+   },
+   "windup_slam": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_slam.ogg",
+      "assets/audio/windup_slam.m4a"
+     ]
+    ]
+   },
+   "windup_summon": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_summon.ogg",
+      "assets/audio/windup_summon.m4a"
+     ]
+    ]
+   },
+   "windup_blink": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_blink.ogg",
+      "assets/audio/windup_blink.m4a"
+     ]
+    ]
+   },
+   "windup_self_destruct": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_self_destruct.ogg",
+      "assets/audio/windup_self_destruct.m4a"
+     ]
+    ]
+   },
+   "windup_hazard_acid": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_hazard_acid.ogg",
+      "assets/audio/windup_hazard_acid.m4a"
+     ]
+    ]
+   },
+   "windup_hazard_fire": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/windup_hazard_fire.ogg",
+      "assets/audio/windup_hazard_fire.m4a"
+     ]
+    ]
+   },
+   "enemy_lock": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/enemy_lock.ogg",
+      "assets/audio/enemy_lock.m4a"
+     ]
+    ]
+   },
+   "release_swipe": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/release_swipe.ogg",
+      "assets/audio/release_swipe.m4a"
+     ]
+    ]
+   },
+   "release_shoot": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/release_shoot_v1.ogg",
+      "assets/audio/release_shoot_v1.m4a"
+     ],
+     [
+      "assets/audio/release_shoot_v2.ogg",
+      "assets/audio/release_shoot_v2.m4a"
+     ]
+    ]
+   },
+   "release_ring": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/release_ring.ogg",
+      "assets/audio/release_ring.m4a"
+     ]
+    ]
+   },
+   "enemy_charge_go": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/enemy_charge_go.ogg",
+      "assets/audio/enemy_charge_go.m4a"
+     ]
+    ]
+   },
+   "enemy_leap": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/enemy_leap.ogg",
+      "assets/audio/enemy_leap.m4a"
+     ]
+    ]
+   },
+   "enemy_summon_rise": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/enemy_summon_rise.ogg",
+      "assets/audio/enemy_summon_rise.m4a"
+     ]
+    ]
+   },
+   "enemy_blink_out": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/enemy_blink_out.ogg",
+      "assets/audio/enemy_blink_out.m4a"
+     ]
+    ]
+   },
+   "enemy_blink_in": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/enemy_blink_in.ogg",
+      "assets/audio/enemy_blink_in.m4a"
+     ]
+    ]
+   },
+   "hazard_on_acid": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/hazard_on_acid.ogg",
+      "assets/audio/hazard_on_acid.m4a"
+     ]
+    ]
+   },
+   "hazard_on_fire": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/hazard_on_fire.ogg",
+      "assets/audio/hazard_on_fire.m4a"
+     ]
+    ]
+   },
+   "enemy_interrupt": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/enemy_interrupt.ogg",
+      "assets/audio/enemy_interrupt.m4a"
+     ]
+    ]
+   },
+   "heavy_impact": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/heavy_impact.ogg",
+      "assets/audio/heavy_impact.m4a"
+     ]
+    ]
+   },
+   "heavy_step": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/heavy_step.ogg",
+      "assets/audio/heavy_step.m4a"
+     ]
+    ]
+   },
+   "boss_step": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/boss_step.ogg",
+      "assets/audio/boss_step.m4a"
+     ]
+    ]
+   },
+   "boss_intro_rise": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/boss_intro_rise.ogg",
+      "assets/audio/boss_intro_rise.m4a"
+     ]
+    ]
+   },
+   "boss_roar_knight": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/boss_roar_knight.ogg",
+      "assets/audio/boss_roar_knight.m4a"
+     ]
+    ]
+   },
+   "boss_roar_queen": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/boss_roar_queen.ogg",
+      "assets/audio/boss_roar_queen.m4a"
+     ]
+    ]
+   },
+   "boss_roar_lich": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/boss_roar_lich.ogg",
+      "assets/audio/boss_roar_lich.m4a"
+     ]
+    ]
+   },
+   "boss_death": {
+    "load_group": "boot",
+    "bus": "sfx",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/boss_death.ogg",
+      "assets/audio/boss_death.m4a"
+     ]
+    ]
+   },
+   "stg_room_clear": {
+    "load_group": "boot",
+    "bus": "music",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/stg_room_clear.ogg",
+      "assets/audio/stg_room_clear.m4a"
+     ]
+    ]
+   },
+   "stg_boss_intro": {
+    "load_group": "boot",
+    "bus": "music",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/stg_boss_intro.ogg",
+      "assets/audio/stg_boss_intro.m4a"
+     ]
+    ]
+   },
+   "stg_boss_phase": {
+    "load_group": "boot",
+    "bus": "music",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/stg_boss_phase.ogg",
+      "assets/audio/stg_boss_phase.m4a"
+     ]
+    ]
+   },
+   "stg_boss_clear": {
+    "load_group": "boot",
+    "bus": "music",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/stg_boss_clear.ogg",
+      "assets/audio/stg_boss_clear.m4a"
+     ]
+    ]
+   },
+   "stg_victory": {
+    "load_group": "boot",
+    "bus": "music",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/stg_victory.ogg",
+      "assets/audio/stg_victory.m4a"
+     ]
+    ]
+   },
+   "stg_death": {
+    "load_group": "boot",
+    "bus": "music",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/stg_death.ogg",
+      "assets/audio/stg_death.m4a"
+     ]
+    ]
+   },
+   "stg_unlock": {
+    "load_group": "boot",
+    "bus": "music",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/stg_unlock.ogg",
+      "assets/audio/stg_unlock.m4a"
+     ]
+    ]
+   },
+   "ui_move": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_move.ogg",
+      "assets/audio/ui_move.m4a"
+     ]
+    ]
+   },
+   "ui_confirm": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_confirm.ogg",
+      "assets/audio/ui_confirm.m4a"
+     ]
+    ]
+   },
+   "ui_back": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_back.ogg",
+      "assets/audio/ui_back.m4a"
+     ]
+    ]
+   },
+   "ui_denied": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_denied.ogg",
+      "assets/audio/ui_denied.m4a"
+     ]
+    ]
+   },
+   "ui_tab": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_tab.ogg",
+      "assets/audio/ui_tab.m4a"
+     ]
+    ]
+   },
+   "ui_book_open": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_book_open.ogg",
+      "assets/audio/ui_book_open.m4a"
+     ]
+    ]
+   },
+   "ui_book_close": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_book_close.ogg",
+      "assets/audio/ui_book_close.m4a"
+     ]
+    ]
+   },
+   "ui_card_pick": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_card_pick.ogg",
+      "assets/audio/ui_card_pick.m4a"
+     ]
+    ]
+   },
+   "ui_card_place": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_card_place.ogg",
+      "assets/audio/ui_card_place.m4a"
+     ]
+    ]
+   },
+   "ui_card_swap": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_card_swap.ogg",
+      "assets/audio/ui_card_swap.m4a"
+     ]
+    ]
+   },
+   "ui_salvage": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_salvage.ogg",
+      "assets/audio/ui_salvage.m4a"
+     ]
+    ]
+   },
+   "ui_buy": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_buy.ogg",
+      "assets/audio/ui_buy.m4a"
+     ]
+    ]
+   },
+   "ui_reroll": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_reroll.ogg",
+      "assets/audio/ui_reroll.m4a"
+     ]
+    ]
+   },
+   "ui_unlock": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_unlock.ogg",
+      "assets/audio/ui_unlock.m4a"
+     ]
+    ]
+   },
+   "ui_preview_up": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/ui_preview_up.ogg",
+      "assets/audio/ui_preview_up.m4a"
+     ]
+    ]
+   },
+   "reward_open": {
+    "load_group": "boot",
+    "bus": "ui",
+    "loop": false,
+    "files": [
+     [
+      "assets/audio/reward_open.ogg",
+      "assets/audio/reward_open.m4a"
+     ]
+    ]
+   },
+   "mus_title": {
+    "load_group": "title",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_title.ogg",
+      "assets/audio/mus_title.m4a"
+     ]
+    ]
+   },
+   "mus_explore": {
+    "load_group": "run",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_explore.ogg",
+      "assets/audio/mus_explore.m4a"
+     ]
+    ]
+   },
+   "mus_combat_a": {
+    "load_group": "run",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_combat_a.ogg",
+      "assets/audio/mus_combat_a.m4a"
+     ]
+    ]
+   },
+   "mus_combat_b": {
+    "load_group": "floor3",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_combat_b.ogg",
+      "assets/audio/mus_combat_b.m4a"
+     ]
+    ]
+   },
+   "mus_boss_a_p1": {
+    "load_group": "boss_a",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_boss_a_p1.ogg",
+      "assets/audio/mus_boss_a_p1.m4a"
+     ]
+    ]
+   },
+   "mus_boss_a_p2": {
+    "load_group": "boss_a",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_boss_a_p2.ogg",
+      "assets/audio/mus_boss_a_p2.m4a"
+     ]
+    ]
+   },
+   "mus_boss_final_p1": {
+    "load_group": "boss_final",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_boss_final_p1.ogg",
+      "assets/audio/mus_boss_final_p1.m4a"
+     ]
+    ]
+   },
+   "mus_boss_final_p2": {
+    "load_group": "boss_final",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_boss_final_p2.ogg",
+      "assets/audio/mus_boss_final_p2.m4a"
+     ]
+    ]
+   },
+   "mus_boss_final_p3": {
+    "load_group": "boss_final",
+    "bus": "music",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/mus_boss_final_p3.ogg",
+      "assets/audio/mus_boss_final_p3.m4a"
+     ]
+    ]
+   },
+   "amb_cave": {
+    "load_group": "run",
+    "bus": "ambience",
+    "loop": true,
+    "files": [
+     [
+      "assets/audio/amb_cave.ogg",
+      "assets/audio/amb_cave.m4a"
+     ]
+    ]
+   }
+  },
+  "downloadMB": {
+   "ogg": 11.78,
+   "m4a": 12.17
+  }
+ },
+ "scenes": {
+  "boot": {
+   "preload": [
+    "atlases:ui",
+    "xml:*",
+    "json:anims"
+   ],
+   "memMBcap": 16
+  },
+  "run": {
+   "preload": [
+    "atlases:world",
+    "atlases:ui",
+    "images:tiles_f1",
+    "images:tiles_f2",
+    "images:tiles_f3",
+    "json:tileset"
+   ],
+   "memMBcap": 24
+  }
+ },
+ "textureUnitBudget": {
+  "combat_pages": 5,
+  "note": "world + ui + 1 tileset page bound in a room (3 of 8 WebGL1 units)"
+ },
+ "credits": "assets/credits.json",
+ "licenses": "LICENSES.md",
+ "sourcePacks": [
+  "0x72_dungeontileset-ii",
+  "kenney_fonts",
+  "kenney_ui-pack-pixel-adventure",
+  "oga_16x16-explosion",
+  "oga_496-rpg-icons",
+  "oga_free-pixel-effects-pack",
+  "oga_pixel-art-spells",
+  "oga_puny-dungeon",
+  "oga_simple-fantasy-rpg-fx",
+  "oga_trash-mobs-16"
+ ]
+}

@@ -1,0 +1,2784 @@
+{
+ "anims": [
+  {
+   "key": "player_idle_f",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "player_run_f",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.run.0"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.run.1"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.run.2"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.run.3"
+    }
+   ],
+   "frameRate": 12,
+   "repeat": -1
+  },
+  {
+   "key": "player_dash_f",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.run.2"
+    }
+   ],
+   "frameRate": 1,
+   "repeat": 0
+  },
+  {
+   "key": "player_hit_f",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.wizzard_f.hit.0"
+    }
+   ],
+   "frameRate": 1,
+   "repeat": 0
+  },
+  {
+   "key": "player_idle_m",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "player_run_m",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.run.0"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.run.1"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.run.2"
+    },
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.run.3"
+    }
+   ],
+   "frameRate": 12,
+   "repeat": -1
+  },
+  {
+   "key": "player_dash_m",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.run.2"
+    }
+   ],
+   "frameRate": 1,
+   "repeat": 0
+  },
+  {
+   "key": "player_hit_m",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.wizzard_m.hit.0"
+    }
+   ],
+   "frameRate": 1,
+   "repeat": 0
+  },
+  {
+   "key": "fx_shield",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.0"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.1"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.2"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.3"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.4"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.5"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.6"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.7"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.8"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.9"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.10"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.11"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.12"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.13"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.14"
+    },
+    {
+     "key": "world",
+     "frame": "player.shield_overlay.15"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": -1
+  },
+  {
+   "key": "bat_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.bat.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.bat.idle.1"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": -1
+  },
+  {
+   "key": "bat_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.bat.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.bat.move.1"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": -1
+  },
+  {
+   "key": "skeleton_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "skeleton_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "skeleton_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.idle_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.idle_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.idle_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.idle_elite.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "skeleton_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.move_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.move_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.move_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.skeleton.move_elite.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "cultist_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.cultist.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "cultist_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.cultist.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "cultist_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.cultist.idle_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.idle_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.idle_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.idle_elite.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "cultist_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.cultist.move_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.move_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.move_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.cultist.move_elite.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "frost_mage_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "frost_mage_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "frost_mage_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.idle_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.idle_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.idle_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.idle_elite.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "frost_mage_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.move_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.move_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.move_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.frost_mage.move_elite.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "brute_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.brute.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "brute_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.brute.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "brute_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.brute.idle_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.idle_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.idle_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.idle_elite.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "brute_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.brute.move_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.move_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.move_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.brute.move_elite.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "slime_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.slime.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "slime_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.slime.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "slime_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.slime.idle_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.idle_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.idle_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.idle_elite.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "slime_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.slime.move_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.move_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.move_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slime.move_elite.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "slimelet_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.slimelet.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slimelet.idle.1"
+    }
+   ],
+   "frameRate": 12,
+   "repeat": -1
+  },
+  {
+   "key": "slimelet_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.slimelet.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.slimelet.move.1"
+    }
+   ],
+   "frameRate": 18,
+   "repeat": -1
+  },
+  {
+   "key": "fire_imp_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.fire_imp.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.fire_imp.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.fire_imp.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.fire_imp.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "fire_imp_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.fire_imp.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.fire_imp.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.fire_imp.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.fire_imp.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "eye_turret_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.eye_turret.idle.0"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "eye_turret_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.eye_turret.move.0"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "eye_turret_windup",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.eye_turret.windup_frame.0"
+    }
+   ],
+   "frameRate": 1,
+   "repeat": 0
+  },
+  {
+   "key": "eye_turret_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.eye_turret.idle_elite.0"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "eye_turret_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.eye_turret.move_elite.0"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "eye_turret_windup_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.eye_turret.windup_frame_elite.0"
+    }
+   ],
+   "frameRate": 1,
+   "repeat": 0
+  },
+  {
+   "key": "wraith_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.wraith.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "wraith_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.wraith.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "wraith_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.wraith.idle_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.idle_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.idle_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.idle_elite.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "wraith_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.wraith.move_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.move_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.move_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.wraith.move_elite.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "necromancer_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "necromancer_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "necromancer_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.idle_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.idle_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.idle_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.idle_elite.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "necromancer_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.move_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.move_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.move_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.necromancer.move_elite.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "skull_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.skull.idle.0"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "skull_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.skull.move.0"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "stone_golem_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "stone_golem_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "stone_golem_idle_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.idle_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.idle_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.idle_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.idle_elite.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "stone_golem_move_elite",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.move_elite.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.move_elite.1"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.move_elite.2"
+    },
+    {
+     "key": "world",
+     "frame": "enemies.stone_golem.move_elite.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ossuary_knight_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "bosses.ossuary_knight.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.ossuary_knight.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.ossuary_knight.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.ossuary_knight.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "ossuary_knight_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "bosses.ossuary_knight.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.ossuary_knight.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.ossuary_knight.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.ossuary_knight.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "mire_queen_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "bosses.mire_queen.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.mire_queen.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.mire_queen.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.mire_queen.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "mire_queen_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "bosses.mire_queen.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.mire_queen.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.mire_queen.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.mire_queen.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "archlich_idle",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "bosses.archlich.idle.0"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.archlich.idle.1"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.archlich.idle.2"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.archlich.idle.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "archlich_move",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "bosses.archlich.move.0"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.archlich.move.1"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.archlich.move.2"
+    },
+    {
+     "key": "world",
+     "frame": "bosses.archlich.move.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "spell_spark_bolt",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.spark_bolt.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.spark_bolt.projectile.1"
+    },
+    {
+     "key": "world",
+     "frame": "spells.spark_bolt.projectile.2"
+    },
+    {
+     "key": "world",
+     "frame": "spells.spark_bolt.projectile.3"
+    },
+    {
+     "key": "world",
+     "frame": "spells.spark_bolt.projectile.4"
+    },
+    {
+     "key": "world",
+     "frame": "spells.spark_bolt.projectile.5"
+    }
+   ],
+   "frameRate": 15,
+   "repeat": -1
+  },
+  {
+   "key": "spell_magic_missile",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.magic_missile.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.magic_missile.projectile.1"
+    },
+    {
+     "key": "world",
+     "frame": "spells.magic_missile.projectile.2"
+    },
+    {
+     "key": "world",
+     "frame": "spells.magic_missile.projectile.3"
+    },
+    {
+     "key": "world",
+     "frame": "spells.magic_missile.projectile.4"
+    },
+    {
+     "key": "world",
+     "frame": "spells.magic_missile.projectile.5"
+    }
+   ],
+   "frameRate": 12,
+   "repeat": -1
+  },
+  {
+   "key": "spell_fire_bolt",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.fire_bolt.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fire_bolt.projectile.1"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fire_bolt.projectile.2"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fire_bolt.projectile.3"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fire_bolt.projectile.4"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fire_bolt.projectile.5"
+    }
+   ],
+   "frameRate": 15,
+   "repeat": -1
+  },
+  {
+   "key": "spell_fireball",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.fireball.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fireball.projectile.1"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fireball.projectile.2"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fireball.projectile.3"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fireball.projectile.4"
+    },
+    {
+     "key": "world",
+     "frame": "spells.fireball.projectile.5"
+    }
+   ],
+   "frameRate": 15,
+   "repeat": -1
+  },
+  {
+   "key": "spell_frost_lance",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.frost_lance.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.frost_lance.projectile.1"
+    },
+    {
+     "key": "world",
+     "frame": "spells.frost_lance.projectile.2"
+    },
+    {
+     "key": "world",
+     "frame": "spells.frost_lance.projectile.3"
+    }
+   ],
+   "frameRate": 15,
+   "repeat": -1
+  },
+  {
+   "key": "spell_chain_lightning",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.chain_lightning.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.chain_lightning.projectile.1"
+    },
+    {
+     "key": "world",
+     "frame": "spells.chain_lightning.projectile.2"
+    },
+    {
+     "key": "world",
+     "frame": "spells.chain_lightning.projectile.3"
+    },
+    {
+     "key": "world",
+     "frame": "spells.chain_lightning.projectile.4"
+    },
+    {
+     "key": "world",
+     "frame": "spells.chain_lightning.projectile.5"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": -1
+  },
+  {
+   "key": "spell_thunder_orb",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.thunder_orb.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.thunder_orb.projectile.1"
+    }
+   ],
+   "frameRate": 12,
+   "repeat": -1
+  },
+  {
+   "key": "spell_rune_mine",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.rune_mine.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.rune_mine.projectile.1"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": -1
+  },
+  {
+   "key": "spell_blink_bolt",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.blink_bolt.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.blink_bolt.projectile.1"
+    },
+    {
+     "key": "world",
+     "frame": "spells.blink_bolt.projectile.2"
+    },
+    {
+     "key": "world",
+     "frame": "spells.blink_bolt.projectile.3"
+    },
+    {
+     "key": "world",
+     "frame": "spells.blink_bolt.projectile.4"
+    },
+    {
+     "key": "world",
+     "frame": "spells.blink_bolt.projectile.5"
+    }
+   ],
+   "frameRate": 15,
+   "repeat": -1
+  },
+  {
+   "key": "spell_vortex",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.0"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.1"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.2"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.3"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.4"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.5"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.6"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.7"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.8"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.9"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.10"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.11"
+    },
+    {
+     "key": "world",
+     "frame": "spells.vortex.projectile.12"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_arcane_7",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.arcane.7.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.arcane.7.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_arcane_9",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.arcane.9.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.arcane.9.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_arcane_13",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.arcane.13.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.arcane.13.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_frost_7",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.frost.7.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.frost.7.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_frost_9",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.frost.9.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.frost.9.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_frost_13",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.frost.13.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.frost.13.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_poison_7",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.poison.7.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.poison.7.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_poison_9",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.poison.9.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.poison.9.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_poison_13",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.poison.13.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.poison.13.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_fire_7",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.fire.7.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.fire.7.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_fire_9",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.fire.9.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.fire.9.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "ebullet_fire_13",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "enemy_bullets.fire.13.0"
+    },
+    {
+     "key": "world",
+     "frame": "enemy_bullets.fire.13.1"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": -1
+  },
+  {
+   "key": "fx_hit_ring",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.hit_ring.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring.5"
+    }
+   ],
+   "frameRate": 30,
+   "repeat": 0
+  },
+  {
+   "key": "fx_hit_ring_large",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.hit_ring_large.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring_large.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring_large.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring_large.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring_large.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring_large.5"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring_large.6"
+    },
+    {
+     "key": "world",
+     "frame": "fx.hit_ring_large.7"
+    }
+   ],
+   "frameRate": 30,
+   "repeat": 0
+  },
+  {
+   "key": "fx_sputter_puff",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.sputter_puff.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.sputter_puff.1"
+    }
+   ],
+   "frameRate": 12,
+   "repeat": 0
+  },
+  {
+   "key": "fx_explosion",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.explosion.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.explosion.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.explosion.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.explosion.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.explosion.4"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": 0
+  },
+  {
+   "key": "fx_poison_burst",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.poison_burst.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.poison_burst.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.poison_burst.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.poison_burst.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.poison_burst.4"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": 0
+  },
+  {
+   "key": "fx_freeze_shatter",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.freeze_shatter.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.freeze_shatter.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.freeze_shatter.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.freeze_shatter.3"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": 0
+  },
+  {
+   "key": "fx_chain_arc",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.chain_arc.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.chain_arc.1"
+    }
+   ],
+   "frameRate": 30,
+   "repeat": -1
+  },
+  {
+   "key": "fx_blink_puff",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.5"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.6"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.7"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.8"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.9"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.10"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.11"
+    },
+    {
+     "key": "world",
+     "frame": "fx.blink_puff.12"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": 0
+  },
+  {
+   "key": "fx_phase_burst",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.5"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.6"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.7"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.8"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.9"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.10"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.11"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.12"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.13"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.14"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.15"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.16"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.17"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.18"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.19"
+    },
+    {
+     "key": "world",
+     "frame": "fx.phase_burst.20"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": 0
+  },
+  {
+   "key": "fx_soul_release",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.soul_release.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.5"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.6"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.7"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.8"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.9"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.10"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.11"
+    },
+    {
+     "key": "world",
+     "frame": "fx.soul_release.12"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": 0
+  },
+  {
+   "key": "fx_summon_sigil",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.5"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.6"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.7"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.8"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.9"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.10"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.11"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.12"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.13"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.14"
+    },
+    {
+     "key": "world",
+     "frame": "fx.summon_sigil.15"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": -1
+  },
+  {
+   "key": "fx_spawn_portal_open",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.3"
+    }
+   ],
+   "frameRate": 14,
+   "repeat": -1
+  },
+  {
+   "key": "fx_spawn_portal_close",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.5"
+    },
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.6"
+    },
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.7"
+    },
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.8"
+    },
+    {
+     "key": "world",
+     "frame": "fx.spawn_portal.9"
+    }
+   ],
+   "frameRate": 14,
+   "repeat": 0
+  },
+  {
+   "key": "fx_enemy_slash",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.enemy_slash.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.enemy_slash.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.enemy_slash.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.enemy_slash.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.enemy_slash.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.enemy_slash.5"
+    },
+    {
+     "key": "world",
+     "frame": "fx.enemy_slash.6"
+    }
+   ],
+   "frameRate": 24,
+   "repeat": 0
+  },
+  {
+   "key": "fx_ebullet_pop",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.ebullet_pop.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.ebullet_pop.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.ebullet_pop.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.ebullet_pop.3"
+    }
+   ],
+   "frameRate": 24,
+   "repeat": 0
+  },
+  {
+   "key": "fx_crate_break",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.crate_break.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.crate_break.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.crate_break.2"
+    }
+   ],
+   "frameRate": 16,
+   "repeat": 0
+  },
+  {
+   "key": "fx_cast_glyph",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.0"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.1"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.2"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.3"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.4"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.5"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.6"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.7"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.8"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.9"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.10"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.11"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.12"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.13"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.14"
+    },
+    {
+     "key": "world",
+     "frame": "fx.cast_glyph.15"
+    }
+   ],
+   "frameRate": 20,
+   "repeat": -1
+  },
+  {
+   "key": "status_burn",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "status.burn.overlay.0"
+    },
+    {
+     "key": "world",
+     "frame": "status.burn.overlay.1"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": -1
+  },
+  {
+   "key": "status_shocked",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "status.shocked.overlay.0"
+    },
+    {
+     "key": "world",
+     "frame": "status.shocked.overlay.1"
+    },
+    {
+     "key": "world",
+     "frame": "status.shocked.overlay.2"
+    },
+    {
+     "key": "world",
+     "frame": "status.shocked.overlay.3"
+    },
+    {
+     "key": "world",
+     "frame": "status.shocked.overlay.4"
+    },
+    {
+     "key": "world",
+     "frame": "status.shocked.overlay.5"
+    }
+   ],
+   "frameRate": 15,
+   "repeat": -1
+  },
+  {
+   "key": "status_poison",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "status.poison.overlay.0"
+    },
+    {
+     "key": "world",
+     "frame": "status.poison.overlay.1"
+    }
+   ],
+   "frameRate": 4,
+   "repeat": -1
+  },
+  {
+   "key": "tiles_torch",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "tiles.torch.0"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.torch.1"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.torch.2"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.torch.3"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.torch.4"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.torch.5"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.torch.6"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.torch.7"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": -1
+  },
+  {
+   "key": "tiles_stairs_exit",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit.0"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit.1"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit.2"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit.3"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": -1
+  },
+  {
+   "key": "tiles_stairs_exit_use",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit_use.0"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit_use.1"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit_use.2"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit_use.3"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit_use.4"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.stairs_exit_use.5"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": 0
+  },
+  {
+   "key": "tiles_chest_open",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "tiles.chest.0"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.chest.1"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.chest.2"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": 0
+  },
+  {
+   "key": "tiles_spikes",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "tiles.spikes.0"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.spikes.1"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.spikes.2"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.spikes.3"
+    }
+   ],
+   "frameRate": 8,
+   "repeat": 0
+  },
+  {
+   "key": "tiles_wall_fountain_mid",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "tiles.wall_fountain.1"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.wall_fountain.2"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.wall_fountain.3"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "tiles_wall_fountain_basin",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "tiles.wall_fountain.4"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.wall_fountain.5"
+    },
+    {
+     "key": "world",
+     "frame": "tiles.wall_fountain.6"
+    }
+   ],
+   "frameRate": 6,
+   "repeat": -1
+  },
+  {
+   "key": "pickup_coin",
+   "type": "frame",
+   "frames": [
+    {
+     "key": "world",
+     "frame": "pickups.coin.0"
+    },
+    {
+     "key": "world",
+     "frame": "pickups.coin.1"
+    },
+    {
+     "key": "world",
+     "frame": "pickups.coin.2"
+    },
+    {
+     "key": "world",
+     "frame": "pickups.coin.3"
+    }
+   ],
+   "frameRate": 10,
+   "repeat": -1
+  }
+ ]
+}

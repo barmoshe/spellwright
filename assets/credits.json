@@ -1,0 +1,162 @@
+{
+ "version": 1,
+ "generatedBy": "scripts/build-assets.py",
+ "sections": [
+  {
+   "title": "Attribution (CC BY)",
+   "required": true,
+   "entries": [
+    {
+     "text": "Some of the sounds in this project were created by ViRiX Dreamcore (David Mckee) www.soundcloud.com/virix — licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). Source: https://opengameart.org/content/magic-sfx-sample. Modified (trimmed, pitched, filtered, layered)."
+    },
+    {
+     "text": "Sound effects by Little Robot Sound Factory — www.littlerobotsoundfactory.com — licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). Source: https://opengameart.org/content/fantasy-sound-effects-library. Modified (trimmed, pitched, filtered, layered, looped)."
+    },
+    {
+     "text": "\"Dark Fog\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\n(Excerpted and looped.)"
+    },
+    {
+     "text": "\"Ossuary 6 - Air\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\n(Excerpted and looped.)"
+    },
+    {
+     "text": "\"Unholy Knight\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\n(Excerpted and looped.)"
+    },
+    {
+     "text": "\"Volatile Reaction\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\n(Excerpted and looped.)"
+    },
+    {
+     "text": "\"Five Armies\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\n(Excerpted and looped.)"
+    },
+    {
+     "text": "\"Aggressor\" Kevin MacLeod (incompetech.com)\nLicensed under Creative Commons: By Attribution 4.0 License\nhttp://creativecommons.org/licenses/by/4.0/\n(Excerpted and looped.)"
+    }
+   ]
+  },
+  {
+   "title": "Art",
+   "required": false,
+   "entries": [
+    {
+     "work": "16x16 DungeonTileset II (v1.7)",
+     "author": "0x72 (Robert)",
+     "license": "CC0 1.0",
+     "url": "https://0x72.itch.io/dungeontileset-ii"
+    },
+    {
+     "work": "Kenney Fonts",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "url": "https://kenney.nl/assets/kenney-fonts"
+    },
+    {
+     "work": "UI Pack - Pixel Adventure",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "url": "https://kenney.nl/assets/ui-pack-pixel-adventure"
+    },
+    {
+     "work": "16x16 Explosion",
+     "author": "BitingChaos",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/16x16-explosion"
+    },
+    {
+     "work": "496 pixel art icons for medieval/fantasy RPG",
+     "author": "Henrique Lazarini (7Soul1)",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/496-pixel-art-icons-for-medievalfantasy-rpg"
+    },
+    {
+     "work": "Free Pixel Effects Pack",
+     "author": "CodeManu",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/free-pixel-effects-pack"
+    },
+    {
+     "work": "Pixel Art Spells",
+     "author": "DevWizard",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/pixel-art-spells"
+    },
+    {
+     "work": "16x16 Puny Dungeon Tileset",
+     "author": "Shade (merchant-shade)",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/16x16-puny-dungeon-tileset"
+    },
+    {
+     "work": "16x16 Simple Fantasy RPG FX",
+     "author": "Emcee Flesher",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/16x16-simple-fantasy-rpg-fx"
+    },
+    {
+     "work": "16x16 Fantasy RPG Trash Mobs (animated)",
+     "author": "Emcee Flesher",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/16x16-fantasy-rpg-trash-mobs-animated"
+    },
+    {
+     "work": "Spellwright original art",
+     "author": "Spellwright studio",
+     "license": "project-original",
+     "url": ""
+    }
+   ]
+  },
+  {
+   "title": "Audio (CC0)",
+   "required": false,
+   "entries": [
+    {
+     "work": "RPG Audio",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "url": "https://kenney.nl/assets/rpg-audio"
+    },
+    {
+     "work": "Impact Sounds",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "url": "https://kenney.nl/assets/impact-sounds"
+    },
+    {
+     "work": "Interface Sounds",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "url": "https://kenney.nl/assets/interface-sounds"
+    },
+    {
+     "work": "UI Audio",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "url": "https://kenney.nl/assets/ui-audio"
+    },
+    {
+     "work": "Sci-fi Sounds",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "url": "https://kenney.nl/assets/sci-fi-sounds"
+    },
+    {
+     "work": "Music Jingles",
+     "author": "Kenney",
+     "license": "CC0 1.0",
+     "url": "https://kenney.nl/assets/music-jingles"
+    },
+    {
+     "work": "80 CC0 RPG SFX",
+     "author": "rubberduck",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/80-cc0-rpg-sfx"
+    },
+    {
+     "work": "80 CC0 creature SFX",
+     "author": "rubberduck",
+     "license": "CC0 1.0",
+     "url": "https://opengameart.org/content/80-cc0-creature-sfx"
+    }
+   ]
+  }
+ ]
+}

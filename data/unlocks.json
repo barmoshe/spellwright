@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "$comment": "Meta milestones. Anything named in any unlocks[] is LOCKED until its milestone fires.",
+  "unlocks": [
+    {
+      "id": "reach_floor_2",
+      "name": "Into the Deep",
+      "desc": "Reach Floor 2.",
+      "condition": {
+        "type": "reach_floor",
+        "value": 2
+      },
+      "unlocks": {
+        "cards": [
+          "frost_lance",
+          "trigger_timer"
+        ],
+        "wands": [],
+        "relics": [],
+        "loadouts": [],
+        "features": []
+      }
+    },
+    {
+      "id": "kill_ossuary_knight",
+      "name": "Knightfall",
+      "desc": "Defeat the Ossuary Knight.",
+      "condition": {
+        "type": "kill_boss",
+        "value": "ossuary_knight"
+      },
+      "unlocks": {
+        "cards": [
+          "comet"
+        ],
+        "wands": [],
+        "relics": [
+          "kindling"
+        ],
+        "loadouts": [
+          "pyromancer"
+        ],
+        "features": []
+      }
+    },
+    {
+      "id": "reach_floor_3",
+      "name": "The Last Stair",
+      "desc": "Reach Floor 3.",
+      "condition": {
+        "type": "reach_floor",
+        "value": 3
+      },
+      "unlocks": {
+        "cards": [
+          "thunder_orb"
+        ],
+        "wands": [
+          "chaos_branch"
+        ],
+        "relics": [],
+        "loadouts": [],
+        "features": []
+      }
+    },
+    {
+      "id": "kill_mire_queen",
+      "name": "Dethroned",
+      "desc": "Defeat the Mire Queen.",
+      "condition": {
+        "type": "kill_boss",
+        "value": "mire_queen"
+      },
+      "unlocks": {
+        "cards": [
+          "vortex",
+          "quad_cast"
+        ],
+        "wands": [],
+        "relics": [],
+        "loadouts": [
+          "stormcaller"
+        ],
+        "features": []
+      }
+    },
+    {
+      "id": "win_run",
+      "name": "Spellwright",
+      "desc": "Defeat Vorn, the Archlich.",
+      "condition": {
+        "type": "kill_boss",
+        "value": "archlich"
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [
+          "archmage_scepter"
+        ],
+        "relics": [
+          "phoenix_feather"
+        ],
+        "loadouts": [
+          "hexer"
+        ],
+        "features": [
+          "curses"
+        ]
+      }
+    },
+    {
+      "id": "all_reactions",
+      "name": "Alchemist",
+      "desc": "Trigger Melt, Overload, Blight and Superconduct (across any runs).",
+      "condition": {
+        "type": "reactions_seen",
+        "value": [
+          "melt",
+          "overload",
+          "blight",
+          "superconduct"
+        ]
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [],
+        "relics": [
+          "alchemist_stone"
+        ],
+        "loadouts": [],
+        "features": []
+      }
+    },
+    {
+      "id": "slayer_300",
+      "name": "Slayer",
+      "desc": "Defeat 300 enemies (lifetime).",
+      "condition": {
+        "type": "lifetime_kills",
+        "value": 300
+      },
+      "unlocks": {
+        "cards": [
+          "crit_up"
+        ],
+        "wands": [
+          "echo_wand"
+        ],
+        "relics": [],
+        "loadouts": [],
+        "features": []
+      }
+    },
+    {
+      "id": "first_payload",
+      "name": "Chain of Command",
+      "desc": "Release a trigger payload.",
+      "condition": {
+        "type": "payload_released",
+        "value": 1
+      },
+      "unlocks": {
+        "cards": [
+          "quickening"
+        ],
+        "wands": [],
+        "relics": [
+          "prism_shard"
+        ],
+        "loadouts": [],
+        "features": []
+      }
+    },
+    {
+      "id": "three_deaths",
+      "name": "Persistence",
+      "desc": "Fall 3 times. The crypt remembers you.",
+      "condition": {
+        "type": "lifetime_deaths",
+        "value": 3
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [],
+        "relics": [
+          "warding_sigil"
+        ],
+        "loadouts": [],
+        "features": []
+      }
+    }
+  ]
+}

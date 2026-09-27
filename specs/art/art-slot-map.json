@@ -1,0 +1,4316 @@
+{
+ "version": 1,
+ "owner": "2D Artist",
+ "artifact": "art-slot-map (ad-hoc; consumed by TA Wave 3 atlas + Animator clip binding)",
+ "conventions": {
+  "coords": "rect = [x, y, w, h] px in the source image; cells = [col, row] on the source grid; cells_index = linear index row-major",
+  "origin": "actors (0.5, 1.0) feet (Animator R7); projectiles/FX/pickups (0.5, 0.5)",
+  "lut_order": "luts apply left-to-right on SOURCE colours; L_SFX_BASE is always implied for simplefx unless a more specific LUT already mapped the colour",
+  "tint_tokens": "see style-guide.md \u00a72.4 \u2014 dev maps token names, never hexes",
+  "data_bug_fixes": [
+   "0x72 tile_list: zombie_anim_f10 -> zombie_anim_f0",
+   "0x72 tile_list: wall_edge_top_left x 31 -> 32"
+  ],
+  "projectile_scale": "visual scale = 1 if radius multiplier < 1.5, 2 if 1.5-2.49, 3 if >= 2.5 (size_up x1.6 -> x2). Hitbox follows data exactly; player visuals may exceed hitboxes, enemy bullets never do.",
+  "ebullet_rule": "enemy projectile radius r -> ebullet.<element>.<2r+1> (frost 9/13 px have a rim broken at the 4 diagonals = segmented crystal ring, the grayscale cue for the slowing shot); radius 3/4/6 map exactly; any other radius -> nearest size DOWN (hitbox never smaller than the dark core). Death on wall/expiry: fx.ebullet_pop."
+ },
+ "sources": {
+  "0x72": {
+   "path": "assets/_downloads/0x72_dungeontileset-ii/0x72_DungeonTilesetII_v1.7.png",
+   "frames": "by name from tile_list_v1.7 (apply TA fixes: zombie_anim_f10->f0, wall_edge_top_left x=32)",
+   "license": "CC0",
+   "author": "0x72"
+  },
+  "0x72_walls": {
+   "path": "assets/_downloads/0x72_dungeontileset-ii/atlas_walls_high-16x32.png",
+   "grid": [
+    16,
+    32
+   ],
+   "license": "CC0",
+   "author": "0x72"
+  },
+  "0x72_floor": {
+   "path": "assets/_downloads/0x72_dungeontileset-ii/atlas_floor-16x16.png",
+   "grid": [
+    16,
+    16
+   ],
+   "cols": 7,
+   "license": "CC0",
+   "author": "0x72"
+  },
+  "trash": {
+   "path": "assets/_downloads/oga_trash-mobs-16/trashmobz-alpha.png",
+   "grid": [
+    16,
+    16
+   ],
+   "license": "CC0",
+   "author": "Emcee Flesher"
+  },
+  "simplefx": {
+   "path": "assets/_downloads/oga_simple-fantasy-rpg-fx/simplefx-alpha.png",
+   "grid": [
+    16,
+    16
+   ],
+   "license": "CC0",
+   "author": "Emcee Flesher"
+  },
+  "devwizard": {
+   "path": "assets/_downloads/oga_pixel-art-spells/Pixelart Spells/PNG Files/<Name>.png",
+   "grid": [
+    16,
+    16
+   ],
+   "license": "CC0",
+   "author": "DevWizard"
+  },
+  "codemanu": {
+   "path": "assets/_downloads/oga_free-pixel-effects-pack/<n>_spritesheet.png",
+   "grid": [
+    100,
+    100
+   ],
+   "license": "CC0",
+   "author": "CodeManu"
+  },
+  "expl16": {
+   "path": "assets/_downloads/oga_16x16-explosion/explosion.png",
+   "grid": [
+    16,
+    16
+   ],
+   "license": "CC0",
+   "author": "BitingChaos"
+  },
+  "puny": {
+   "path": "assets/_downloads/oga_puny-dungeon/punyworld-dungeon-tileset.png",
+   "grid": [
+    16,
+    16
+   ],
+   "license": "CC0",
+   "author": "Shade"
+  },
+  "icons": {
+   "path": "assets/_downloads/oga_496-rpg-icons/<Name>.png",
+   "size": [
+    34,
+    34
+   ],
+   "license": "CC0",
+   "author": "Henrique Lazarini (7Soul1)"
+  },
+  "ui_s": {
+   "path": "assets/_downloads/kenney_ui-pack-pixel-adventure/Tilesheets/Small tiles/Thick outline/tilemap_packed.png",
+   "grid": [
+    16,
+    16
+   ],
+   "cols": 23,
+   "license": "CC0",
+   "author": "Kenney"
+  },
+  "ui_l": {
+   "path": "assets/_downloads/kenney_ui-pack-pixel-adventure/Tilesheets/Large tiles/Thick outline/tilemap_packed.png",
+   "grid": [
+    32,
+    32
+   ],
+   "cols": 13,
+   "license": "CC0",
+   "author": "Kenney"
+  },
+  "fonts": {
+   "path": "assets/_downloads/kenney_fonts/Fonts/<Name>.ttf",
+   "license": "CC0",
+   "author": "Kenney"
+  },
+  "ui_authored": {
+   "path": "assets/src/art/spellwright_ui.png",
+   "frames": "by name from assets/src/art/spellwright_ui.json (scripts/author-ui-art.py)",
+   "license": "project-original",
+   "author": "Spellwright 2D Artist"
+  },
+  "icons16": {
+   "path": "assets/src/art/icons16.png",
+   "frames": "assets/src/art/icons16.json by_id (e.g. \"spells.fire_bolt\")",
+   "license": "CC0 derivative of 7Soul1",
+   "author": "Henrique Lazarini (7Soul1); 16 px pass by Spellwright 2D Artist"
+  },
+  "authored": {
+   "path": "assets/src/art/spellwright_authored.png",
+   "frames": "by name from assets/src/art/spellwright_authored.json",
+   "license": "project-original",
+   "author": "Spellwright 2D Artist (scripts/author-art.py)"
+  }
+ },
+ "luts": {
+  "L_OUTLINE": {
+   "applies": "every 7Soul1 icon and every simplefx/trash frame drawn with NORMAL blend",
+   "map": {
+    "#000000": "#222222",
+    "#010301": "#222222",
+    "#020202": "#222222"
+   }
+  },
+  "L_DELETE_OUTLINE": {
+   "applies": "simplefx frames used as PLAYER projectiles/FX (player-owned art never carries a dark outline \u2014 style-guide \u00a75.1)",
+   "map": {
+    "#000000": "transparent"
+   }
+  },
+  "L_SFX_BASE": {
+   "applies": "every simplefx frame, before any element LUT",
+   "map": {
+    "#ffffff": "#fdf7ed",
+    "#ed1c24": "#df6026",
+    "#ed1f29": "#df6026",
+    "#fe1515": "#df6026",
+    "#c7101a": "#df6026",
+    "#880015": "#8f4029",
+    "#ff7f27": "#ee8e2e",
+    "#ffc90e": "#facb3e",
+    "#ffe040": "#facb3e",
+    "#fff200": "#fff6b8",
+    "#ffff80": "#fff6b8",
+    "#1030ff": "#417089",
+    "#1223fa": "#417089",
+    "#3f48cc": "#417089",
+    "#00a2e8": "#5fcde4",
+    "#99d9ea": "#cae6f5",
+    "#97ffea": "#cae6f5",
+    "#00dfb3": "#72d6ce",
+    "#007961": "#3c9f9c",
+    "#22b14c": "#4ba747",
+    "#82e679": "#97da3f",
+    "#bef2b9": "#c8ef7a",
+    "#9fe81a": "#97da3f",
+    "#7ab112": "#4ba747",
+    "#8000ff": "#5956bd",
+    "#c3c3c3": "#b6cbcf",
+    "#acb7c3": "#b6cbcf",
+    "#7f7f7f": "#775c55",
+    "#b97a57": "#b58057",
+    "#69412c": "#8a503e",
+    "#efe4b0": "#d3bfa9",
+    "#fe8f8f": "#f78697",
+    "#f3767c": "#f78697",
+    "#ffc4c4": "#fdd0d6",
+    "#ffaec9": "#fdd0d6"
+   }
+  },
+  "L_SFX_ARCANE": {
+   "applies": "simplefx blue orbs re-used as arcane player shots (source colours, pre-BASE)",
+   "map": {
+    "#1030ff": "#5956bd",
+    "#00a2e8": "#8b7cf0",
+    "#99d9ea": "#cfc0ff",
+    "#ffffff": "#fdf7ed"
+   }
+  },
+  "L_SFX_SHOCK": {
+   "applies": "simplefx starbursts + lightning strip + vertical bolt re-used as shock (source colours, pre-BASE)",
+   "map": {
+    "#1030ff": "#ee8e2e",
+    "#00a2e8": "#facb3e",
+    "#99d9ea": "#fff6b8",
+    "#8000ff": "#ee8e2e",
+    "#fff200": "#fdf7ed",
+    "#ffe040": "#fff6b8",
+    "#ffffff": "#fdf7ed"
+   }
+  },
+  "L_SFX_FIRE_STAR": {
+   "applies": "simplefx starburst re-used as the rune mine (source colours, pre-BASE)",
+   "map": {
+    "#1030ff": "#8f4029",
+    "#00a2e8": "#ee8e2e",
+    "#99d9ea": "#facb3e",
+    "#8000ff": "#8f4029",
+    "#fff200": "#fdf7ed",
+    "#ffffff": "#fdf7ed"
+   }
+  },
+  "L_SFX_POISON_DART": {
+   "applies": "simplefx arrow re-used as venom dart (source colours, pre-BASE)",
+   "map": {
+    "#b97a57": "#4ba747",
+    "#ffc90e": "#97da3f",
+    "#c3c3c3": "#c8ef7a",
+    "#ff7f27": "#3d734f",
+    "#7f7f7f": "#3d734f",
+    "#ffffff": "#fdf7ed"
+   }
+  },
+  "L_SFX_HOSTILE": {
+   "applies": "simplefx red orb burst + white slash arcs when they are ENEMY-owned (source colours)",
+   "map": {
+    "#fe1515": "#dc4a7b",
+    "#fe8f8f": "#f78697",
+    "#ffc4c4": "#fdd0d6",
+    "#ffffff": "#f78697",
+    "#acb7c3": "#dc4a7b",
+    "#000000": "#222222"
+   }
+  },
+  "L_SFX_WHITE_ARCANE": {
+   "applies": "simplefx white slash crescent re-used as the boomerang blade (source colours)",
+   "map": {
+    "#ffffff": "#cfc0ff",
+    "#acb7c3": "#8b7cf0"
+   }
+  },
+  "L_DW_ARCANE": {
+   "applies": "DevWizard Arcane Bolt / Magic Orb (moves arcane out of the reserved hostile pink band)",
+   "map": {
+    "#76428a": "#5956bd",
+    "#d77bba": "#cfc0ff",
+    "#5b6ee1": "#8b7cf0"
+   }
+  },
+  "L_DW_SPARKS_SHOCK": {
+   "applies": "DevWizard Magic Sparks as the shocked-status overlay",
+   "map": {
+    "#76428a": "#ee8e2e",
+    "#d77bba": "#facb3e"
+   }
+  },
+  "L_DW_LIGHT_SHOCK": {
+   "applies": "DevWizard Light Bolt as the chain-lightning body",
+   "map": {
+    "#ffffff": "#facb3e",
+    "#dbf9ff": "#fff6b8",
+    "#fffdc9": "#fdf7ed"
+   }
+  },
+  "L_DW_PURE_ARCANE": {
+   "applies": "DevWizard Pure Bolt 2 as blink bolt / muzzle star",
+   "map": {
+    "#ffffff": "#cfc0ff",
+    "#b3f3ff": "#fdf7ed"
+   }
+  },
+  "L_EXPL16": {
+   "applies": "BitingChaos explosion (PICO-8 palette -> 0x72 master; removes hostile pink/crimson from a player-owned blast)",
+   "map": {
+    "#ff004d": "#df6026",
+    "#7e2553": "#8f4029",
+    "#ffa300": "#ee8e2e",
+    "#ffec27": "#facb3e",
+    "#fff1e8": "#fdf7ed",
+    "#5f574f": "#483b3a"
+   }
+  },
+  "L_GREY_BAKE": {
+   "applies": "CodeManu sheets: bake to greyscale luminance (keep alpha) so one runtime tint token colours them; drawn ADD",
+   "map": "op: rgb := luma(rgb); pixels with luma < 0.06 -> alpha 0"
+  },
+  "L_BAT": {
+   "applies": "trashmobz bat cells",
+   "map": {
+    "#000000": "#222222",
+    "#002060": "#314152",
+    "#004080": "#417089",
+    "#0060c0": "#5698cc",
+    "#ffffff": "#fdf7ed",
+    "#ff0000": "#da4e38",
+    "#800000": "#62232f",
+    "#ffc0c0": "#f78697",
+    "#ff8080": "#dc4a7b"
+   }
+  },
+  "L_CULTIST": {
+   "applies": "0x72 doc_* -> crimson-hooded bone-masked cultist",
+   "map": {
+    "#314152": "#62232f",
+    "#417089": "#9f294e",
+    "#111111": "#222222"
+   }
+  },
+  "L_FROSTMAGE": {
+   "applies": "0x72 orc_shaman_* -> pale frost shaman",
+   "map": {
+    "#3d734f": "#b6cbcf",
+    "#8f4029": "#5698cc",
+    "#62232f": "#314152",
+    "#d44e52": "#72d6ce",
+    "#314152": "#2a2a3a"
+   }
+  },
+  "L_WRAITH": {
+   "applies": "0x72 angel_* -> pale-teal spectre (rendered at alpha 0.85)",
+   "map": {
+    "#fccba3": "#b6cbcf",
+    "#e2b694": "#72d6ce",
+    "#facb3e": "#cae6f5",
+    "#ee8e2e": "#72d6ce",
+    "#cae6f5": "#fdf7ed",
+    "#5698cc": "#3c9f9c",
+    "#72d6ce": "#49a790"
+   }
+  },
+  "L_KNIGHT": {
+   "applies": "0x72 big_zombie_* -> Ossuary Knight (bone body, iron darks, red crest)",
+   "map": {
+    "#4ba747": "#da4e38",
+    "#97da3f": "#ee8e2e",
+    "#aa8d7a": "#d3bfa9",
+    "#775c55": "#aa8d7a",
+    "#483b3a": "#775c55",
+    "#333333": "#314152"
+   }
+  },
+  "L_GOLEM": {
+   "applies": "0x72 big_demon_* -> Stone Golem (pale rune-stone, teal rune eyes/teeth)",
+   "map": {
+    "#da4e38": "#b6cbcf",
+    "#9f294e": "#417089",
+    "#fdf7ed": "#72d6ce"
+   }
+  },
+  "L_LICH": {
+   "applies": "0x72 necromancer_anim_* -> Archlich (crimson trim -> gold)",
+   "map": {
+    "#9f294e": "#facb3e"
+   }
+  },
+  "L_PORTAL_HOSTILE": {
+   "applies": "Puny purple portal row 11 -> enemy spawn portal",
+   "map": {
+    "#403074": "#62232f",
+    "#523c88": "#62232f",
+    "#6047ae": "#9f294e",
+    "#7254c3": "#9f294e",
+    "#a666eb": "#dc4a7b",
+    "#e87cff": "#f78697",
+    "#ffc0ff": "#fdf7ed"
+   }
+  },
+  "L_PUNY_STONE": {
+   "applies": "Puny grey block -> pedestal in the 0x72 stone ramp, + 1px #222222 outline bake",
+   "map": {
+    "#79776d": "#aa8d7a",
+    "#747167": "#775c55",
+    "#6f6b61": "#483b3a"
+   }
+  },
+  "L_FLOOR_F2": {
+   "applies": "floor 2 \"Drowned Halls\": floor, walls, doors, columns, edge_down (tileset variant page)",
+   "map": {
+    "#483b3a": "#2f3b47",
+    "#775c55": "#4a6272",
+    "#aa8d7a": "#6f8fa0",
+    "#d3bfa9": "#b6cbcf",
+    "#2b2929": "#27313b",
+    "#3b3332": "#27313b",
+    "#302c2b": "#27313b",
+    "#21141b": "#1a2230",
+    "#23151d": "#1a2230"
+   }
+  },
+  "L_FLOOR_F3": {
+   "applies": "floor 3 \"The Last Library\": same slot set",
+   "map": {
+    "#483b3a": "#3e2a33",
+    "#775c55": "#6b4450",
+    "#2b2929": "#2e1f26",
+    "#3b3332": "#2e1f26",
+    "#302c2b": "#2e1f26"
+   }
+  },
+  "L_GEM_CYAN": {
+   "applies": "0x72 weapon_green_magic_staff gem",
+   "map": {
+    "#97da3f": "#72d6ce"
+   }
+  },
+  "L_GEM_YELLOW": {
+   "applies": "staff gem",
+   "map": {
+    "#97da3f": "#facb3e"
+   }
+  },
+  "L_GEM_VIOLET": {
+   "applies": "staff gem",
+   "map": {
+    "#97da3f": "#8b7cf0"
+   }
+  },
+  "L_GEM_WHITE": {
+   "applies": "staff gem",
+   "map": {
+    "#97da3f": "#cae6f5"
+   }
+  },
+  "L_GEM_PLUM": {
+   "applies": "staff gem",
+   "map": {
+    "#97da3f": "#9f294e"
+   }
+  },
+  "L_ICON_OAK": {
+   "applies": "icon W_Staff04 -> oak brown",
+   "map": {
+    "#bbcde8": "#d8a57d",
+    "#809cb3": "#b58057",
+    "#687576": "#8a503e",
+    "#3c6161": "#62232f"
+   }
+  },
+  "L_ICON_ARCHMAGE": {
+   "applies": "icon W_Staff06 -> gold + violet crystal",
+   "map": {
+    "#e7f5ff": "#fdf7ed",
+    "#e7f9ff": "#fdf7ed",
+    "#d5e1e9": "#facb3e",
+    "#b8bfc4": "#ee8e2e",
+    "#6f818d": "#8f4029",
+    "#00a2d5": "#5956bd",
+    "#3acfff": "#8b7cf0",
+    "#baeeff": "#cfc0ff"
+   }
+  },
+  "L_ICON_SHADOW": {
+   "applies": "icon A_Clothing01 -> shadow cloak",
+   "map": {
+    "#fcfbfb": "#cfc0ff",
+    "#e8e5e5": "#8b7cf0",
+    "#cfc7c7": "#5956bd",
+    "#b0a3a3": "#5f2d56",
+    "#988787": "#2a2a3a",
+    "#776161": "#2a2a3a"
+   }
+  }
+ },
+ "player": {
+  "skins": {
+   "apprentice": "wizzard_m",
+   "pyromancer": "wizzard_f",
+   "stormcaller": "wizzard_m",
+   "hexer": "wizzard_f"
+  },
+  "frame_size": [
+   16,
+   28
+  ],
+  "origin": [
+   0.5,
+   1.0
+  ],
+  "content_bbox_idle_f0": [
+   2,
+   9,
+   16,
+   28
+  ],
+  "clips": {
+   "player_idle": {
+    "art": {
+     "src": "0x72",
+     "frames": [
+      "wizzard_<skin>_idle_anim_f0",
+      "wizzard_<skin>_idle_anim_f1",
+      "wizzard_<skin>_idle_anim_f2",
+      "wizzard_<skin>_idle_anim_f3"
+     ]
+    },
+    "fps": 6,
+    "loop": true
+   },
+   "player_run": {
+    "art": {
+     "src": "0x72",
+     "frames": [
+      "wizzard_<skin>_run_anim_f0",
+      "wizzard_<skin>_run_anim_f1",
+      "wizzard_<skin>_run_anim_f2",
+      "wizzard_<skin>_run_anim_f3"
+     ]
+    },
+    "fps": 12,
+    "loop": true
+   },
+   "player_dash": {
+    "art": {
+     "src": "0x72",
+     "frames": [
+      "wizzard_<skin>_run_anim_f2"
+     ]
+    },
+    "hold": true,
+    "afterimage": "same frame, tint FILL token dash-ghost #5698cc, alpha 0.6 -> 0 (Animator owns fade)"
+   },
+   "player_hit": {
+    "art": {
+     "src": "0x72",
+     "frames": [
+      "wizzard_<skin>_hit_anim_f0"
+     ]
+    },
+    "hold": true,
+    "flash": "tint FILL token flash #ffffff"
+   },
+   "player_cast": {
+    "art": "NO BODY FRAMES EXIST \u2014 body keeps idle/run; cast is carried by the held wand (wand_held) + muzzle flash (fx.muzzle) + 1px kick (Animator). This is the decision, not a gap."
+   },
+   "player_death": {
+    "art": {
+     "src": "0x72",
+     "frames": [
+      "wizzard_<skin>_hit_anim_f0"
+     ]
+    },
+    "sequence": [
+     "hold hit frame, FILL flash #ffffff 2 steps",
+     "body alpha steps 1.0 -> 0.66 -> 0.33 -> 0 (Stepped, Animator timing) while fx.soul_release plays from core",
+     "wand_held drops: rotate 90deg, fall to feet, stays 1 s (Animator)"
+    ],
+    "fx": "fx.soul_release"
+   }
+  },
+  "shadow": {
+   "src": "authored",
+   "frames": [
+    "shadow_10x3"
+   ]
+  },
+  "hurtbox_pip": {
+   "art": "optional Settings -> Accessibility \"Show hitbox\": 3x3 px #fdf7ed square with 1px #222222 ring at the hurtbox centre (core anchor), drawn above the body. UX owns the toggle."
+  },
+  "shield_overlay": {
+   "src": "codemanu",
+   "file": "8_protectioncircle",
+   "cells_index": "every 4th of 0..60 (16 f) @ 20 fps loop",
+   "trim": [
+    34,
+    39,
+    34,
+    34
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "shield #72d6ce",
+   "blend": "ADD"
+  },
+  "slow_motes": {
+   "art": "2x2 px #cae6f5 particle (fx emitter texture = authored glow_16 not needed; use a 2x2 white pixel frame tinted)",
+   "owner": "Animator/TA emitter"
+  }
+ },
+ "wands": {
+  "apprentice_wand": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_green_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request",
+    "lut": "L_GEM_VIOLET"
+   },
+   "gem": "#8b7cf0"
+  },
+  "ember_rod": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_red_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request"
+   },
+   "gem": "#da4e38"
+  },
+  "glass_needle": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff08",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_green_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request",
+    "lut": "L_GEM_WHITE"
+   },
+   "gem": "#cae6f5"
+  },
+  "twin_fork": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_green_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request"
+   },
+   "gem": "#97da3f"
+  },
+  "stormcaller_staff": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff06",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_green_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request",
+    "lut": "L_GEM_YELLOW"
+   },
+   "gem": "#facb3e"
+  },
+  "oak_staff": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff04",
+    "lut": [
+     "L_OUTLINE",
+     "L_ICON_OAK"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_green_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request"
+   },
+   "gem": "#97da3f"
+  },
+  "grave_scepter": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff07",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_green_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request",
+    "lut": "L_GEM_PLUM"
+   },
+   "gem": "#9f294e"
+  },
+  "chaos_branch": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_green_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request",
+    "lut": "L_GEM_VIOLET"
+   },
+   "gem": "#8b7cf0"
+  },
+  "echo_wand": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_green_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request",
+    "lut": "L_GEM_CYAN"
+   },
+   "gem": "#72d6ce"
+  },
+  "archmage_scepter": {
+   "icon": {
+    "src": "icons",
+    "file": "W_Staff06",
+    "lut": [
+     "L_OUTLINE",
+     "L_ICON_ARCHMAGE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "held": {
+    "src": "0x72",
+    "frames": [
+     "weapon_red_magic_staff"
+    ],
+    "crop": "top 10 rows of the staff (gem head + first 2 px of shaft), 8x10 \u2014 Animator \u00a76 request"
+   },
+   "gem": "#da4e38",
+   "note": "legendary: in-world pickup also gets glow_32 tint #facb3e"
+  }
+ },
+ "loadouts": {
+  "apprentice": {
+   "portrait": {
+    "src": "0x72",
+    "frames": [
+     "wizzard_m_idle_anim_f0",
+     "wizzard_m_idle_anim_f1",
+     "wizzard_m_idle_anim_f2",
+     "wizzard_m_idle_anim_f3"
+    ]
+   },
+   "badge_icon": "wands.apprentice_wand.icon"
+  },
+  "pyromancer": {
+   "portrait": {
+    "src": "0x72",
+    "frames": [
+     "wizzard_f_idle_anim_f0",
+     "wizzard_f_idle_anim_f1",
+     "wizzard_f_idle_anim_f2",
+     "wizzard_f_idle_anim_f3"
+    ]
+   },
+   "badge_icon": "wands.ember_rod.icon"
+  },
+  "stormcaller": {
+   "portrait": {
+    "src": "0x72",
+    "frames": [
+     "wizzard_m_idle_anim_f0",
+     "wizzard_m_idle_anim_f1",
+     "wizzard_m_idle_anim_f2",
+     "wizzard_m_idle_anim_f3"
+    ]
+   },
+   "badge_icon": "wands.stormcaller_staff.icon"
+  },
+  "hexer": {
+   "portrait": {
+    "src": "0x72",
+    "frames": [
+     "wizzard_f_idle_anim_f0",
+     "wizzard_f_idle_anim_f1",
+     "wizzard_f_idle_anim_f2",
+     "wizzard_f_idle_anim_f3"
+    ]
+   },
+   "badge_icon": "wands.glass_needle.icon"
+  }
+ },
+ "enemies": {
+  "bat": {
+   "idle": {
+    "src": "trash",
+    "cells": [
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_BAT",
+    "note": "row 0 assumed front-facing; TA verifies trashmobz row->facing in Wave 3; flipX only (R6)"
+   },
+   "move": {
+    "src": "trash",
+    "cells": [
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_BAT",
+    "note": "row 0 assumed front-facing; TA verifies trashmobz row->facing in Wave 3; flipX only (R6)"
+   },
+   "class": "C",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "fps": 10,
+   "flying": true
+  },
+  "skeleton": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "skelet_idle_anim_f0",
+     "skelet_idle_anim_f1",
+     "skelet_idle_anim_f2",
+     "skelet_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "skelet_run_anim_f0",
+     "skelet_run_anim_f1",
+     "skelet_run_anim_f2",
+     "skelet_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "swipe_fx": "fx.enemy_slash"
+  },
+  "cultist": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "doc_idle_anim_f0",
+     "doc_idle_anim_f1",
+     "doc_idle_anim_f2",
+     "doc_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "doc_run_anim_f0",
+     "doc_run_anim_f1",
+     "doc_run_anim_f2",
+     "doc_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    23
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_CULTIST",
+   "bullet": "ebullet.arcane.7"
+  },
+  "frost_mage": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "orc_shaman_idle_anim_f0",
+     "orc_shaman_idle_anim_f1",
+     "orc_shaman_idle_anim_f2",
+     "orc_shaman_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "orc_shaman_run_anim_f0",
+     "orc_shaman_run_anim_f1",
+     "orc_shaman_run_anim_f2",
+     "orc_shaman_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    23
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_FROSTMAGE",
+   "bullet": "ebullet.frost.9"
+  },
+  "brute": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "masked_orc_idle_anim_f0",
+     "masked_orc_idle_anim_f1",
+     "masked_orc_idle_anim_f2",
+     "masked_orc_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "masked_orc_run_anim_f0",
+     "masked_orc_run_anim_f1",
+     "masked_orc_run_anim_f2",
+     "masked_orc_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    23
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   }
+  },
+  "slime": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "swampy_anim_f0",
+     "swampy_anim_f1",
+     "swampy_anim_f2",
+     "swampy_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "swampy_anim_f0",
+     "swampy_anim_f1",
+     "swampy_anim_f2",
+     "swampy_anim_f3"
+    ]
+   },
+   "class": "B",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "on_death_fx": "fx.poison_burst"
+  },
+  "slimelet": {
+   "idle": {
+    "src": "authored",
+    "frames": [
+     "slimelet_f0",
+     "slimelet_f1"
+    ]
+   },
+   "move": {
+    "src": "authored",
+    "frames": [
+     "slimelet_f0",
+     "slimelet_f1"
+    ]
+   },
+   "class": "B",
+   "frame_size": [
+    9,
+    8
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "note": "authored half-mass swampy (0x72 palette); replaces the Animator placeholder \"swampy x0.75\""
+  },
+  "fire_imp": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "imp_idle_anim_f0",
+     "imp_idle_anim_f1",
+     "imp_idle_anim_f2",
+     "imp_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "imp_run_anim_f0",
+     "imp_run_anim_f1",
+     "imp_run_anim_f2",
+     "imp_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "blast_fx": "fx.explosion (radius 36, hostile variant: ring colour telegraph-rim)"
+  },
+  "eye_turret": {
+   "idle": {
+    "src": "authored",
+    "frames": [
+     "eye_turret_f0"
+    ]
+   },
+   "move": {
+    "src": "authored",
+    "frames": [
+     "eye_turret_f0"
+    ]
+   },
+   "class": "D",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "windup_frame": {
+    "src": "authored",
+    "frames": [
+     "eye_turret_f1"
+    ]
+   },
+   "note": "authored; f1 (glare) is shown for the whole windup, replacing the Animator placeholder \"static eye tile\"",
+   "bullet": "ebullet.arcane.7"
+  },
+  "wraith": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "angel_idle_anim_f0",
+     "angel_idle_anim_f1",
+     "angel_idle_anim_f2",
+     "angel_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "angel_run_anim_f0",
+     "angel_run_anim_f1",
+     "angel_run_anim_f2",
+     "angel_run_anim_f3"
+    ]
+   },
+   "class": "A (flyer)",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_WRAITH",
+   "alpha": 0.85,
+   "flying": true,
+   "bullet": "ebullet.arcane.7",
+   "blink_fx": "fx.blink_puff (tint #72d6ce)",
+   "note": "replaces the Animator placeholder Tiny Dungeon ghost #121 (pack rejected)"
+  },
+  "necromancer": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "necromancer_anim_f0",
+     "necromancer_anim_f1",
+     "necromancer_anim_f2",
+     "necromancer_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "necromancer_anim_f0",
+     "necromancer_anim_f1",
+     "necromancer_anim_f2",
+     "necromancer_anim_f3"
+    ]
+   },
+   "class": "B",
+   "frame_size": [
+    16,
+    23
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "summon_sigil": "fx.summon_sigil"
+  },
+  "skull": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "skull"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "skull"
+    ]
+   },
+   "class": "D (flyer)",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "flying": true,
+   "trail": "authored glow_16 ADD tint #9f294e alpha 0.35 behind it (reads \"possessed\")"
+  },
+  "stone_golem": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "big_demon_idle_anim_f0",
+     "big_demon_idle_anim_f1",
+     "big_demon_idle_anim_f2",
+     "big_demon_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "big_demon_run_anim_f0",
+     "big_demon_run_anim_f1",
+     "big_demon_run_anim_f2",
+     "big_demon_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    32,
+    36
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_22x5"
+    ]
+   },
+   "lut": "L_GOLEM",
+   "bullet": "ebullet.arcane.9",
+   "stomp_fx": "fx.explosion (radius 44, hostile)"
+  }
+ },
+ "elite": {
+  "scale": 1.0,
+  "outline": "TA bakes an elite variant of every eliteCandidates sheet: 1px outline in token elite-gold #facb3e around the existing #222222 silhouette (frame grows +2 px each axis; origin unchanged)",
+  "ground": "authored shadow ellipse drawn in #facb3e alpha 0.5 under the regular shadow",
+  "objection": "rules.enemies.elite.scale 1.25 \u2014 see art-slot-map.md \u00a7Objections"
+ },
+ "bosses": {
+  "ossuary_knight": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "big_zombie_idle_anim_f0",
+     "big_zombie_idle_anim_f1",
+     "big_zombie_idle_anim_f2",
+     "big_zombie_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "big_zombie_run_anim_f0",
+     "big_zombie_run_anim_f1",
+     "big_zombie_run_anim_f2",
+     "big_zombie_run_anim_f3"
+    ]
+   },
+   "lut": "L_KNIGHT",
+   "frame_size": [
+    32,
+    36
+   ],
+   "scale": 1,
+   "weapon_overlay": {
+    "boss_knight_blade": {
+     "src": "0x72",
+     "frames": [
+      "weapon_knight_sword"
+     ]
+    }
+   },
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_22x5"
+    ]
+   },
+   "bullet": "ebullet.arcane.9",
+   "hitbox_fit": "radius 12 vs content 18x27: OK"
+  },
+  "mire_queen": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "ogre_idle_anim_f0",
+     "ogre_idle_anim_f1",
+     "ogre_idle_anim_f2",
+     "ogre_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "ogre_run_anim_f0",
+     "ogre_run_anim_f1",
+     "ogre_run_anim_f2",
+     "ogre_run_anim_f3"
+    ]
+   },
+   "lut": null,
+   "frame_size": [
+    32,
+    36
+   ],
+   "scale": 1,
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_22x5"
+    ]
+   },
+   "bullet": "ebullet.poison.9 (aimed_glob radius 6 -> ebullet.poison.13)",
+   "hazard": "hazard.acid_pool",
+   "hitbox_fit": "radius 14 vs content 20 wide: contact reads ~1 px early \u2014 note to Game Designer (radius 12 would fit); not blocking"
+  },
+  "archlich": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "necromancer_anim_f0",
+     "necromancer_anim_f1",
+     "necromancer_anim_f2",
+     "necromancer_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "necromancer_anim_f0",
+     "necromancer_anim_f1",
+     "necromancer_anim_f2",
+     "necromancer_anim_f3"
+    ]
+   },
+   "lut": "L_LICH",
+   "frame_size": [
+    16,
+    23
+   ],
+   "scale": 2,
+   "scale_note": "THE one sanctioned integer x2 exception (style-guide \u00a73.3): final boss, content 26x30 at x2; every overlay on it (staff, flash, shadow) also x2",
+   "weapon_overlay": {
+    "boss_lich_staff": {
+     "src": "0x72",
+     "frames": [
+      "weapon_green_magic_staff"
+     ],
+     "crop": "top 16 rows",
+     "lut": "L_GEM_VIOLET",
+     "scale": 2,
+     "note": "green staff source so L_GEM_VIOLET (#97da3f->#8b7cf0) hits the gem (TA objection resolved)"
+    }
+   },
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_22x5"
+    ]
+   },
+   "bullet": "ebullet.arcane.9 / ebullet.frost.9",
+   "hazard": "hazard.fire_zone"
+  }
+ },
+ "boss_telegraph": {
+  "principle": "Bosses have idle/run only. Every attack is told by FOUR stacked channels, none of them new body frames: (1) body tint ADD token telegraph-hot ramping to peak in the last 150 ms (Animator R5 priority 4); (2) a 1/8-step scale pulse (Animator R4) ; (3) a ground decal in the hostile telegraph colours showing WHERE; (4) a type glyph FX at the boss core showing WHAT.",
+  "per_attack_type": {
+   "melee_swipe": "decal: filled arc (arcDeg, range) telegraph-fill + 1px telegraph-rim; act: fx.enemy_slash scaled to range with integer steps (x1 <= 32 px range, x2 above); knight also raises boss_knight_blade overlay",
+   "ring": "decal: 1px telegraph-rim circle at 24 px pulsing; core glyph: fx.cast_glyph (hostile) ; bullets appear on the ring",
+   "shoot": "decal: 1 px telegraph-rim line per aimed bullet, 48 px long, locking 150 ms before release; core glyph: fx.cast_glyph (hostile)",
+   "spiral": "core glyph: fx.cast_glyph rotating + 1/8-step scale pulse 1.0/1.125 at 4 Hz",
+   "charge": "decal: lane rect (body width x charge length) telegraph-fill + rim, locked at windup start",
+   "slam": "decal: filled circle (radius) telegraph-fill + rim for windup+travel; landing = fx.explosion hostile variant",
+   "summon": "decal per spawn point: fx.summon_sigil (hostile protection circle) then fx.spawn_portal",
+   "hazard": "decal: circle (radius) telegraph-rim only during windup; active = hazard.<element>",
+   "blink": "fx.blink_puff at origin and destination; body alpha steps 1 -> 0.5 -> 0",
+   "sequence": "each step uses its own type",
+   "self_destruct": "(fire_imp) decal: filled circle at blast radius 36 telegraph-fill + rim from windup start; body: telegraph-hot + 1/8-step swell 1.0 -> 1.25 over the windup (Animator R4 transient) + FILL flash every 100 ms in the last 300 ms; act: fx.explosion hostile variant",
+   "phase_change": "invuln tint (R5 p5) + fx.phase_burst from core + camera flash owned by Animator/UX (reduced-motion safe)"
+  }
+ },
+ "tiles": {
+  "floor": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "floor_1",
+     "floor_2",
+     "floor_3",
+     "floor_4",
+     "floor_5",
+     "floor_6",
+     "floor_7",
+     "floor_8"
+    ]
+   },
+   "weights": {
+    "floor_1": 60,
+    "floor_2": 6,
+    "floor_3": 6,
+    "floor_4": 5,
+    "floor_5": 6,
+    "floor_6": 5,
+    "floor_7": 6,
+    "floor_8": 6
+   },
+   "rule": "seeded by fx rng per room; never two cracked (non floor_1) tiles orthogonally adjacent; floor under a wall row uses 0x72_floor idx 10-13 (top shadow fringe) at random"
+  },
+  "wall": {
+   "art": {
+    "src": "0x72_walls",
+    "cells": "cols 0-11 x rows 0-3 = the 3x3-minimal 47-tile blob template (godot-docs#3316)",
+    "draw": "each 16x32 tile anchored so its bottom 16 px cover the grid cell; the top 16 px overhang the cell above (README y-offset); depth band wall-tops 80 for the overhang half"
+   },
+   "note": "TA derives the bitmask->cell table from the template and records it in atlas-key-contract; 2D Artist signs off one rendered room per floor"
+  },
+  "wall_edge_fix": "use tile_list rects with TA fix wall_edge_top_left x=32 wherever tile_list edge pieces are used (door frames, decor)",
+  "wall_decor": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "wall_banner_red",
+     "wall_banner_blue",
+     "wall_banner_green",
+     "wall_banner_yellow",
+     "wall_hole_1",
+     "wall_hole_2",
+     "wall_goo",
+     "wall_goo_base"
+    ]
+   },
+   "per_floor": {
+    "f1": [
+     "wall_banner_red",
+     "wall_hole_1",
+     "wall_hole_2"
+    ],
+    "f2": [
+     "wall_banner_blue",
+     "wall_goo",
+     "wall_fountain_mid_blue_anim"
+    ],
+    "f3": [
+     "wall_banner_yellow",
+     "wall_banner_red",
+     "wall_hole_2"
+    ]
+   },
+   "rule": "north wall face only; <= 1 per 6 wall tiles; never above a door; >= 3 tiles apart"
+  },
+  "wall_fountain": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "wall_fountain_top_1",
+     "wall_fountain_mid_blue_anim_f0",
+     "wall_fountain_mid_blue_anim_f1",
+     "wall_fountain_mid_blue_anim_f2",
+     "wall_fountain_basin_blue_anim_f0",
+     "wall_fountain_basin_blue_anim_f1",
+     "wall_fountain_basin_blue_anim_f2"
+    ]
+   },
+   "fps": 6,
+   "note": "f2 decor; red variant is NOT used (red liquid near fire FX muddies the fire read)"
+  },
+  "torch": {
+   "art": {
+    "src": "puny",
+    "cells": [
+     [
+      16,
+      0
+     ],
+     [
+      17,
+      0
+     ],
+     [
+      18,
+      0
+     ],
+     [
+      19,
+      0
+     ],
+     [
+      20,
+      0
+     ],
+     [
+      21,
+      0
+     ],
+     [
+      22,
+      0
+     ],
+     [
+      23,
+      0
+     ]
+    ]
+   },
+   "fps": 10,
+   "light": "authored glow_32 ADD tint token torch-light #ee8e2e alpha 0.35, 1 px y flicker (Animator)",
+   "rule": "north wall face, every 6-8 tiles, mirrored pairs flanking doors"
+  },
+  "pit": {
+   "interior": {
+    "src": "authored",
+    "frames": [
+     "tile_pit_void"
+    ]
+   },
+   "lip": {
+    "src": "0x72",
+    "frames": [
+     "edge_down"
+    ]
+   },
+   "rule": "void fill #0d0a10 on every ~ cell; 0x72 edge_down drawn on a pit cell whose NORTH neighbour is floor (the only lip in 3/4 view); nothing else \u2014 value ~0 is the impassable read"
+  },
+  "pillar": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "column"
+    ]
+   },
+   "size": [
+    16,
+    48
+   ],
+   "draw": "feet on the o cell, 32 px rise above; y-sorted in the actor band so actors pass behind"
+  },
+  "crate": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "crate"
+    ]
+   },
+   "size": [
+    16,
+    24
+   ],
+   "hit": "FILL flash #ffffff on hit",
+   "break_fx": "fx.crate_break",
+   "readability": "only wood-orange object in the room \u2014 breakable = warm wood (never used for indestructible props)"
+  },
+  "pedestal": {
+   "art": {
+    "src": "puny",
+    "cells": [
+     [
+      16,
+      14
+     ]
+    ],
+    "lut": "L_PUNY_STONE"
+   },
+   "item": "item icon16 / wand staff floats 6 px above with 1 px bob (Animator) + glow_16 ADD tint by rarity"
+  },
+  "door": {
+   "frame": {
+    "src": "0x72",
+    "frames": [
+     "doors_frame_left",
+     "doors_frame_top",
+     "doors_frame_right"
+    ]
+   },
+   "states": {
+    "open": {
+     "src": "0x72",
+     "frames": [
+      "doors_leaf_open"
+     ]
+    },
+    "closed": {
+     "src": "0x72",
+     "frames": [
+      "doors_leaf_closed"
+     ]
+    },
+    "locked": {
+     "art": {
+      "src": "0x72",
+      "frames": [
+       "doors_leaf_closed"
+      ]
+     },
+     "tint": "MULTIPLY token door-locked #7a6a70",
+     "overlay": "none \u2014 the dim leaf + room-clear stinger carry it"
+    }
+   },
+   "reward_badge": "two icon16 (room kind pip + reward kind) 20 px above the door frame, each on a 18x18 dark cell with badge_20-style keyline (hud-layout \u00a76, ui-artwork.md \u00a75)",
+   "layout": "leaf 32x32 on the two d/D cells; frames overlap the neighbouring wall cells"
+  },
+  "stairs_exit": {
+   "art": {
+    "src": "puny",
+    "cells": [
+     [
+      16,
+      9
+     ],
+     [
+      17,
+      9
+     ],
+     [
+      18,
+      9
+     ],
+     [
+      19,
+      9
+     ]
+    ]
+   },
+   "fps": 10,
+   "note": "cyan portal ring f0-3 loop = floor exit after the boss; f4-9 collapse/sparkle on use"
+  },
+  "spikes": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "floor_spikes_anim_f0",
+     "floor_spikes_anim_f1",
+     "floor_spikes_anim_f2",
+     "floor_spikes_anim_f3"
+    ]
+   },
+   "note": "not in the current room legend; reserved"
+  },
+  "chest": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "chest_full_open_anim_f0",
+     "chest_full_open_anim_f1",
+     "chest_full_open_anim_f2"
+    ]
+   },
+   "fps": 10,
+   "note": "vault reward container (open once)"
+  }
+ },
+ "pickups": {
+  "coin": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "coin_anim_f0",
+     "coin_anim_f1",
+     "coin_anim_f2",
+     "coin_anim_f3"
+    ]
+   },
+   "fps": 10,
+   "size": [
+    6,
+    7
+   ],
+   "glow": "none (gold already highest-value warm pixel)"
+  },
+  "heart_drop": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "ui_heart_full"
+    ]
+   },
+   "size": [
+    13,
+    12
+   ],
+   "glow": "glow_16 ADD tint #da4e38 alpha 0.4"
+  },
+  "heal_potion_shop": {
+   "art": {
+    "src": "0x72",
+    "frames": [
+     "flask_big_red"
+    ]
+   },
+   "size": [
+    16,
+    16
+   ]
+  },
+  "card_drop": {
+   "art": "the HUD card cell: #2a2a3a 16x16 fill + icon16 + card_<type>_18 frame (spell frame tinted by element)",
+   "glow": "glow_16 ADD tint by rarity token"
+  },
+  "relic_drop": {
+   "art": "relic icon16 on pedestal",
+   "glow": "glow_16 ADD tint by rarity token"
+  },
+  "wand_drop": {
+   "art": "full-length staff (8x30, same LUT as held) rotated 45deg (wands may rotate, Animator R4) on the pedestal + glow_32 ADD tint = wand gem colour, alpha 0.5"
+  }
+ },
+ "enemy_bullets": {
+  "arcane.7": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_arcane_7_f0",
+     "ebullet_arcane_7_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 3,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "arcane.9": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_arcane_9_f0",
+     "ebullet_arcane_9_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 4,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "arcane.13": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_arcane_13_f0",
+     "ebullet_arcane_13_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 6,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "frost.7": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_frost_7_f0",
+     "ebullet_frost_7_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 3,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "frost.9": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_frost_9_f0",
+     "ebullet_frost_9_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 4,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "frost.13": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_frost_13_f0",
+     "ebullet_frost_13_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 6,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "poison.7": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_poison_7_f0",
+     "ebullet_poison_7_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 3,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "poison.9": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_poison_9_f0",
+     "ebullet_poison_9_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 4,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "poison.13": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_poison_13_f0",
+     "ebullet_poison_13_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 6,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "fire.7": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_fire_7_f0",
+     "ebullet_fire_7_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 3,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "fire.9": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_fire_9_f0",
+     "ebullet_fire_9_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 4,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "fire.13": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_fire_13_f0",
+     "ebullet_fire_13_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 6,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  }
+ },
+ "spells": {
+  "spark_bolt": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Arcane Bolt",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_ARCANE"
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #8b7cf0 a0.5",
+   "impact": "fx.hit_ring (arcane)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow08",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "magic_missile": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Magic Orb",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_ARCANE"
+   },
+   "fps": 12,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.5",
+   "impact": "fx.hit_ring (arcane)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow10",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "bouncing_burst": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     118,
+     37,
+     6,
+     6
+    ],
+    "lut": [
+     "L_SFX_ARCANE",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.5",
+   "impact": "fx.hit_ring (arcane); on wall bounce: 1-step FILL flash #fdf7ed",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "fire_bolt": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Fireball",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ]
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #ee8e2e a0.5",
+   "impact": "fx.hit_ring (fire) + 2 ember motes",
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "fireball": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Firebomb",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ]
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_32 #ee8e2e a0.45",
+   "impact": "onExpire explode r32 -> fx.explosion (fire)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "ice_shard": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     5,
+     35,
+     5,
+     9
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ],
+    "orientation": "long axis vertical in source: rotate = velocity angle + 90deg"
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #5fcde4 a0.5",
+   "impact": "fx.hit_ring (frost)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Ice03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "frost_nova": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     5,
+     35,
+     5,
+     9
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ],
+    "orientation": "as ice_shard"
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #5fcde4 a0.4",
+   "impact": "fx.hit_ring (frost); cast burst: simplefx r2 c9-c10 snow burst 2 f @ 20 fps at caster",
+   "icon": {
+    "src": "icons",
+    "file": "S_Ice02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "frost_lance": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Ice Lance",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ]
+    ]
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #5fcde4 a0.5",
+   "impact": "fx.hit_ring (frost)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Ice09",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "chain_lightning": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Light Bolt",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_LIGHT_SHOCK"
+   },
+   "fps": 20,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #facb3e a0.6",
+   "impact": "fx.hit_ring (shock); each jump = fx.chain_arc",
+   "icon": {
+    "src": "icons",
+    "file": "S_Thunder01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "thunder_orb": {
+   "projectile": {
+    "src": "simplefx",
+    "cells": [
+     [
+      14,
+      4
+     ],
+     [
+      15,
+      4
+     ]
+    ],
+    "lut": [
+     "L_SFX_SHOCK",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 12,
+   "rotate_to_velocity": false,
+   "glow": "glow_32 #facb3e a0.55",
+   "impact": "each tick zap: fx.zap_bolt on the target + fx.chain_arc from orb",
+   "icon": {
+    "src": "icons",
+    "file": "S_Thunder03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "venom_dart": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     3,
+     54,
+     10,
+     3
+    ],
+    "lut": [
+     "L_SFX_POISON_DART",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #97da3f a0.4",
+   "impact": "fx.hit_ring (poison)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Poison08",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "toxic_flask": {
+   "projectile": {
+    "src": "0x72",
+    "frames": [
+     "flask_green"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #97da3f a0.4",
+   "impact": "shatter: fx.poison_burst; zone: zone.player_poison (radius 26)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Poison05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "spin": "rotate 540 deg/s while flying (non-character sprite, allowed by R4)"
+  },
+  "boomerang_blade": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     40,
+     110,
+     22,
+     10
+    ],
+    "lut": [
+     "L_SFX_WHITE_ARCANE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.4",
+   "impact": "fx.hit_ring (arcane) per pass",
+   "icon": {
+    "src": "icons",
+    "file": "S_Physic02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "spin": "rotate 720 deg/s"
+  },
+  "arcane_orbit": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     132,
+     35,
+     10,
+     10
+    ],
+    "lut": [
+     "L_SFX_ARCANE",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.6",
+   "impact": "fx.hit_ring (arcane)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow12",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "rune_mine": {
+   "projectile": {
+    "src": "simplefx",
+    "cells": [
+     [
+      12,
+      0
+     ],
+     [
+      13,
+      0
+     ]
+    ],
+    "lut": [
+     "L_SFX_FIRE_STAR",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #ee8e2e a0.3 (settling) -> a0.7 (armed)",
+   "impact": "onExpire explode r40 -> fx.explosion (fire)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire08",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "states": "settling: frame c12 static; armed: c12/c13 alternate @ 6 fps"
+  },
+  "blink_bolt": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Pure Bolt 2",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_PURE_ARCANE"
+   },
+   "fps": 15,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #cfc0ff a0.6",
+   "impact": "onExpire teleport: fx.blink_puff at origin and destination (tint #cfc0ff)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Magic05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "comet": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     208,
+     34,
+     16,
+     11
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ],
+    "orientation": "faces +x (tail left)"
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_32 #ee8e2e a0.6",
+   "impact": "onExpire explode r48 -> fx.explosion (fire, large)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "vortex": {
+   "projectile": {
+    "src": "codemanu",
+    "file": "13_vortex",
+    "cells_index": "every 5th of 0..60 (13 f)",
+    "trim": [
+     14,
+     12,
+     77,
+     76
+    ],
+    "lut": "L_GREY_BAKE",
+    "tint": "#8b7cf0",
+    "blend": "ADD"
+   },
+   "fps": 20,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #cfc0ff a0.8 at centre (the bright core)",
+   "impact": "onExpire explode r36 -> fx.explosion (arcane)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  }
+ },
+ "modifiers": {
+  "double_cast": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Wind04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_multicast_36 / card_multicast_18 (bronze)",
+   "family": "multicast",
+   "corner_badge": "numeral on chip_7x7 top-right",
+   "badge": "x2 (Kenney Mini 8 px #fdf7ed on chip_7x7, top-right)"
+  },
+  "triple_cast": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Wind04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_multicast_36 / card_multicast_18 (bronze)",
+   "family": "multicast",
+   "corner_badge": "numeral on chip_7x7 top-right",
+   "badge": "x3"
+  },
+  "quad_cast": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Wind04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_multicast_36 / card_multicast_18 (bronze)",
+   "family": "multicast",
+   "corner_badge": "numeral on chip_7x7 top-right",
+   "badge": "x4"
+  },
+  "trigger_hit": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Light01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_trigger_36 / card_trigger_18 (bronze)",
+   "family": "trigger",
+   "corner_badge": "g_trigger + event letter top-right",
+   "badge": "g_trigger + H (on impact)"
+  },
+  "trigger_expire": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Wind05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_trigger_36 / card_trigger_18 (bronze)",
+   "family": "trigger",
+   "corner_badge": "g_trigger + event letter top-right",
+   "badge": "g_trigger + E (on expire)"
+  },
+  "trigger_timer": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Magic02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_trigger_36 / card_trigger_18 (bronze)",
+   "family": "trigger",
+   "corner_badge": "g_trigger + event letter top-right",
+   "badge": "g_trigger + T (timer 0.25 s)"
+  },
+  "damage_up": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Buff14",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "speed_up": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Bow11",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "size_up": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Buff01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "accuracy": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Bow09",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "range_up": {
+   "icon": {
+    "src": "icons",
+    "file": "I_Telescope",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "heavy": {
+   "icon": {
+    "src": "icons",
+    "file": "I_IronBall",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "rapid_cast": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Wind06",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "quickening": {
+   "icon": {
+    "src": "icons",
+    "file": "Ac_Medal02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "homing": {
+   "icon": {
+    "src": "icons",
+    "file": "I_Eye",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "pierce": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Bow04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "bounce": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Bow05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "split": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Bow10",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "explosive": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire06",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "chain": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Thunder04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "crit_up": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Dagger04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "stat",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "infuse_fire": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Axe01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "infuse",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "infuse_frost": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Axe02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "infuse",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "infuse_shock": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Axe03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "infuse",
+   "corner_badge": "g_plus_5x5 top-right"
+  },
+  "infuse_poison": {
+   "icon": {
+    "src": "icons",
+    "file": "S_Axe07",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "card_frame": "ui_authored card_modifier_36 / card_modifier_18 (bronze)",
+   "family": "infuse",
+   "corner_badge": "g_plus_5x5 top-right"
+  }
+ },
+ "relics": {
+  "arcane_whetstone": {
+   "src": "icons",
+   "file": "I_SilverBar",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "winged_boots": {
+   "src": "icons",
+   "file": "A_Shoes04",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "magnet_charm": {
+   "src": "icons",
+   "file": "Ac_Necklace04",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "mana_font": {
+   "src": "icons",
+   "file": "I_Crystal01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "deep_well": {
+   "src": "icons",
+   "file": "P_Blue05",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "heart_vessel": {
+   "src": "icons",
+   "file": "P_Red07",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "greed_ring": {
+   "src": "icons",
+   "file": "Ac_Ring01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "ember_heart": {
+   "src": "icons",
+   "file": "I_Ruby",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "frost_crown": {
+   "src": "icons",
+   "file": "I_Diamond",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "storm_battery": {
+   "src": "icons",
+   "file": "I_Cannon04",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "plague_vial": {
+   "src": "icons",
+   "file": "P_Green05",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "glass_lens": {
+   "src": "icons",
+   "file": "I_Mirror",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "quickened_quill": {
+   "src": "icons",
+   "file": "I_Feather01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "sand_hourglass": {
+   "src": "icons",
+   "file": "I_Clock",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "echo_chamber": {
+   "src": "icons",
+   "file": "I_SnailShell",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "blast_boots": {
+   "src": "icons",
+   "file": "A_Shoes07",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "merchant_seal": {
+   "src": "icons",
+   "file": "Ac_Medal01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "thorn_mantle": {
+   "src": "icons",
+   "file": "A_Clothing02",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "shatter_heart": {
+   "src": "icons",
+   "file": "I_Crystal03",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "kindling": {
+   "src": "icons",
+   "file": "I_Torch02",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "shadow_cloak": {
+   "src": "icons",
+   "file": "A_Clothing01",
+   "lut": [
+    "L_OUTLINE",
+    "L_ICON_SHADOW"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "vampiric_fang": {
+   "src": "icons",
+   "file": "I_Fang",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "alchemist_stone": {
+   "src": "icons",
+   "file": "I_Agate",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "prism_shard": {
+   "src": "icons",
+   "file": "I_Opal",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "warding_sigil": {
+   "src": "icons",
+   "file": "Ac_Medal04",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "phoenix_feather": {
+   "src": "icons",
+   "file": "I_Feather02",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  }
+ },
+ "status": {
+  "burn": {
+   "overlay": {
+    "src": "simplefx",
+    "cells": [
+     [
+      7,
+      1
+     ],
+     [
+      8,
+      1
+     ]
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 10,
+   "anchor": "head",
+   "tint": "none (R5: overlays, not tint)"
+  },
+  "chill": {
+   "tint": "MULTIPLY chill-tint-1 #cae6f5 (1 stack) / chill-tint-2 #9fd0e8 (2 stacks) \u2014 supporting cue only",
+   "overlay": {
+    "src": "ui_authored",
+    "frames": [
+     "pip_chill_5"
+    ],
+    "rule": "1 or 2 pips (= stacks) at head anchor, 1 px apart, same spot as the poison stack number (poison number shifts right when both apply); 3rd stack = frozen shell instead"
+   },
+   "resolves": "UX objection (style-guide \u00a74.4 chill)"
+  },
+  "frozen": {
+   "tint": "MULTIPLY frost-tint #8fd8ff",
+   "overlay": {
+    "src": "simplefx",
+    "rect": [
+     16,
+     80,
+     16,
+     16
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_OUTLINE"
+    ],
+    "alpha": 0.7,
+    "name": "ice_shell_16"
+   },
+   "anchor": "feet, covers lower 16 px",
+   "thaw_fx": "fx.freeze_shatter"
+  },
+  "shocked": {
+   "overlay": {
+    "src": "devwizard",
+    "file": "Magic Sparks",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_SPARKS_SHOCK"
+   },
+   "fps": 15,
+   "anchor": "core"
+  },
+  "vulnerable": {
+   "overlay": "Kenney Mini \"!\" #facb3e above head, 1 px #222222 outline (no sprite needed)"
+  },
+  "poison": {
+   "overlay": {
+    "src": "simplefx",
+    "cells": [
+     [
+      6,
+      0
+     ],
+     [
+      7,
+      0
+     ]
+    ],
+    "lut": [
+     "L_SFX_BASE"
+    ]
+   },
+   "fps": 4,
+   "anchor": "head",
+   "stacks": "Kenney Mini 8 px numeral #97da3f with 1 px #222222 outline right of the drip when stacks >= 2"
+  },
+  "player_slow": {
+   "overlay": "Animator motes (#cae6f5 2x2), no tint"
+  }
+ },
+ "reactions": {
+  "melt": {
+   "fx": "fx.freeze_shatter tinted steam #fdf7ed + fx.hit_ring (fire) x1 scale",
+   "label": "MELT"
+  },
+  "overload": {
+   "fx": "fx.explosion (radius 32, fire) + fx.chain_arc x3 random short arcs",
+   "label": "OVERLOAD"
+  },
+  "blight": {
+   "fx": "fx.poison_burst + burn overlay flash",
+   "label": "BLIGHT"
+  },
+  "superconduct": {
+   "fx": "fx.freeze_shatter + 1 px ring #cae6f5 at chillRadius 40",
+   "label": "SUPERCONDUCT"
+  },
+  "quench": {
+   "fx": "fx.sputter_puff tinted #cae6f5",
+   "label": "QUENCH"
+  },
+  "label_style": "Kenney Mini 8 px, reaction colour = mixed-element token (melt #ee8e2e, overload #facb3e, blight #97da3f, superconduct #cae6f5, quench #b6cbcf), 1 px #222222 outline; UX owns placement/timing"
+ },
+ "fx": {
+  "hit_ring": {
+   "src": "codemanu",
+   "file": "10_weaponhit",
+   "cells_index": [
+    1,
+    4,
+    7,
+    10,
+    13,
+    16
+   ],
+   "trim": [
+    32,
+    34,
+    37,
+    37
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "element.light",
+   "blend": "ADD",
+   "fps": 30
+  },
+  "hit_ring_large": {
+   "src": "codemanu",
+   "file": "10_weaponhit",
+   "cells_index": [
+    1,
+    5,
+    9,
+    13,
+    17,
+    21,
+    25,
+    29
+   ],
+   "trim": [
+    32,
+    34,
+    37,
+    37
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "element.light",
+   "blend": "ADD",
+   "fps": 30
+  },
+  "muzzle": {
+   "art": "authored glow_16 ADD tint element.light 3 steps (muzzleFlashMs 50) + devwizard Pure Bolt 2 frame 0 (L_DW_PURE_ARCANE) tinted MULTIPLY element.light at the wand tip"
+  },
+  "sputter_puff": {
+   "src": "expl16",
+   "cells": [
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "lut": "L_EXPL16",
+   "fps": 12,
+   "note": "grey debris frames = \"no mana\" puff (feel-spec sputterFlashMs 90)"
+  },
+  "explosion": {
+   "layers": [
+    "authored glow_64 ADD tint element.light alpha 0.8 -> 0 (flash, 2 steps)",
+    "expl16 f0-4 (L_EXPL16) @ 20 fps at integer scale k = 2 if radius <= 32 else 3 (FX-only integer upscale, style-guide \u00a73.3)",
+    "1 px Graphics ring at exactly `radius`, element.light (player) / telegraph-rim (enemy), 120 ms (Animator)"
+   ],
+   "element_variants": "fire: as-is; arcane: expl16 replaced by fx.hit_ring_large at x2 tinted #cfc0ff; hostile (imp/golem/slam): ring colour telegraph-rim #f78697"
+  },
+  "poison_burst": {
+   "src": "simplefx",
+   "cells": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ],
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "lut": [
+    "L_SFX_BASE"
+   ],
+   "fps": 20
+  },
+  "freeze_shatter": {
+   "art": {
+    "src": "simplefx",
+    "rect": [
+     16,
+     80,
+     32,
+     16
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_OUTLINE"
+    ],
+    "frames": "2 x 16x16 cells (c1,c2) then c3,c4 debris",
+    "fps": 20
+   }
+  },
+  "chain_arc": {
+   "art": {
+    "src": "simplefx",
+    "rect": [
+     160,
+     0,
+     32,
+     16
+    ],
+    "lut": [
+     "L_SFX_SHOCK",
+     "L_DELETE_OUTLINE"
+    ],
+    "alt_frame": [
+     128,
+     0,
+     32,
+     16
+    ]
+   },
+   "draw": "TileSprite along the segment (rotated), 2 frames alternate @ 30 fps, life 120 ms; ADD; tint by shot element for the chain modifier"
+  },
+  "zap_bolt": {
+   "src": "simplefx",
+   "rect": [
+    240,
+    32,
+    16,
+    32
+   ],
+   "lut": [
+    "L_SFX_SHOCK",
+    "L_DELETE_OUTLINE"
+   ],
+   "note": "vertical bolt striking the target, 2 steps",
+   "blend": "ADD"
+  },
+  "blink_puff": {
+   "src": "codemanu",
+   "file": "12_nebula",
+   "cells_index": "every 5th of 0..60 (13 f)",
+   "trim": [
+    15,
+    15,
+    75,
+    77
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "token by owner",
+   "blend": "ADD"
+  },
+  "phase_burst": {
+   "src": "codemanu",
+   "file": "12_nebula",
+   "cells_index": "all 61 decimated to every 3rd (21 f)",
+   "trim": [
+    15,
+    15,
+    75,
+    77
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "telegraph-rim",
+   "blend": "ADD"
+  },
+  "soul_release": {
+   "src": "codemanu",
+   "file": "18_midnight",
+   "cells_index": "every 5th of 0..60 (13 f)",
+   "trim": [
+    22,
+    25,
+    57,
+    57
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "#cfc0ff",
+   "blend": "ADD"
+  },
+  "summon_sigil": {
+   "src": "codemanu",
+   "file": "8_protectioncircle",
+   "cells_index": "every 4th (16 f)",
+   "trim": [
+    34,
+    39,
+    34,
+    34
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "telegraph-rim",
+   "blend": "ADD"
+  },
+  "spawn_portal": {
+   "src": "puny",
+   "cells": [
+    [
+     16,
+     11
+    ],
+    [
+     17,
+     11
+    ],
+    [
+     18,
+     11
+    ],
+    [
+     19,
+     11
+    ],
+    [
+     20,
+     11
+    ],
+    [
+     21,
+     11
+    ],
+    [
+     22,
+     11
+    ],
+    [
+     23,
+     11
+    ],
+    [
+     24,
+     11
+    ],
+    [
+     25,
+     11
+    ]
+   ],
+   "lut": "L_PORTAL_HOSTILE",
+   "fps": 14,
+   "note": "f0-3 loop during spawnPortalMs 700, f4-9 collapse as the enemy appears"
+  },
+  "enemy_slash": {
+   "art": {
+    "src": "simplefx",
+    "rects": [
+     [
+      8,
+      110,
+      16,
+      6
+     ],
+     [
+      40,
+      110,
+      22,
+      10
+     ],
+     [
+      72,
+      110,
+      22,
+      17
+     ],
+     [
+      104,
+      110,
+      22,
+      20
+     ],
+     [
+      136,
+      113,
+      22,
+      17
+     ],
+     [
+      168,
+      120,
+      22,
+      10
+     ],
+     [
+      200,
+      124,
+      16,
+      6
+     ]
+    ],
+    "lut": "L_SFX_HOSTILE"
+   },
+   "fps": 24,
+   "note": "7-frame crescent; rotate to swing direction (FX may rotate)"
+  },
+  "ebullet_pop": {
+   "src": "simplefx",
+   "cells": [
+    [
+     8,
+     3
+    ],
+    [
+     9,
+     3
+    ],
+    [
+     10,
+     3
+    ],
+    [
+     11,
+     3
+    ]
+   ],
+   "lut": "L_SFX_HOSTILE",
+   "fps": 24,
+   "note": "16x16 cells (c8-c9 are one 32 px component: slice as cells)"
+  },
+  "crate_break": {
+   "src": "expl16",
+   "cells": [
+    [
+     2,
+     0
+    ],
+    [
+     3,
+     0
+    ],
+    [
+     4,
+     0
+    ]
+   ],
+   "lut": "L_EXPL16",
+   "fps": 16
+  },
+  "cast_glyph": {
+   "src": "codemanu",
+   "file": "8_protectioncircle",
+   "cells_index": "every 4th (16 f)",
+   "trim": [
+    34,
+    39,
+    34,
+    34
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "telegraph-rim (enemy) \u2014 core glyph during boss windups",
+   "blend": "ADD"
+  }
+ },
+ "zones": {
+  "zone.player_poison": "Graphics disc radius r: fill #3d734f alpha 0.45, 1 px rim #97da3f; 3 poison-drip overlays (STATUS.poison art) scattered inside, re-seeded every 800 ms. No pink anywhere.",
+  "hazard.acid_pool": "Graphics disc: fill #3d734f alpha 0.5 + telegraph-rim dual keyline outside (hostile signature) + 1 px inner rim #97da3f; drips as above",
+  "hazard.fire_zone": "Graphics disc: fill #8f4029 alpha 0.5 + telegraph-rim dual keyline outside + 1 px inner rim #ee8e2e; burn overlay flames (STATUS.burn art) x3 inside"
+ },
+ "telegraph_tokens": {
+  "telegraph-fill": "#dc4a7b at alpha 0.18 -> 0.35 in the final 150 ms (aim lock)",
+  "telegraph-rim": "dual keyline: 1 px #fdd0d6 over 1 px #222222 (inner) \u2014 clears 3:1 on every floor and wall colour (min 4.40:1)",
+  "telegraph-hot": "ADD ramp #000000 -> #4a1526 -> peak #9f294e in the lock window (replaces the Animator placeholder #a8401c orange: orange is a player-fire colour)"
+ },
+ "ui": {
+  "panel_dark": {
+   "src": "ui_l",
+   "tile": 8,
+   "nine_slice": [
+    6,
+    6,
+    6,
+    6
+   ],
+   "fill_behind": "#2a2a3a",
+   "use": "panels, toasts, detail pane, tooltips (text on #2a2a3a: #fdf7ed 13.2:1, #b6cbcf 8.3:1)"
+  },
+  "panel_ornate": {
+   "src": "ui_l",
+   "tile": 9,
+   "nine_slice": [
+    10,
+    10,
+    10,
+    10
+   ],
+   "fill_behind": "#2a2a3a",
+   "use": "modal frames (Pause, Reward, Shop, Run End)"
+  },
+  "card_cells": {
+   "src": "ui_authored",
+   "editor_36": [
+    "card_spell_36",
+    "card_modifier_36",
+    "card_multicast_36",
+    "card_trigger_36",
+    "card_always_36"
+   ],
+   "hud_18": [
+    "card_spell_18",
+    "card_modifier_18",
+    "card_multicast_18",
+    "card_trigger_18"
+   ],
+   "layers": "cell fill #2a2a3a (32x32 / 16x16) -> icon32 at +1,+1 / icon16 at +1,+1 -> frame overlay -> badges (spell 36: elem_<element> 7x7 bottom-right; spell 18: pip3_<element> 3x3 at +14,+14)",
+   "spell_tint": "MULTIPLY element light: arcane #cfc0ff, fire #ee8e2e, frost #cae6f5, shock #facb3e, poison #97da3f"
+  },
+  "cell_states": {
+   "src": "ui_authored",
+   "empty": "cell_empty_36 / cell_empty_18 (dashed)",
+   "drag_valid": "cell_valid_36",
+   "drag_invalid": "g_stop badge top-right + slash_36 overlay",
+   "next_to_cast": "cell_next_36 / cell_next_18 + g_chevron_5x3 below",
+   "drawn_this_cycle": "whole cell alpha 0.4",
+   "skipped_mana": "slash_18 for 250 ms",
+   "focus": "focus_40 / focus_22",
+   "held_ghost": "cell_empty_36 at origin; held icon 90 % alpha +4,+4 with 1 px #222222 drop shadow",
+   "locked_always_cast": "card_always_36 + g_lock_7x7"
+  },
+  "element_glyphs": {
+   "src": "ui_authored",
+   "frames": [
+    "elem_arcane",
+    "elem_fire",
+    "elem_frost",
+    "elem_shock",
+    "elem_poison",
+    "pip3_arcane",
+    "pip3_fire",
+    "pip3_frost",
+    "pip3_shock",
+    "pip3_poison"
+   ]
+  },
+  "glyphs": {
+   "src": "ui_authored",
+   "frames": [
+    "g_warn",
+    "g_stop",
+    "g_ok",
+    "g_no",
+    "g_recharge",
+    "g_wrap",
+    "g_arrow",
+    "g_up",
+    "g_down",
+    "g_hand",
+    "g_trigger",
+    "g_chevron_5x3",
+    "g_vuln_5x3",
+    "g_new_5x5",
+    "g_plus_5x5",
+    "g_lock_7x7",
+    "chip_7x7"
+   ]
+  },
+  "floor_pips": {
+   "src": "ui_authored",
+   "frames": [
+    "pip_start",
+    "pip_combat",
+    "pip_elite",
+    "pip_treasure",
+    "pip_shop",
+    "pip_future",
+    "pip_boss_9",
+    "pip_current_9"
+   ]
+  },
+  "wand_badge": {
+   "src": "ui_authored",
+   "normal": "badge_20",
+   "equipped": "badge_20_equipped (+ raised 4 px, UX)",
+   "icon": "icon16 of the wand"
+  },
+  "bars": {
+   "src": "ui_authored",
+   "frame": "bar_frame_6 nine-slice [2,2,2,2]",
+   "hatch": "hatch_4 TileSprite (low mana / boss invulnerable)",
+   "fills": "mana #5698cc (+1 px #72d6ce top line) \u00b7 boss fill #da4e38, damage chip #facb3e, phase ticks #fdf7ed with #222222 keyline \u00b7 wand recharge line #b6cbcf"
+  },
+  "reticle": {
+   "src": "ui_authored",
+   "frames": [
+    "reticle_9x9",
+    "aim_pip_5x5"
+   ],
+   "recharge_ring": "Graphics 1 px #fdf7ed arc over 1 px #222222 ring, 13x13"
+  },
+  "shield_pip": {
+   "src": "ui_authored",
+   "frames": [
+    "shield_hex_13x12"
+   ],
+   "break_fx": "fx.freeze_shatter at pip (UI scene)"
+  },
+  "bag_icon": {
+   "src": "ui_authored",
+   "frames": [
+    "bag_8"
+   ]
+  },
+  "keycap": {
+   "src": "ui_authored",
+   "frames": [
+    "keycap_12"
+   ],
+   "label": "Kenney Mini 8 px #fdf7ed centred"
+  },
+  "button": {
+   "src": "ui_l",
+   "tile": 16,
+   "nine_slice": [
+    5,
+    5,
+    5,
+    5
+   ],
+   "hover": 15,
+   "pressed": "16 + content +1 px y + MULTIPLY #b0b0b0",
+   "disabled": "16 + MULTIPLY #6a6a6a, label #775c55",
+   "focus": "hover + 1 px #facb3e ring outside"
+  },
+  "button_primary": {
+   "src": "ui_l",
+   "tile": 1,
+   "nine_slice": [
+    5,
+    5,
+    5,
+    5
+   ],
+   "hover": 0
+  },
+  "tab": {
+   "src": "ui_l",
+   "tile": 16,
+   "selected": 2
+  },
+  "banner": {
+   "src": "ui_l",
+   "tiles": [
+    43,
+    44,
+    45
+   ],
+   "three_slice": true,
+   "use": "Run End / boss name ribbon"
+  },
+  "hearts": {
+   "src": "0x72",
+   "frames": [
+    "ui_heart_full",
+    "ui_heart_half",
+    "ui_heart_empty"
+   ]
+  },
+  "coin_icon": {
+   "src": "0x72",
+   "frames": [
+    "coin_anim_f0"
+   ],
+   "box": "8x8, sprite 6x7 centred at +1,+0"
+  },
+  "reward_kind_icons_note": "door badges use the icon16 versions (icons16.json by_id reward_kind.*)",
+  "reward_kind_icons": {
+   "spell": {
+    "src": "icons",
+    "file": "W_Book06",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "modifier": {
+    "src": "icons",
+    "file": "W_Book04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "relic": {
+    "src": "icons",
+    "file": "I_Chest01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "wand": {
+    "src": "icons",
+    "file": "W_Staff01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "heal": {
+    "src": "0x72",
+    "frames": [
+     "ui_heart_full"
+    ]
+   },
+   "coins": {
+    "src": "0x72",
+    "frames": [
+     "coin_anim_f0"
+    ]
+   },
+   "shop": {
+    "src": "icons",
+    "file": "I_GoldCoin",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "treasure": {
+    "src": "icons",
+    "file": "I_Chest02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "boss": {
+    "src": "0x72",
+    "frames": [
+     "skull"
+    ]
+   }
+  }
+ },
+ "fonts": {
+  "body": {
+   "font": "Kenney Pixel",
+   "size_px": 16,
+   "use": "card names, descriptions, buttons, menus",
+   "case": "mixed"
+  },
+  "heading": {
+   "font": "Kenney High",
+   "size_px": 16,
+   "use": "screen titles, section heads; x2 for Run End titles",
+   "case": "UPPER"
+  },
+  "small": {
+   "font": "Kenney Mini",
+   "size_px": 8,
+   "use": "badges (x2, T, 0.25), status stacks, damage numbers, HUD counters, reaction labels",
+   "case": "mixed"
+  },
+  "wordmark": {
+   "font": "Kenney High",
+   "size_px": 16,
+   "scale": 3,
+   "use": "title wordmark SPELLWRIGHT only"
+  },
+  "rejected": [
+   "Kenney Future*",
+   "Kenney Rocket*",
+   "Kenney Blocks",
+   "Kenney Mini Square Mono",
+   "*Square variants (sci-fi register)"
+  ],
+  "bake": "every size baked as BitmapFont at 1x with a second \"outlined\" variant (1 px #222222 8-neighbour stroke) \u2014 the default for all in-world and HUD text"
+ },
+ "key_art": {
+  "title_screen_640x360": [
+   "background: the sanctum room (f1 tiles, north wall + 2 torches + wall_banner_red pair) framed so the north door sits at x=320",
+   "hero: player wizzard_m idle at (320, 250) feet, wand raised (held apprentice wand), glow_64 ADD #8b7cf0 a0.6 at the wand tip",
+   "threat ring (reads \"roguelite horde\"): skeleton (-120,+10), cultist (+130,-10), necromancer (+170,-40), 3 bats upper left, brute silhouette right \u2014 all in f1 palette, each 8-16 px into darkness: 50 % MULTIPLY #483b3a so the hero is the only full-value figure",
+   "magic: 4 spark_bolt bodies + 1 fireball in flight toward the enemies (ADD glows) \u2014 the verb in one frame",
+   "wordmark: SPELLWRIGHT, Kenney High 16 px at x3 (48 px cap ~27 px), fill #cfc0ff, 1 px (x3) #222222 outline, #5956bd drop row; centred at y=70; tagline Kenney Pixel 16 #d3bfa9 \"Build the spell. Break the crypt.\" y=112"
+  ],
+  "formats": {
+   "wide_16x9": "the composition above (640x360, export x3 = 1920x1080)",
+   "square_1x1": "360x360 crop centred on x=320, wordmark re-set to 2 lines? NO \u2014 keep one line at x2 (Kenney High x2), hero + 3 enemies",
+   "vertical_9x16": "360x640 re-compose (not crop): wordmark top third, hero centre, enemies stacked below the door; x3 export 1080x1920"
+  }
+ },
+ "coverage": {
+  "enemies": {
+   "data_ids": 13,
+   "mapped": 13,
+   "missing": [],
+   "stale": []
+  },
+  "bosses": {
+   "data_ids": 3,
+   "mapped": 3,
+   "missing": [],
+   "stale": []
+  },
+  "spells": {
+   "data_ids": 18,
+   "mapped": 18,
+   "missing": [],
+   "stale": []
+  },
+  "modifiers": {
+   "data_ids": 25,
+   "mapped": 25,
+   "missing": [],
+   "stale": []
+  },
+  "relics": {
+   "data_ids": 26,
+   "mapped": 26,
+   "missing": [],
+   "stale": []
+  },
+  "wands": {
+   "data_ids": 10,
+   "mapped": 10,
+   "missing": [],
+   "stale": []
+  },
+  "loadouts": {
+   "data_ids": 4,
+   "mapped": 4,
+   "missing": [],
+   "stale": []
+  },
+  "icon_duplicates": {}
+ }
+}

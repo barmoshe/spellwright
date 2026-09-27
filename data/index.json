@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "files": {
+    "spells": "data/spells.json",
+    "modifiers": "data/modifiers.json",
+    "wands": "data/wands.json",
+    "relics": "data/relics.json",
+    "enemies": "data/enemies.json",
+    "bosses": "data/bosses.json",
+    "rooms": "data/rooms.json",
+    "floors": "data/floors.json",
+    "rules": "data/rules.json",
+    "economy": "data/economy.json",
+    "unlocks": "data/unlocks.json",
+    "loadouts": "data/loadouts.json"
+  }
+}
