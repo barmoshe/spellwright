@@ -46,16 +46,18 @@ export class FocusNav {
     this._press = null;                         // { id, at } of the item the pointer went down on
 
     const input = scene.input;
-    this._onMove = (p) => {
+    this._onMove = (p0) => {
       if (!this._live()) return;
-      if (p.x === this._last.x && p.y === this._last.y) return;     // real motion only
-      this._last.x = p.x; this._last.y = p.y;
+      if (p0.x === this._last.x && p0.y === this._last.y) return;     // real motion only
+      this._last.x = p0.x; this._last.y = p0.y;
+      const p = this._design(p0);
       if (this.onPointerMove) this.onPointerMove(p);
       const it = this.hit(p.x, p.y);
       if (it && !it.noHover && !it.clickOnly && it.id !== this.current) this.focus(it.id);
     };
-    this._onDown = (p) => {
+    this._onDown = (p0) => {
       this._press = null;
+      const p = this._design(p0);
       if (!this._live() || this.guarded()) return;
       if (this.onPointerDown && this.onPointerDown(p) === true) return;
       const it = this.hit(p.x, p.y);
@@ -68,8 +70,9 @@ export class FocusNav {
       if (it.pressOnDown) { this._activate(it, p); return; }     // drag sources etc. opt out of release-over-same
       this._press = { id: it.id, at: now() };
     };
-    this._onUp = (p) => {
+    this._onUp = (p0) => {
       const pr = this._press; this._press = null;
+      const p = this._design(p0);
       if (!this._live()) return;
       if (this.onPointerUp) this.onPointerUp(p);
       if (!pr || pr.at < this.openAt || p.button === 2) return;
@@ -77,7 +80,7 @@ export class FocusNav {
       if (!it || it.id !== pr.id) return;                        // slid off: cancelled
       this._activate(it, p);
     };
-    this._onWheel = (p, over, dx, dy) => { if (this._live() && this.onWheel) this.onWheel(p, dy); };
+    this._onWheel = (p, over, dx, dy) => { if (this._live() && this.onWheel) this.onWheel(this._design(p), dy); };
     input.on('pointermove', this._onMove);
     input.on('pointerdown', this._onDown);
     input.on('pointerup', this._onUp);
@@ -86,6 +89,18 @@ export class FocusNav {
   }
 
   _live() { return !this.suspended && this.isActive(); }
+  /**
+   * Screen pointer → the scene's camera space (ui/uiSpace.js: overlay cameras scroll by −UI_OX on a wide view).
+   * Returns the pointer itself when the camera is unscrolled; otherwise a prototype-linked view of it with x/y
+   * shifted, so button / wasTouch / event / rightButtonDown() still read through to the real pointer.
+   */
+  _design(p) {
+    const cam = this.scene.cameras && this.scene.cameras.main;
+    if (!cam || (!cam.scrollX && !cam.scrollY)) return p;
+    const q = Object.create(p);
+    q.x = p.x + cam.scrollX; q.y = p.y + cam.scrollY;
+    return q;
+  }
   /** True inside the open-guard window (mobile-touch-spec §6 rule 2). */
   guarded() { return now() - this.openAt < T('uiOpenGuardMs', 180); }
   /** Re-arm the open-guard (a modal revealed again, e.g. the welcome-back pause, §7.3). */

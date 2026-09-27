@@ -5,7 +5,7 @@
 // Data: { openSetup?, openCodex?, openGoals? } (Run End "New Run" routes here when Mode Select is eligible).
 
 import Phaser from '../../lib/phaser.esm.min.js';
-import { VIEW_W, VIEW_H } from '../config.js';
+import { UI_W, UI_H } from '../ui/uiSpace.js';   // 640×360 overlay design space
 import { services } from './overlay.js';
 import { FocusNav } from '../ui/nav.js';
 import { RunSetup, setupEligible } from '../ui/RunSetup.js';
@@ -52,7 +52,7 @@ export class TitleScene extends Phaser.Scene {
   buildMain() {
     const r = this.root;
     this.mainC = this.add.container(0, 0); r.add(this.mainC);
-    const c = this.mainC, cx = VIEW_W / 2;
+    const c = this.mainC, cx = UI_W / 2;
     c.add(txt(this, cx, 70, t('title.name'), 'display', { origin: [0.5, 0.5] }));
     c.add(txt(this, cx, 96, t('title.tagline'), 'T1', { origin: [0.5, 0.5], color: C.dim }));
     const cc = codexCounts();
@@ -90,7 +90,7 @@ export class TitleScene extends Phaser.Scene {
   buildHint() {
     if (this.hint) this.hint.destroy();
     const fam = this._fam = this.router.promptFamily;
-    this.hint = hintLine(this, VIEW_W / 2, VIEW_H - 20, t(fam === 'kbm' ? 'title.hintKb' : 'title.hintPad'), this.router, { align: 'center' });
+    this.hint = hintLine(this, UI_W / 2, UI_H - 20, t(fam === 'kbm' ? 'title.hintKb' : 'title.hintPad'), this.router, { align: 'center' });
     this.mainC.add(this.hint);
   }
 

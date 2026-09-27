@@ -19,7 +19,9 @@ export class SceneFlow {
     this.stack = [];
     this.queue = [];
     this.runHolds = new Set();
+    this.onModal = null;                          // (open: bool) → display.setModal (phone view size, aspect-ratio-spec)
   }
+  _modalHook(on) { if (this.onModal) this.onModal(on); }
 
   get scenes() { return this.game.scene; }
   top() { return this.stack.length ? this.stack[this.stack.length - 1] : null; }
@@ -52,9 +54,10 @@ export class SceneFlow {
     const sm = this.scenes;
     this.holdRun('overlay');
     if (top) sm.pause(top);                       // settings over pause: pause the pause menu
+    this.stack.push(key);                         // pushed first: listeners of the size flip below see the modal
+    if (!top) this._modalHook(true);              // BEFORE the scene starts: it is built at the menu size
     sm.run(key, data);
     sm.bringToTop(key);
-    this.stack.push(key);
     this.router.clearHeld();
     return true;
   }
@@ -68,7 +71,7 @@ export class SceneFlow {
     const top = this.top();
     if (top) { sm.resume(top); }
     else if (this.queue.length) { const next = this.queue.shift(); this.open(next.key, next.data); return; }
-    else this.releaseRun('overlay');
+    else { this._modalHook(false); this.releaseRun('overlay'); }
     this.router.clearHeld();
   }
 
@@ -96,5 +99,6 @@ export class SceneFlow {
     for (const key of [...this.stack].reverse()) this.scenes.stop(key);
     this.stack.length = 0; this.queue.length = 0;
     this.runHolds.clear();
+    this._modalHook(false);
   }
 }

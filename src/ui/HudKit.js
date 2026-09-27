@@ -10,6 +10,7 @@ import { Art } from '../core/art.js';
 import { Save } from '../core/save.js';
 import { C, txt } from './kit.js';
 import { promptEntry, promptText, tokenKeys, touchEntry } from '../input/prompts.js';
+import { VIEW_W, VIEW_H } from '../config.js';
 
 // ---------------------------------------------------------------------------------------------
 // settings-derived helpers
@@ -393,8 +394,12 @@ export function rewardKindTex(kind) {
   return { key: `hudfb:${fb}`, frame: undefined };
 }
 
-/** Clamp a screen-space box into hud-layout §2.4 spatial box (6, 44, 628, 262). */
-export const SPATIAL = { x: 6, y: 44, w: 628, h: 262 };
+/**
+ * The world-UI clamp box in SCREEN px (hud-layout §2.4 as amended by aspect-ratio-spec §4). One shared, mutable
+ * object: HudScene sets it from hudLayout.spatialFor(layout) on every (re)layout; WorldHud / DamageNumbers read it.
+ */
+export const SPATIAL = { x: 6, y: 44, w: VIEW_W - 12, h: VIEW_H - 98 };
+export function setSpatial(r) { Object.assign(SPATIAL, r); }
 export function clampBox(sx, sy, w, h) {
   const x = Math.max(SPATIAL.x, Math.min(SPATIAL.x + SPATIAL.w - w, sx));
   const y = Math.max(SPATIAL.y, Math.min(SPATIAL.y + SPATIAL.h - h, sy));

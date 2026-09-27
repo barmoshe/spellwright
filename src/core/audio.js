@@ -22,6 +22,7 @@
 import { Save } from './save.js';
 import { EV } from './ev.js';
 import { Log } from './log.js';
+import { VIEW_W } from '../config.js';
 
 const DEFAULTS = { master: 80, music: 70, sfx: 90, ui: 80 };
 const dbToGain = (db) => Math.pow(10, db / 20);
@@ -262,7 +263,7 @@ export class AudioMixer {
     v.snd = snd;
     if (o.x != null && cue.spatial && cue.spatial.is_positional && snd.setPan && this.panRef) {
       const width = cue.spatial.width ?? 0.5;
-      snd.setPan(Math.max(-1, Math.min(1, (o.x - this.panRef()) / 320)) * width);
+      snd.setPan(Math.max(-1, Math.min(1, (o.x - this.panRef()) / (VIEW_W / 2))) * width);   // half the view = hard pan
     }
     snd.setVolume(this._gain(v));
     snd.once('complete', () => this._stop(v));

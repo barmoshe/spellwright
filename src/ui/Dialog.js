@@ -6,7 +6,7 @@
 // right-click = the safe cancel. An option with `confirmTwice` (D6 Erase) activates after a 1.0 s
 // mouse HOLD, or after being confirmed twice (keyboard / pad) — nobody is forced into a hold.
 
-import { VIEW_W, VIEW_H } from '../config.js';
+import { UI_W, UI_H, fullRect } from './uiSpace.js';   // 640×360 overlay design space
 import { C, txt, drawPanel } from './kit.js';
 import { button, reduced, richLine } from './draw.js';
 import { FocusNav } from './nav.js';
@@ -25,9 +25,9 @@ export class Dialog {
     if (this.mainNav) this.mainNav.suspended = true;
     const W = o.width || 320;
     const root = this.root = scene.add.container(0, 0).setDepth(2000);
-    const dim = scene.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x000000, 0.55).setOrigin(0);
+    const dim = fullRect(scene, 0x000000, 0.55);
     root.add(dim);
-    const panel = this.panel = scene.add.container(Math.round((VIEW_W - W) / 2), 0);
+    const panel = this.panel = scene.add.container(Math.round((UI_W - W) / 2), 0);
     root.add(panel);
     const body = txt(scene, 14, 14, o.text, 'T1', { wrap: W - 28 });
     const extra = (o.lines || []).map((s, i) => richLine(scene, 14, 0, s, { color: C.dim }));
@@ -38,7 +38,7 @@ export class Dialog {
     const g = scene.add.graphics();
     drawPanel(g, 0, 0, W, H, 'ornate');
     panel.add([g, body, ...extra]);
-    panel.y = Math.round((VIEW_H - H) / 2);
+    panel.y = Math.round((UI_H - H) / 2);
 
     this.nav = new FocusNav(scene, { layer: panel, onBack: () => this.cancel(), depth: 2001 });
     const n = o.options.length;

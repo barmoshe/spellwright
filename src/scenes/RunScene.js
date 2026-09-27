@@ -35,6 +35,9 @@ export class RunScene extends Phaser.Scene {
 
   create() {
     const reg = this.registry;
+    // phones: the play view size (smaller internal height = bigger world/HUD/text) BEFORE the camera / HUD are built
+    const disp = reg.get('display');
+    if (disp) disp.setPlay(true);
     this.bus = reg.get('bus');
     this.router = reg.get('router');
     this.flow = reg.get('flow');
@@ -170,8 +173,10 @@ export class RunScene extends Phaser.Scene {
     ctx.time.ms += DT_MS; ctx.time.step++;
     run.stats.timeFrames++;
     const p = ctx.player, cam = ctx.cam;
-    const it = this.router.sample(p.coreX - cam.view.x, p.coreY - cam.view.y);
-    it.aimWorldX = it.aimScreenX + cam.view.x; it.aimWorldY = it.aimScreenY + cam.view.y;
+    const pv = cam.toScreen(p.coreX, p.coreY);          // screen px (the view may be zoomed on phones)
+    const it = this.router.sample(pv.x, pv.y);
+    const aw = cam.toWorld(it.aimScreenX, it.aimScreenY);
+    it.aimWorldX = aw.x; it.aimWorldY = aw.y;
     ctx.intent = it;
     // touch (mobile-touch-spec §3.3): 'auto' → AutoAim picks target, aim and cast; otherwise the marker clears
     if (it.aimSource === 'auto') this.autoAim.apply(it, DT_MS);
@@ -318,9 +323,10 @@ export class RunScene extends Phaser.Scene {
       });
       near.defences = defMask;
       // HUD occlusion (hud-layout §3.2): bit set when the player, an enemy or an enemy bullet sits under a corner cluster
-      const boxes = [[1, 0, 0, 160, 44], [2, 170, 0, 300, 30], [4, 480, 0, 160, 40], [8, 0, 314, 272, 46]];
+      const cx0 = (VIEW_W - 640) / 2;   // corner clusters follow the view edges (hudLayout.js anchors)
+      const boxes = [[1, 0, 0, 160, 44], [2, cx0 + 170, 0, 300, 30], [4, VIEW_W - 160, 0, 160, 40], [8, 0, VIEW_H - 46, 272, 46]];
       let mask = 0;
-      const test = (wx, wy) => { const sx = wx - v.x, sy = wy - v.y; for (const [bit, bx, by, bw, bh] of boxes) if (sx >= bx && sx < bx + bw && sy >= by && sy < by + bh) mask |= bit; };
+      const test = (wx, wy) => { const sx = (wx - v.x) * v.z, sy = (wy - v.y) * v.z; for (const [bit, bx, by, bw, bh] of boxes) if (sx >= bx && sx < bx + bw && sy >= by && sy < by + bh) mask |= bit; };
       test(p.coreX, p.coreY);
       ctx.enemies.forEachAlive((e) => test(e.x, e.y));
       for (const sh of ctx.shots.live) if (sh.alive && sh.team === 1) test(sh.x, sh.y);
@@ -333,7 +339,7 @@ export class RunScene extends Phaser.Scene {
         dashCharges: p.dashCharges, dashMax: p.dashMax, dashRefillFrac: p.dashRefillFrac, slowed: p.slowMs > 0 },
       wand: w ? { index: run.activeWand, recharging: w.state.rechargeTimerMs > 0, rechargeFrac: w.state.rechargeTimerMs > 0 ? w.state.rechargeTimerMs / Math.max(1, this._lastRechargeTotal(w)) : 0,
         castReady: w.state.castTimerMs <= 0 && w.state.rechargeTimerMs <= 0, holdMs: this._holdMs || 0 } : null,
-      camera: { scrollX: ctx.cam.view.x, scrollY: ctx.cam.view.y },
+      camera: { scrollX: ctx.cam.view.x, scrollY: ctx.cam.view.y, zoom: ctx.cam.view.z },
       room: { kind: d.room && d.room.kind, templateId: d.room && d.room.templateId, cleared: d.cleared, twist: d.room && d.room.twist, puzzle: !!(d.room && d.room.puzzle), inCombat: d.combatActive && ctx.enemies.aliveCount() > 0,
         enemiesAlive: ctx.enemies.aliveCount(), controllable: p.alive && p.controllable && !this.transitioning && !ctx.flags.victory && !(d.boss && d.boss.introMs > 0) },
       near,
@@ -428,6 +434,8 @@ export class RunScene extends Phaser.Scene {
   }
 
   onShutdown() {
+    const disp = this.registry.get('display');
+    if (disp) disp.setPlay(false);
     const world = this.physics && this.physics.world;
     if (world) world.off('worldstep', this.simStep, this);
     const ctx = this.ctx;

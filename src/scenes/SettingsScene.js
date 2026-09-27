@@ -5,7 +5,7 @@
 // change → bus 'settings:changed' (key, value). Data: { from:'title'|'pause', group? }.
 
 import Phaser from '../../lib/phaser.esm.min.js';
-import { VIEW_W, VIEW_H } from '../config.js';
+import { UI_W, UI_H, fullRect } from '../ui/uiSpace.js';   // 640×360 overlay design space
 import { modalChrome } from './overlay.js';
 import { FocusNav } from '../ui/nav.js';
 import { Dialog } from '../ui/Dialog.js';
@@ -353,9 +353,9 @@ export class SettingsScene extends Phaser.Scene {
     if (locked) { this.mixer.fire('ui_denied'); this.say(t(action === 'pause' ? 'settings.lockedEsc' : 'settings.lockedAim')); return; }
     this.mixer.fire('ui_confirm');
     const root = this.add.container(0, 0).setDepth(3000);
-    root.add(this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x000000, 0.55).setOrigin(0));
-    const g = this.add.graphics(); drawPanel(g, VIEW_W / 2 - 150, 140, 300, 60, 'ornate'); root.add(g);
-    root.add(txt(this, VIEW_W / 2, 158, t('settings.capture', { action: t(`settings.action.${action}`) }), 'T1', { origin: [0.5, 0], wrap: 280, align: 'center' }));
+    root.add(fullRect(this, 0x000000, 0.55));
+    const g = this.add.graphics(); drawPanel(g, UI_W / 2 - 150, 140, 300, 60, 'ornate'); root.add(g);
+    root.add(txt(this, UI_W / 2, 158, t('settings.capture', { action: t(`settings.action.${action}`) }), 'T1', { origin: [0.5, 0], wrap: 280, align: 'center' }));
     const done = (code) => {
       this.input.keyboard.off('keydown', onKey);
       this.input.off('pointerdown', onPtr);

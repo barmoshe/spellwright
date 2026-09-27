@@ -10,7 +10,7 @@
 
 import { hintLine } from '../ui/HudKit.js';
 import Phaser from '../../lib/phaser.esm.min.js';
-import { VIEW_W } from '../config.js';
+import { UI_W } from '../ui/uiSpace.js';   // 640×360 overlay design space
 import { modalChrome } from './overlay.js';
 import { FocusNav } from '../ui/nav.js';
 import { Dialog } from '../ui/Dialog.js';
@@ -45,7 +45,7 @@ export class ShopScene extends Phaser.Scene {
     this.extra = new ExtraKeys(this, top, SHOP_KEYS);
     const p = this.p = this.m.panel;
     p.add(box(this, 16, 8, 608, 344, 'ornate'));
-    p.add(txt(this, VIEW_W / 2, 14, t('shop.title'), 'T2', { origin: [0.5, 0] }));
+    p.add(txt(this, UI_W / 2, 14, t('shop.title'), 'T2', { origin: [0.5, 0] }));
     this.tabC = this.add.container(0, 0); p.add(this.tabC);
     this.coinsC = this.add.container(0, 0); p.add(this.coinsC);
     this.stockC = this.add.container(0, 0); p.add(this.stockC);
@@ -54,7 +54,7 @@ export class ShopScene extends Phaser.Scene {
     this.footC = this.add.container(0, 0); p.add(this.footC);
     this.lastItem = null;
     this.forgeSel = null;
-    if (!this.run || !this.run.shop) { p.add(txt(this, VIEW_W / 2, 150, t('shop.none'), 'T1', { origin: [0.5, 0.5], color: C.dim })); this.tab = 'buy'; this.buildFooter(); this.nav.focus('f:leave', { silent: true, snap: true }); return; }
+    if (!this.run || !this.run.shop) { p.add(txt(this, UI_W / 2, 150, t('shop.none'), 'T1', { origin: [0.5, 0.5], color: C.dim })); this.tab = 'buy'; this.buildFooter(); this.nav.focus('f:leave', { silent: true, snap: true }); return; }
     // the tab is remembered per shop visit (run.shop.tab), a returnTo from the editor may name it
     this.tab = this.args.tab || this.run.shop.tab || 'buy';
     this.buildCoins();
@@ -213,12 +213,12 @@ export class ShopScene extends Phaser.Scene {
     const h = this.touch ? 30 : 20, y = 272;
     const fam = this._fam = this.router.promptFamily;   // G7 (controller-prompts §4)
     const hintY = this.tab === 'forge' ? 326 : this.touch ? 306 : 300;
-    const eb = fam === 'kbm' ? richLine(this, VIEW_W / 2, hintY, t('shop.editHint'), { align: 'center', color: C.dim })
-      : hintLine(this, VIEW_W / 2, hintY, t('shop.editHintPad'), this.router, { align: 'center' });
+    const eb = fam === 'kbm' ? richLine(this, UI_W / 2, hintY, t('shop.editHint'), { align: 'center', color: C.dim })
+      : hintLine(this, UI_W / 2, hintY, t('shop.editHintPad'), this.router, { align: 'center' });
     c.add(eb);
-    this.nav.add({ id: 'f:edit', x: VIEW_W / 2 - 110, y: hintY - 2, w: 220, h: 14, clickOnly: true, onClick: () => this.toEditor() });
+    this.nav.add({ id: 'f:edit', x: UI_W / 2 - 110, y: hintY - 2, w: 220, h: 14, clickOnly: true, onClick: () => this.toEditor() });
     const forge = this.tab === 'forge' && run && run.shop;
-    const lx = forge ? PANE.x : this.tab === 'buy' && run && run.shop ? 390 : VIEW_W / 2 - 60, lw = forge ? PANE.w : 120;
+    const lx = forge ? PANE.x : this.tab === 'buy' && run && run.shop ? 390 : UI_W / 2 - 60, lw = forge ? PANE.w : 120;
     const lb = button(this, lx, y, lw, h, t('shop.leave'));
     c.add(lb);
     const upOf = (fallback) => (this.tab === 'forge' ? (this._forgeLast || fallback) : fallback);
@@ -342,8 +342,8 @@ export class ShopScene extends Phaser.Scene {
     this.nav.clear('fg:'); this.nav.clear('pane:');
     this.forgeRows = {};
     if (!this.forgeOpen) {
-      c.add(richLine(this, VIEW_W / 2, 130, [{ g: 'lock' }, ' ', t('shop.forgeLocked')], { align: 'center', color: C.dim }));
-      c.add(txt(this, VIEW_W / 2, 146, t('shop.forgeLockedHint'), 'T1', { origin: [0.5, 0], color: C.dim, wrap: 360 }));
+      c.add(richLine(this, UI_W / 2, 130, [{ g: 'lock' }, ' ', t('shop.forgeLocked')], { align: 'center', color: C.dim }));
+      c.add(txt(this, UI_W / 2, 146, t('shop.forgeLockedHint'), 'T1', { origin: [0.5, 0], color: C.dim, wrap: 360 }));
       return;
     }
     const st = run.forgeState();

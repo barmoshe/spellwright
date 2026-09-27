@@ -13,7 +13,7 @@ import { TimeControl } from '../core/timecontrol.js';
 import { Save } from '../core/save.js';
 import { DisplayScaler } from '../platform/display.js';
 import { FocusBoundary } from '../platform/focus.js';
-import { DEBUG } from '../config.js';
+import { DEBUG, VIEW_W } from '../config.js';
 import { t } from '../core/i18n.js';
 
 export class SystemScene extends Phaser.Scene {
@@ -41,6 +41,7 @@ export class SystemScene extends Phaser.Scene {
       onPortrait: () => { router.clearHeld(); holdRun('rotate'); },
       onLandscape: () => reveal(),
     });
+    flow.onModal = (on) => display.setModal(on);   // phones: 640×360 modals get the 360-high menu view
     const timeCtl = new TimeControl(flow);
     // touch (mobile-touch-spec §3–§4): whole-viewport sticks + thumb buttons, active only in a run with no modal
     router.touch = new TouchSticks(router, display, (btn) => bus.emit(EV.TOUCH_TAP, btn));
@@ -66,7 +67,7 @@ export class SystemScene extends Phaser.Scene {
     reg.set('perf', { simMs: 0, proj: 0, enemies: 0, steps: 0 });
     this.router = router; this.flow = flow; this.display = display; this.mixer = mixer;
     mixer.bind(bus, flow);
-    mixer.panRef = () => { const r = this.game.scene.getScene('run'); return r && r.cameras && r.cameras.main ? r.cameras.main.scrollX + 320 : 320; };
+    mixer.panRef = () => { const r = this.game.scene.getScene('run'); return r && r.cameras && r.cameras.main ? r.cameras.main.scrollX + VIEW_W / 2 : VIEW_W / 2; };
 
     this.focus = new FocusBoundary({
       onLost: () => {

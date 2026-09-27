@@ -62,7 +62,7 @@ export class AutoAim {
   apply(it, dt) {
     const ctx = this.ctx, p = ctx.player, T = this.T;
     if (!p || !ctx.world) { this.target = null; it.castHeld = false; return; }
-    const v = ctx.cam.view, tipX = p.coreX, tipY = p.coreY;
+    const v = ctx.cam.gate || ctx.cam.view, tipX = p.coreX, tipY = p.coreY;   // below the touch HUD band (aspect-ratio-spec §3.1)
     const range = T('autoFireRangePx', 200);
     const onScreen = (x, y) => x >= v.x && x <= v.x + v.w && y >= v.y && y <= v.y + v.h;
     const cands = [];

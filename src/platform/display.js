@@ -10,8 +10,14 @@
 // minus the letterbox on that edge, ÷ scale, rounded up), `isPhone`, portrait detection with the DOM
 // #rotate overlay, and emits EV.DISPLAY_CHANGED({ safe, zoom, isPhone, portrait }) on any change.
 // iOS can rotate without a resize event, so the size is also polled (cheap: 4 reads every 500 ms).
+//
+// Adaptive view size (aspect-ratio-spec §1 + phone-play rule, config.js viewFor): W 640..800 follows the screen shape;
+// on a phone DURING PLAY (setPlay(true), no modal: setModal) H drops to 288..360 so everything renders bigger, and it
+// returns to the 360-high MENU size whenever a 640×360-designed screen shows. Applied with scale.setGameSize(W, H) and
+// announced on EV.DISPLAY_CHANGED ({ w, h }) — HudScene relayouts (deferred while hidden under a modal), overlay
+// scenes re-centre (ui/uiSpace.js), the camera re-frames (sim/Camera.js). Window changes are debounced 150 ms.
 
-import { VIEW_W, VIEW_H } from '../config.js';
+import { VIEW_W, VIEW_H, VIEW_PINNED, viewFor, setViewSize } from '../config.js';
 import { EV } from '../core/ev.js';
 
 const mm = (q) => (typeof matchMedia === 'function' ? matchMedia(q).matches : false);
@@ -45,6 +51,8 @@ export class DisplayScaler {
     this._w = 0; this._h = 0;
     this.probe = typeof document !== 'undefined' ? document.getElementById('safe-probe') : null;
     this.rotateEl = typeof document !== 'undefined' ? document.getElementById('rotate') : null;
+    this._wTimer = null;
+    this._play = false; this._modal = false; this._flip = false;
     this._onResize = () => this.apply();
     window.addEventListener('resize', this._onResize);
     window.addEventListener('orientationchange', this._onResize);
@@ -58,9 +66,27 @@ export class DisplayScaler {
     // Layout not ready yet (hidden pane / early boot): retry next frame instead of collapsing to 0.
     if (!w || !h) { requestAnimationFrame(() => this.apply()); return; }
     this._w = w; this._h = h;
+    // LANDSCAPE ONLY (user direction 2026-09-27): a touch device held in portrait never re-lays the game out — the
+    // DOM #rotate overlay covers it and the run is held (§7.1). Size, zoom, safe rect and scenes stay as they were;
+    // a play/modal flip requested meanwhile (the hold opens Pause) is applied on the return to landscape.
+    if (this._booted && (this.isPhone || mm('(pointer: coarse)')) && h > w) { this._orientation(w, h); return; }
+    const mode = this.getScaleMode();
+    // §1: W from the screen shape (touch devices size for landscape). First apply = immediate; later = debounced.
+    // A play/modal flip (setPlay / setModal) applies at once — the scene being opened must be built at its size;
+    // a window/toolbar/rotation change is debounced 150 ms.
+    if (!VIEW_PINNED) {
+      const want = viewFor(w, h, mode, { landscape: this.isPhone || mm('(pointer: coarse)'), phonePlay: this.isPhone && this._play && !this._modal });
+      if (want.w !== VIEW_W || want.h !== VIEW_H) {
+        if (!this._booted || this._flip) { clearTimeout(this._wTimer); this._wTimer = null; this._setSize(want.w, want.h); }
+        else {
+          clearTimeout(this._wTimer);
+          this._wTimer = setTimeout(() => { this._wTimer = null; this._setSize(want.w, want.h); this.apply(); }, 150);
+        }
+      } else if (this._wTimer) { clearTimeout(this._wTimer); this._wTimer = null; }
+    }
+    this._booted = true; this._flip = false;
     const fit = Math.min(w / VIEW_W, h / VIEW_H);
     const k = Math.floor(fit);
-    const mode = this.getScaleMode();
     const useInteger = mode === 'integer' || (mode === 'auto' && k >= 2);
     // ONE code path: Scale.NONE + setZoom. Fractional zoom = aspect-correct "fill". (Switching the
     // ScaleManager to FIT after boot does NOT update displaySize's aspect mode in 4.1.0 — it
@@ -70,12 +96,23 @@ export class DisplayScaler {
     this.game.scale.setZoom(this.zoom);
     this._computeSafe(w, h);
     this._orientation(w, h);
-    const sig = `${this.zoom.toFixed(4)}|${this.safe.l}|${this.safe.t}|${this.safe.r}|${this.safe.b}|${this.portrait}`;
+    const sig = `${VIEW_W}x${VIEW_H}|${this.zoom.toFixed(4)}|${this.safe.l}|${this.safe.t}|${this.safe.r}|${this.safe.b}|${this.portrait}`;
     if (sig !== this._sig) {
       this._sig = sig;
-      if (this.bus) this.bus.emit(EV.DISPLAY_CHANGED, { safe: { ...this.safe }, zoom: this.zoom, isPhone: this.isPhone, portrait: this.portrait });
+      if (this.bus) this.bus.emit(EV.DISPLAY_CHANGED, { safe: { ...this.safe }, zoom: this.zoom, isPhone: this.isPhone, portrait: this.portrait, w: VIEW_W, h: VIEW_H });
     }
   }
+
+  /** Apply a new internal size (config live bindings + the canvas backing store; cameras follow via Phaser). */
+  _setSize(w, h) {
+    if (!setViewSize(w, h)) return;
+    this.game.scale.setGameSize(VIEW_W, VIEW_H);
+  }
+
+  /** A run is (not) live — RunScene create / shutdown. Phones size the view for play (viewFor phonePlay). */
+  setPlay(on) { if (this._play === !!on) return; this._play = !!on; this._flip = true; this.apply(); }
+  /** A modal is (not) open — SceneFlow. Modals are 640×360 designs: phones switch back to the menu size. */
+  setModal(on) { if (this._modal === !!on) return; this._modal = !!on; this._flip = true; this.apply(); }
 
   /** §1: inset_game = ceil(max(0, env(inset) − letterbox on that edge) / scale), per edge. */
   _computeSafe(w, h) {
@@ -120,6 +157,11 @@ export class DisplayScaler {
   toggleFullscreen() {
     const scale = this.game.scale;
     if (scale.isFullscreen) { scale.stopFullscreen(); return true; }
+    // landscape only: lock the orientation once fullscreen is entered (Android Chrome; iOS Safari has no lock API —
+    // the #rotate overlay still covers portrait there). Never throws.
+    scale.once('enterfullscreen', () => {
+      try { const o = screen.orientation; if (o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) { /* unsupported */ }
+    });
     // Gamepad presses are not user activation (HTML spec), so a pad "Fullscreen" would make the browser
     // reject requestFullscreen with an uncaught promise error. Skip it cleanly instead (F11 / mouse / keys work).
     if (navigator.userActivation && !navigator.userActivation.isActive) return false;
@@ -134,5 +176,6 @@ export class DisplayScaler {
     window.removeEventListener('orientationchange', this._onResize);
     if (window.visualViewport) window.visualViewport.removeEventListener('resize', this._onResize);
     clearInterval(this._poll);
+    clearTimeout(this._wTimer);
   }
 }

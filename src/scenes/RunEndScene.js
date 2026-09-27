@@ -8,7 +8,7 @@
 // clipboard inside the confirm, D8 selectable DOM fallback) with default focus on Copy.
 
 import Phaser from '../../lib/phaser.esm.min.js';
-import { VIEW_W, VIEW_H } from '../config.js';
+import { UI_W, UI_H } from '../ui/uiSpace.js';   // 640×360 overlay design space
 import { services } from './overlay.js';
 import { FocusNav } from '../ui/nav.js';
 import { setupEligible, dailyResultText } from '../ui/RunSetup.js';
@@ -57,7 +57,7 @@ export class RunEndScene extends Phaser.Scene {
     const panels = [];
     const head = this.add.container(0, 0); r.add(head); panels.push(head);
     const outcome = ['death', 'victory', 'abandon'].includes(sm.outcome) ? sm.outcome : 'abandon';
-    head.add(txt(s, VIEW_W / 2, 22, t(`runend.${outcome}`), 'display', { origin: [0.5, 0.5], color: outcome === 'victory' ? C.gold : outcome === 'death' ? C.error : C.text }));
+    head.add(txt(s, UI_W / 2, 22, t(`runend.${outcome}`), 'display', { origin: [0.5, 0.5], color: outcome === 'victory' ? C.gold : outcome === 'death' ? C.error : C.text }));
     if (outcome === 'death' && sm.killer) {
       const k = cat().enemies[sm.killer] || cat().bosses[sm.killer];
       const name = k ? k.name : sm.killer;
@@ -65,9 +65,9 @@ export class RunEndScene extends Phaser.Scene {
       const tx = txt(s, 0, 40, t('runend.killedBy', { name }), 'T1', { color: C.dim });
       const ic = actorIcon(s, 0, 46, sm.killer, 16) || icon(s, 0, 46, 'enemies', sm.killer, 16);
       const w = tx.width + 20;
-      ic.x = VIEW_W / 2 - w / 2 + 8; tx.x = VIEW_W / 2 - w / 2 + 20;
+      ic.x = UI_W / 2 - w / 2 + 8; tx.x = UI_W / 2 - w / 2 + 20;
       line.add([ic, tx]);
-    } else if (outcome === 'victory') head.add(txt(s, VIEW_W / 2, 40, t('runend.victorySub'), 'T1', { origin: [0.5, 0], color: C.dim }));
+    } else if (outcome === 'victory') head.add(txt(s, UI_W / 2, 40, t('runend.victorySub'), 'T1', { origin: [0.5, 0], color: C.dim }));
 
     // stats
     const st = this.add.container(0, 0); r.add(st); panels.push(st);
@@ -141,7 +141,7 @@ export class RunEndScene extends Phaser.Scene {
       const q = earnedGoals(cat(), Save);
       if (q.length && y < 296) pg.add(txt(s, 24, y, t('runend.goalsQueued', { list: q.map((x) => x.name).join(', ') }), 'T1', { color: C.dim, wrap: 590 }));
     }
-    this.detail = txt(s, VIEW_W / 2, 314, '', 'T1', { origin: [0.5, 0], color: C.dim });
+    this.detail = txt(s, UI_W / 2, 314, '', 'T1', { origin: [0.5, 0], color: C.dim });
     r.add(this.detail);
 
     // buttons
@@ -150,7 +150,7 @@ export class RunEndScene extends Phaser.Scene {
     if (this.milestones.length) btns.push({ id: 'b:unlocks', label: t('runend.seeUnlocks'), kind: this.shareText ? 'button' : 'primary', act: () => this.showUnlocks() });
     btns.push({ id: 'b:new', label: t('runend.newRun'), kind: this.milestones.length ? 'button' : 'primary', act: () => this.newRun() });
     btns.push({ id: 'b:title', label: t('runend.title'), act: () => this.toTitle() });
-    const bw = 130, x0 = VIEW_W / 2 - (btns.length * (bw + 8) - 8) / 2;
+    const bw = 130, x0 = UI_W / 2 - (btns.length * (bw + 8) - 8) / 2;
     const bp = this.add.container(0, 0); r.add(bp); panels.push(bp);
     btns.forEach((b, i) => {
       const x = x0 + i * (bw + 8);
@@ -197,7 +197,7 @@ export class RunEndScene extends Phaser.Scene {
     r.removeAll(true);
     this.nav.raise();
     r.add(box(s, 16, 16, 608, 328, 'ornate'));
-    r.add(txt(s, VIEW_W / 2, 24, t('runend.unlocksTitle'), 'T2', { origin: [0.5, 0] }));
+    r.add(txt(s, UI_W / 2, 24, t('runend.unlocksTitle'), 'T2', { origin: [0.5, 0] }));
     let y = 48;
     const ids = [];
     for (const m of this.milestones) {
@@ -221,9 +221,9 @@ export class RunEndScene extends Phaser.Scene {
       }
       y += 4;
     }
-    const b = button(s, VIEW_W / 2 - 60, 316, 120, 22, t('runend.continue'), { kind: 'primary' });
+    const b = button(s, UI_W / 2 - 60, 316, 120, 22, t('runend.continue'), { kind: 'primary' });
     r.add(b);
-    this.nav.add({ id: 'u:continue', x: VIEW_W / 2 - 60, y: 316, w: 120, h: 22, onFocus: () => b.setFocused(true), onBlur: () => b.setFocused(false),
+    this.nav.add({ id: 'u:continue', x: UI_W / 2 - 60, y: 316, w: 120, h: 22, onFocus: () => b.setFocused(true), onBlur: () => b.setFocused(false),
       onConfirm: () => { b.press(); this.closeUnlocks(); } });
     this.nav.linkList([...ids, 'u:continue'], 'v', false);
     this.nav.raise();
@@ -262,7 +262,7 @@ export class RunEndScene extends Phaser.Scene {
   showChip(str) {
     if (this.chip) this.chip.destroy();
     const it = this.nav.get('b:copy');
-    const x = it ? it.x + it.w / 2 : VIEW_W / 2, y = it ? it.y - 14 : 300;
+    const x = it ? it.x + it.w / 2 : UI_W / 2, y = it ? it.y - 14 : 300;
     const c = this.add.container(0, 0);
     const tx = richLine(this, 0, 0, [{ g: 'ok' }, ' ', { t: str, color: C.ok }]);
     const w = tx.lineWidth || 60;

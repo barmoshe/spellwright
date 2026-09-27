@@ -19,7 +19,7 @@ import { Save } from '../core/save.js';
 import { EV } from '../core/ev.js';
 
 const MAX_PARTICLES = 1200;
-const LARGE_FLASH_AREA = 0.25 * VIEW_W * VIEW_H;   // 57 600 px²
+const LARGE_FLASH_AREA = () => 0.25 * VIEW_W * VIEW_H;   // 25% of the view (57 600 px² at 640×360); VIEW_W is live
 
 export class Fx {
   constructor(ctx) {
@@ -113,7 +113,7 @@ export class Fx {
     const now = this.ctx.time.ms;
     this.flashWindow = this.flashWindow.filter((t) => now - t < 1000);
     this.stepFlashArea += areaPx;
-    if (this.stepFlashArea >= LARGE_FLASH_AREA) {
+    if (this.stepFlashArea >= LARGE_FLASH_AREA()) {
       if (this.flashWindow.length >= 3) return false;
       this.flashWindow.push(now);
       this.stepFlashArea = 0;

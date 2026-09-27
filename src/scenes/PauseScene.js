@@ -7,7 +7,7 @@
 // editForcesRecharge); close = flow.close('pause') or flow.replace(returnTo.key, returnTo.data).
 
 import Phaser from '../../lib/phaser.esm.min.js';
-import { VIEW_W } from '../config.js';
+import { UI_W, onReflow, viewLeft, viewRight, screenX, screenY } from '../ui/uiSpace.js';   // 640×360 overlay design space
 import { modalChrome } from './overlay.js';
 import { FocusNav } from '../ui/nav.js';
 import { ExtraKeys } from '../ui/extraKeys.js';
@@ -24,7 +24,7 @@ import { EV, listen } from '../core/events.js';
 import { glyph as padGlyph, glyphSpecs } from '../ui/HudKit.js';
 
 const TABS = ['wands', 'relics', 'map', 'codex', 'menu'];
-const TAB_W = 76, TAB_X0 = Math.round((VIEW_W - TAB_W * TABS.length) / 2);
+const TAB_W = 76, TAB_X0 = Math.round((UI_W - TAB_W * TABS.length) / 2);
 
 export class PauseScene extends Phaser.Scene {
   constructor() { super('pause'); }
@@ -63,7 +63,10 @@ export class PauseScene extends Phaser.Scene {
     const p = this.m.panel;
     // wand-editor-ux §10.4: the tab bar is 24 px tall in the touch profile (≥ 24 px targets); 20 on desktop
     const TB = this.touchUi ? 24 : 20;
-    p.add(box(this, 0, 0, VIEW_W, TB, 'dark'));
+    // aspect-ratio-spec §4: the strip spans the whole view (0…W); the tabs stay centred in the 640 design space
+    const strip = () => { const b = box(this, viewLeft(), 0, viewRight() - viewLeft(), TB, 'dark'); p.addAt(b, 0); return b; };
+    this.tabStrip = strip();
+    onReflow(this, () => { if (this.tabStrip) this.tabStrip.destroy(); this.tabStrip = strip(); });
     this.buildTabKeys();
     this.tabTexts = TABS.map((k, i) => {
       const x = TAB_X0 + i * TAB_W;
@@ -119,7 +122,7 @@ export class PauseScene extends Phaser.Scene {
 
   // -------------------------------------------------------------------------------------- tabs
   buildWands(first) {
-    if (!this.run || !this.run.wands.length) { this.content.add(txt(this, VIEW_W / 2, 150, t('pause.noRun'), 'T1', { origin: [0.5, 0.5], color: C.dim })); return; }
+    if (!this.run || !this.run.wands.length) { this.content.add(txt(this, UI_W / 2, 150, t('pause.noRun'), 'T1', { origin: [0.5, 0.5], color: C.dim })); return; }
     this.editor = new WandEditor(this, this.content, this.nav, { snap: this.snap, heldCard: first ? this.args.heldCard : null, sel: this.lastSel });
     if (!first) { const memo = this.focusMemo.wands; if (memo && this.nav.has(memo)) this.nav.focus(memo, { silent: true, snap: true }); }
   }
@@ -218,13 +221,16 @@ export class PauseScene extends Phaser.Scene {
 
   buildMenu() {
     const c = this.content;
-    c.add(box(this, VIEW_W / 2 - 110, 70, 220, 190, 'ornate'));
-    c.add(txt(this, VIEW_W / 2, 82, t('pause.title'), 'T2', { origin: [0.5, 0] }));
+    c.add(box(this, UI_W / 2 - 110, 70, 220, 190, 'ornate'));
+    c.add(txt(this, UI_W / 2, 82, t('pause.title'), 'T2', { origin: [0.5, 0] }));
     // welcome-back header (§7.3): T2 + a T1 reorientation line, only after a hold (focus loss / rotation)
     if (this.registry.get('welcomeBack') && this.run) {
       const r = this.run;
-      c.add(txt(this, VIEW_W / 2, 30, t('welcome.title'), 'T2', { origin: [0.5, 0] }));
-      c.add(txt(this, VIEW_W / 2, 48, t('welcome.line', { floor: r.floor, room: (r.step || 0) + 1, hp: r.hp, max: r.maxHp, wand: r.activeWand + 1 }), 'T1', { origin: [0.5, 0], color: C.dim }));
+      // aspect-ratio-spec §5.1: title (W/2, sT + 30), subtitle (W/2, sT + 46) ≤ 440 wide, ≤ 2 lines, bottom ≤ 66 (the
+      // Menu box top − 4). The HUD is hidden under every modal, so nothing collides with it any more.
+      const disp = this.registry.get('display'), sT = screenY(disp ? disp.safe.t : 0);
+      c.add(txt(this, UI_W / 2, sT + 30, t('welcome.title'), 'T2', { origin: [0.5, 0] }));
+      c.add(txt(this, UI_W / 2, sT + 46, t('welcome.line', { floor: r.floor, room: (r.step || 0) + 1, hp: r.hp, max: r.maxHp, wand: r.activeWand + 1 }), 'T1', { origin: [0.5, 0], color: C.dim, wrap: 440, align: 'center' }));
     }
     const items = [
       { id: 'm:resume', label: t('pause.resume'), kind: 'primary', act: () => this.requestClose() },
@@ -234,7 +240,7 @@ export class PauseScene extends Phaser.Scene {
     ];
     // touch profile: the primary (Resume) is ≥ 37 px tall (mobile-touch-spec §5.2), rows ≥ 24
     items.forEach((it, i) => {
-      const x = VIEW_W / 2 - 80;
+      const x = UI_W / 2 - 80;
       const h = this.touchUi && i === 0 ? 37 : 24;
       const y = this.touchUi ? (i === 0 ? 102 : 148 + (i - 1) * 32) : 108 + i * 34;
       const b = button(this, x, y, 160, h, it.label, { kind: it.kind });
@@ -285,11 +291,11 @@ export class PauseScene extends Phaser.Scene {
       this.kPrev = this.add.container(0, 0); this.kNext = this.add.container(0, 0);
     } else if (fam === 'kbm') {
       this.kPrev = keycap(this, 10, 4, 'Q');
-      this.kNext = keycap(this, VIEW_W - 24, 4, 'E');
+      this.kNext = keycap(this, UI_W - 24, 4, 'E');
     } else {
       this.kPrev = padGlyph(this, 10, 4, glyphSpecs(this.router, 'tabPrev')[0]);
       this.kNext = padGlyph(this, 0, 4, glyphSpecs(this.router, 'tabNext')[0]);
-      this.kNext.x = VIEW_W - 12 - this.kNext._w;
+      this.kNext.x = UI_W - 12 - this.kNext._w;
     }
     this.m.panel.add([this.kPrev, this.kNext]);
   }

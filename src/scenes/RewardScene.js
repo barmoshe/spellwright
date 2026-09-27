@@ -12,7 +12,7 @@
 //   Tab → Pause:Wands with returnTo (same offer on return).
 
 import Phaser from '../../lib/phaser.esm.min.js';
-import { VIEW_W } from '../config.js';
+import { UI_W } from '../ui/uiSpace.js';   // 640×360 overlay design space
 import { modalChrome } from './overlay.js';
 import { FocusNav } from '../ui/nav.js';
 import { Dialog } from '../ui/Dialog.js';
@@ -56,10 +56,10 @@ export class RewardScene extends Phaser.Scene {
     const isRelic = o.kind === 'relic' || o.kind === 'bossRelic';
     const touch = !!(this.router && this.router.touchProfile);
     p.add(box(s, 16, 8, 608, 344, 'ornate'));
-    p.add(txt(s, VIEW_W / 2, 16, t(isRelic ? 'reward.titleRelic' : 'reward.title'), 'T2', { origin: [0.5, 0] }));
-    p.add(txt(s, VIEW_W / 2, 32, t(o.risk ? 'reward.sub.risk' : `reward.sub.${o.kind}`), 'T1', { origin: [0.5, 0], color: o.risk ? C.warn : C.dim }));
+    p.add(txt(s, UI_W / 2, 16, t(isRelic ? 'reward.titleRelic' : 'reward.title'), 'T2', { origin: [0.5, 0] }));
+    p.add(txt(s, UI_W / 2, 32, t(o.risk ? 'reward.sub.risk' : `reward.sub.${o.kind}`), 'T1', { origin: [0.5, 0], color: o.risk ? C.warn : C.dim }));
     const n = o.items.length, W = 176, gap = 12;
-    const x0 = Math.round((VIEW_W - (n * W + (n - 1) * gap)) / 2);
+    const x0 = Math.round((UI_W - (n * W + (n - 1) * gap)) / 2);
     this.cards = [];
     o.items.forEach((id, i) => {
       const x = x0 + i * (W + gap), y = 50;
@@ -192,7 +192,7 @@ export class RewardScene extends Phaser.Scene {
   }
 
   footer(items, y, upId) {
-    let x = VIEW_W / 2 - (items.length * 124 - 8) / 2;
+    let x = UI_W / 2 - (items.length * 124 - 8) / 2;
     const ids = [];
     for (const it of items) {
       // explicit x/w/h (v2 draft footer) or the v1 centred 116×20 row
@@ -276,7 +276,7 @@ export class RewardScene extends Phaser.Scene {
     this.newWandId = wandId;
     const d = cat().wands[wandId];
     p.add(box(s, 16, 8, 608, 344, 'ornate'));
-    p.add(txt(s, VIEW_W / 2, 16, t('reward.wandTitle'), 'T2', { origin: [0.5, 0] }));
+    p.add(txt(s, UI_W / 2, 16, t('reward.wandTitle'), 'T2', { origin: [0.5, 0] }));
     // new wand panel
     p.add(box(s, 32, 34, 576, 112, 'dark'));
     p.add(icon(s, 58, 60, 'wands', wandId, 32));
@@ -292,7 +292,7 @@ export class RewardScene extends Phaser.Scene {
     (d.presetCards || []).forEach((cid, k) => p.add(cardCell(s, 82 + k * 20, 118, cardOf(cid), 18)));
     if ((d.alwaysCast || []).length) p.add(txt(s, 400, 94, t('editor.alwaysLine', { card: d.alwaysCast.map((x) => cardOf(x).name).join(', ') }), 'T1', { color: C.dim, wrap: 200 }));
     // P11 coach line (first wand offer)
-    if (!Save.flag('wandOffer')) { p.add(txt(s, VIEW_W / 2, 150, t('reward.wandCoach'), 'T1', { origin: [0.5, 0], color: C.gold })); Save.setFlag('wandOffer'); }
+    if (!Save.flag('wandOffer')) { p.add(txt(s, UI_W / 2, 150, t('reward.wandCoach'), 'T1', { origin: [0.5, 0], color: C.gold })); Save.setFlag('wandOffer'); }
     this.bus.emit(EV.FTUE, 'wandoffer-opened');
     // carried wands (swap targets) + Take
     const free = run.wands.length < run.wandSlots;

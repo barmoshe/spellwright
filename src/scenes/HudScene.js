@@ -16,10 +16,10 @@ import { T } from '../core/tunables.js';
 import { Save } from '../core/save.js';
 import { cat } from '../data/catalog.js';
 import { C, txt, icon, cardCell } from '../ui/kit.js';
-import { ensureHudTextures, hudImage, hudTex, reducedMotion, flashScale, PIP_FOR_KIND, drawPsSymbol } from '../ui/HudKit.js';
+import { ensureHudTextures, hudImage, hudTex, reducedMotion, flashScale, PIP_FOR_KIND, drawPsSymbol, setSpatial } from '../ui/HudKit.js';
 import { promptEntry } from '../input/prompts.js';
 import { Toasts } from '../ui/Toasts.js';
-import { layoutFor } from '../ui/hudLayout.js';
+import { layoutFor, spatialFor } from '../ui/hudLayout.js';
 import { TouchHud } from '../ui/TouchHud.js';
 import { warnOnce } from '../core/log.js';
 import EN from '../i18n/en.js';
@@ -65,7 +65,9 @@ export class HudScene extends Phaser.Scene {
     const run0 = reg.get('run');
     this._layoutOpts = { profile: router0 && router0.touchProfile ? 'touch' : 'desktop', safe: disp ? { ...disp.safe } : undefined,
       stickSide: Save.settings.touchStickSide, wandCount: run0 ? run0.wands.length : 1 };
+    this._layoutOpts.w = VIEW_W; this._layoutOpts.h = VIEW_H;
     applyLayout(layoutFor(this._layoutOpts.profile, this._layoutOpts.safe, this._layoutOpts));
+    setSpatial(spatialFor(LAYOUT));            // world-UI clamp box (WorldHud / DamageNumbers read it)
     this.L = LAYOUT;
     if (router0) router0.hudLayout = LAYOUT;
     this.bus = reg.get('bus');
@@ -238,7 +240,7 @@ export class HudScene extends Phaser.Scene {
    */
   _vignette(on) {
     if (!this.vigImg) {
-      const key = 'hud:lowhp_vignette';
+      const key = `hud:lowhp_vignette:${VIEW_W}x${VIEW_H}`;   // per view size (the width is live)
       if (!this.textures.exists(key)) {
         const tex = this.textures.createCanvas(key, VIEW_W, VIEW_H);
         const ctx = tex.getContext();
@@ -328,7 +330,7 @@ export class HudScene extends Phaser.Scene {
   _buildModeBadge() {
     this.modeBadgeObjs = [];
     const mb = this.run && this.run.modeBadge, R = LAYOUT.modeBadge;
-    if (!mb || !R) return;
+    if (!mb || !R || R.hidden) return;                 // R.hidden: aspect-ratio-spec §4 collision fallback
     const y = R.y - 1, parts = [];
     if (mb.mode === 'gentle') {
       const pct = txt(this, R.x, y, t('hud.mode.gentlePct', { p: mb.absorbPct | 0 }), 'T1', { origin: [1, 0] });
@@ -993,7 +995,7 @@ export class HudScene extends Phaser.Scene {
       if (fWater) c.add(this.add.image(x, top + 32, tex, fWater).setOrigin(0, 0).setAlpha(0.9));
     }
     const prop = (id, x, y) => { const a = Art.getQuiet(id, 0); if (a) c.add(this.add.image(x, y, a.key, a.frame).setOrigin(0.5, 1)); };
-    if (wd.id === 'w2_drowned_halls') for (const x of [120, 520]) prop('worlds.w2_drowned_halls.props.drain', x, top + 32);
+    if (wd.id === 'w2_drowned_halls') for (const x of [VIEW_W / 2 - 200, VIEW_W / 2 + 200]) prop('worlds.w2_drowned_halls.props.drain', x, top + 32);
     const pairProp = wd.id === 'w1_sunken_crypt' ? 'worlds.w1_sunken_crypt.props.candles' : wd.id === 'w3_last_library' ? 'worlds.w3_last_library.props.candelabra' : null;
     // text block
     const key = wd.cardKey || `world.w${floor}.card`;
@@ -1159,15 +1161,19 @@ export class HudScene extends Phaser.Scene {
     on(EV.RUN_END, () => { this._setLowHp(false); this._endCard(); this._endWorldCard(true); });
     // hud-layout §9.1 rebuild triggers → a HUD restart (debounced to the next frame; rare: device/rotation/setting)
     const relayout = () => {
+      // hidden under a modal (aspect-ratio-spec §5.1): phones switch to the menu view size while a modal shows and
+      // back afterwards — defer, so the HUD rebuilds at most once, and only if the size it returns to differs
+      if (this._modal()) { this._relayoutPending = true; return; }
       const r = this.router, d = this.registry.get('display');
       const want = { profile: r && r.touchProfile ? 'touch' : 'desktop', safe: d ? d.safe : undefined, stickSide: Save.settings.touchStickSide };
       const o = this._layoutOpts;
-      const same = want.profile === o.profile && want.stickSide === o.stickSide && (want.profile === 'desktop' ||
+      const same = want.profile === o.profile && want.stickSide === o.stickSide && o.w === VIEW_W && o.h === VIEW_H && (want.profile === 'desktop' ||
         (want.safe && o.safe && ['l', 't', 'r', 'b'].every((k) => want.safe[k] === o.safe[k])));
       if (same || this._restarting) return;
       this._restarting = true;
       this.time.delayedCall(0, () => this.scene.restart({ sim: this.simKey }));
     };
+    this._relayout = relayout;
     on(EV.TOUCH_PROFILE, relayout);
     on(EV.DISPLAY_CHANGED, relayout);
     on(EV.SETTINGS_CHANGED, (k) => { if (k === 'touchStickSide' || k === 'touchControls') relayout(); });
@@ -1257,11 +1263,33 @@ export class HudScene extends Phaser.Scene {
     const auto = Save.settings.castMode === 'toggle' && !!(this.router && this.router.castLatch);
     if (auto !== this.autoChip.visible) this.autoChip.setVisible(auto);
 
+    this._modalHide(dt, modal);
+    if (!modal && this._relayoutPending) { this._relayoutPending = false; this._relayout(); }
     this._occlusion(dt);
     this.toasts.update(dt);
     if (this.touchHud) this.touchHud.update(dt, this._sim());
     this._updateBanners(dt);
     this._cursor(modal);
+  }
+
+  /**
+   * aspect-ratio-spec §5.1 (amends screen-graph rule 6): while ANY modal is open the whole HUD — clusters, touch
+   * sticks, DASH/SWAP/USE, PAUSE/EDIT — is hidden and inert. Out over 90 ms with the backdrop's rise; back over 120 ms
+   * once the modal has closed (a Reward ↔ Pause swap never empties the stack, so it stays hidden). Reduced motion:
+   * instant. One camera alpha = zero per-object work. Touch input is already inert (router.gameplayActive()).
+   */
+  _modalHide(dt, modal) {
+    const cam = this.cameras.main;
+    const target = modal ? 0 : 1;
+    if (this._hudA === undefined) this._hudA = target;
+    if (this._hudA !== target) {
+      const step = this.rm ? 1 : dt / (modal ? 90 : 120);
+      this._hudA = target > this._hudA ? Math.min(1, this._hudA + step) : Math.max(0, this._hudA - step);
+    }
+    if (cam.alpha !== this._hudA) cam.setAlpha(this._hudA);
+    const vis = this._hudA > 0;
+    if (cam.visible !== vis) cam.setVisible(vis);
+    if (this.input.enabled === modal) this.input.enabled = !modal;
   }
 
   /** hud-layout §3.2: player body (probe) or sim-reported hostile overlap → cluster to 30% in 100 ms; back 300 ms after clear. */
@@ -1270,8 +1298,9 @@ export class HudScene extends Phaser.Scene {
     const probe = sim && typeof sim.hudProbe === 'function' && sim.sys.isActive() ? sim.hudProbe() : null;
     let px0 = -1e9, py0 = -1e9, px1 = -1e9, py1 = -1e9;
     if (probe && probe.player && probe.camera) {
-      const sx = probe.player.x - probe.camera.scrollX, sy = probe.player.y - probe.camera.scrollY;
-      px0 = sx - 7; px1 = sx + 7; py0 = sy - 18; py1 = sy;
+      const z = probe.camera.zoom || 1;
+      const sx = (probe.player.x - probe.camera.scrollX) * z, sy = (probe.player.y - probe.camera.scrollY) * z;
+      px0 = sx - 7 * z; px1 = sx + 7 * z; py0 = sy - 18 * z; py1 = sy;
     }
     this._updateCounters(probe);
     const mask = probe && probe.hudOcclusion | 0;          // optional sim bitmask: 1 tl, 2 tc, 4 tr, 8 bl
@@ -1279,7 +1308,7 @@ export class HudScene extends Phaser.Scene {
     for (const k of ['tl', 'tc', 'tr', 'bl', 'boss']) {
       const cl = this.cl[k];
       let r = k === 'boss' ? BOSS_CLUSTER : CLUSTER[k];
-      if (k === 'bl' && this.cells.length) r = [6, 314, Math.max(264, this.slotX0 + this.capW - 6), 40];
+      if (k === 'bl' && this.cells.length) r = [CLUSTER.bl[0], CLUSTER.bl[1] + 2, Math.max(CLUSTER.bl[2], this.slotX0 + this.capW - 6), CLUSTER.bl[3] - 2];
       const hit = !!(mask & bits[k]) || (px1 >= r[0] - 4 && px0 <= r[0] + r[2] + 4 && py1 >= r[1] - 4 && py0 <= r[1] + r[3] + 4);
       if (hit) { cl.occ = true; cl.clearAt = -1; }
       else if (cl.occ) { if (cl.clearAt < 0) cl.clearAt = this.now; if (this.now - cl.clearAt >= 300) cl.occ = false; }

@@ -8,6 +8,9 @@
 // Draws: the reticle (KB+M) / aim pip (pad), the recharge ring, dash readiness, damage numbers, the
 // interact prompt, door choice icons + labels, pedestal previews + glints, and FTUE verb prompts.
 // Reads `runScene.hudProbe()` once per frame (spatial data only); everything else is bus-driven.
+// Phone room zoom (aspect-ratio-spec §3.3): labels / prompts / door icons are placed in SCREEN px through the sim
+// camera's live view (_sx/_sy/_setScreen) and counter-scaled by 1/z, so world-anchored text is always drawn at 1:1
+// (no fractional bitmap-text scaling, O-UX-3); reticle, rings, bars and chevrons are icons and zoom with the world.
 // Depth band 90–99 (above wall-tops 80). No per-frame setText: text objects are rebuilt only when
 // their content key changes; per-frame work is setPosition / Graphics redraw of a few rects.
 
@@ -18,6 +21,7 @@ import { C, txt } from './kit.js';
 import { ensureHudTextures, hudImageC, hudTex, promptRow, drawDarkPanel, reducedMotion, PIP_FOR_KIND, rewardKindTex, clampBox, SPATIAL } from './HudKit.js';
 import { DamageNumbers } from './DamageNumbers.js';
 import { Ftue } from './Ftue.js';
+import { VIEW_W, VIEW_H } from '../config.js';
 
 const D = { doors: 90, pedestal: 90, dash: 92, dmg: 95, interact: 96, door: 96, ftue: 97, reticle: 99 };
 // v2 doors (hud-layout §9.6): room-kind pip for the new kinds, reward shape for the new reward kinds, and the
@@ -83,6 +87,23 @@ export class WorldHud {
     s.events.once('shutdown', () => this.destroy());
   }
 
+  /** The sim camera's live world view {x, y, z} (sim/Camera.js), or the scene camera when there is no sim rig. */
+  _view() {
+    const c = this.scene.ctx && this.scene.ctx.cam;
+    if (c && c.view) return c.view;
+    const cam = this.scene.cameras.main;
+    return { x: cam.scrollX, y: cam.scrollY, z: 1 };
+  }
+  _sx(x) { const v = this._view(); return (x - v.x) * v.z; }
+  _sy(y) { const v = this._view(); return (y - v.y) * v.z; }
+  /** Place a world-UI object at a SCREEN position, drawn 1:1 whatever the camera zoom. */
+  _setScreen(obj, sx, sy) {
+    const v = this._view();
+    obj.setPosition(v.x + sx / v.z, v.y + sy / v.z);
+    const k = 1 / v.z;
+    if (obj.scaleX !== k) obj.setScale(k);
+  }
+
   /** Bus subscription removed on destroy() (and on RunScene shutdown). */
   on(evt, fn) { this.bus.on(evt, fn, this); this._handlers.push([evt, fn]); }
 
@@ -132,12 +153,10 @@ export class WorldHud {
 
   /** Icons sit 20 px above the door frame's top (door (x, y) = door centre, 16×32 frame → top y − 16). */
   _placeDoor(e) {
-    const cam = this.scene.cameras.main;
-    const top = e.y - 16 - 20;
     const w = e.w || 38;
-    const [sx, sy] = clampBox(e.x - Math.round(w / 2) - cam.scrollX, top - cam.scrollY, w, 18);
-    e.c.setPosition(sx + cam.scrollX, sy + cam.scrollY + Math.round(e.dy));
-    e.sx = sx + cam.scrollX; e.sy = sy + cam.scrollY;
+    const [sx, sy] = clampBox(Math.round(this._sx(e.x)) - Math.round(w / 2), Math.round(this._sy(e.y - 16)) - 20, w, 18);
+    this._setScreen(e.c, sx, sy + Math.round(e.dy));
+    e.sx = sx; e.sy = sy;                                  // SCREEN px (the door label steps around them)
     this._placed.push({ x: sx, y: sy, w, h: 18 });
   }
 
@@ -153,8 +172,7 @@ export class WorldHud {
       [x, y] = clampBox(x, ny, w, h);
     }
     this._placed.push({ x, y, w, h });
-    const cam = this.scene.cameras.main;
-    obj.setPosition(x + cam.scrollX, y + cam.scrollY);
+    this._setScreen(obj, x, y);
     return [x, y];
   }
 
@@ -297,16 +315,17 @@ export class WorldHud {
     const off = near.offscreen || [];
     this.chevG.clear();
     if (!off.length) return;
-    const cx = 320, cy = 180;                      // screen centre (640×360)
+    const cx = VIEW_W / 2, cy = VIEW_H / 2;        // screen centre
     for (const e of off) {
-      const sx = e.x - cam.scrollX, sy = e.y - cam.scrollY;
+      const sx = this._sx(e.x), sy = this._sy(e.y);
       const dx = sx - cx, dy = sy - cy;
       const m = Math.hypot(dx, dy) || 1;
       // project onto the spatial box edge, inset 6 px so the 8×8 chevron stays inside the §2.4 clamp
       const kx = dx ? ((dx > 0 ? SPATIAL.x + SPATIAL.w - 6 : SPATIAL.x + 6) - cx) / dx : Infinity;
       const ky = dy ? ((dy > 0 ? SPATIAL.y + SPATIAL.h - 6 : SPATIAL.y + 6) - cy) / dy : Infinity;
       const k = Math.min(kx, ky);
-      const px = Math.round(cx + dx * k + cam.scrollX), py = Math.round(cy + dy * k + cam.scrollY);
+      const v = this._view();                                 // screen edge point → world (the chevron is an icon: it zooms)
+      const px = Math.round(v.x + (cx + dx * k) / v.z), py = Math.round(v.y + (cy + dy * k) / v.z);
       const ux = dx / m, uy = dy / m;
       const tip = [px + ux * 5, py + uy * 5], l = [px - ux * 3 - uy * 3, py - uy * 3 + ux * 3], r = [px - ux * 3 + uy * 3, py - uy * 3 - ux * 3];   // 8 long × 6 wide arrowhead
       this.chevG.fillStyle(C.stroke, 1).fillTriangle(tip[0] + ux, tip[1] + uy, l[0] - uy, l[1] + ux, r[0] + uy, r[1] - ux);
@@ -342,8 +361,7 @@ export class WorldHud {
       }
     }
     if (this.interact && it) {
-      const cam = s.cameras.main;
-      this._place(this.interact, it.x - this.interact._w / 2 - cam.scrollX, it.y - 8 - 6 - this.interact._h - cam.scrollY, this.interact._w, this.interact._h);
+      this._place(this.interact, this._sx(it.x) - this.interact._w / 2, this._sy(it.y - 8) - 6 - this.interact._h, this.interact._w, this.interact._h);
     }
   }
 
@@ -383,12 +401,12 @@ export class WorldHud {
       }
     }
     if (this.doorLabel) {
-      const e = this.doorLabel.door, cam = this.scene.cameras.main;
+      const e = this.doorLabel.door;
       const L = this.doorLabel;
-      // above the icons; when the clamp leaves no room there (doors in the top wall), below them instead
-      let top = e.sy - 2 - L._h - cam.scrollY;
-      if (top < SPATIAL.y) top = e.sy + 18 + 2 - cam.scrollY;
-      this._place(L, e.x - L._w / 2 - cam.scrollX, top, L._w, L._h);
+      // above the icons; when the clamp leaves no room there (doors in the top wall), below them instead (screen px)
+      let top = e.sy - 2 - L._h;
+      if (top < SPATIAL.y) top = e.sy + 18 + 2;
+      this._place(L, this._sx(e.x) - L._w / 2, top, L._w, L._h);
     }
   }
 
@@ -432,8 +450,7 @@ export class WorldHud {
       }
       const lab = this.pedLabels.get(i);
       if (lab) {
-        const cam = s.cameras.main;
-        this._place(lab.c, p.x - lab.c._w / 2 - cam.scrollX, p.y - 20 - lab.c._h - cam.scrollY, lab.c._w, lab.c._h);
+        this._place(lab.c, this._sx(p.x) - lab.c._w / 2, this._sy(p.y) - 20 - lab.c._h, lab.c._w, lab.c._h);
       }
     }
     for (const [i, v] of this.pedLabels) if (i >= list.length) { v.c.destroy(); this.pedLabels.delete(i); }
@@ -466,8 +483,8 @@ export class WorldHud {
     }
     const headY = P.y - 16;
     if (this.ftuePrompt && show) {
-      const c = this.ftuePrompt, cam = s.cameras.main;
-      this._place(c, P.x - c._w / 2 - cam.scrollX, headY - 28 - c._h / 2 - cam.scrollY, c._w, c._h);
+      const c = this.ftuePrompt;
+      this._place(c, this._sx(P.x) - c._w / 2, this._sy(headY) - 28 - c._h / 2, c._w, c._h);
       // P4 windup emphasis: brighten (RM: thicker frame instead of a pulse)
       const bright = this.ftue.bright;
       if (bright !== c.bright) {
@@ -482,9 +499,9 @@ export class WorldHud {
     // ✔ completion tick (300 ms) in the prompt's place
     if (this.ftue.tick > 0) {
       if (!this.tickImg) this.tickImg = hudImageC(s, 0, 0, 'g_ok').setDepth(D.ftue + 1);
-      const cam = s.cameras.main;
-      const [sx, sy] = clampBox(P.x - 4 - cam.scrollX, headY - 28 - 4 - cam.scrollY, 9, 9);
-      this.tickImg.setPosition(sx + cam.scrollX + 4, sy + cam.scrollY + 4).setVisible(true);
+      const [sx, sy] = clampBox(this._sx(P.x) - 4, this._sy(headY) - 28 - 4, 9, 9);
+      this._setScreen(this.tickImg, sx + 4, sy + 4);
+      this.tickImg.setVisible(true);
     } else if (this.tickImg) this.tickImg.setVisible(false);
   }
 

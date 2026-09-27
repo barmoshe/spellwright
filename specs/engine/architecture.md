@@ -82,7 +82,7 @@ Wave 4 adds (content-bearing, not in the skeleton): `src/sim/EnemySystem.js`, `s
 
 ---
 
-## §3 Resolution & scaling — 640×360, integer zoom, `pixelArt: true`
+## §3 Resolution & scaling — 640×360 design, adaptive view (§3.1), integer zoom, `pixelArt: true`
 
 **Decision: 640×360 internal, integer-scaled.** Defended against 480×270:
 
@@ -108,6 +108,32 @@ Wave 4 adds (content-bearing, not in the skeleton): `src/sim/EnemySystem.js`, `s
 | 1366×~650 | ×1.81 fill |
 | 1400×820 | ×2 integer |
 | 2560×~1300 | ×3 integer |
+
+### §3.1 Adaptive view size, v2.2 (specs/ux/aspect-ratio-spec.md; supersedes "640×360 fixed")
+
+The internal size is no longer a constant. **`VIEW_W` / `VIEW_H` / `UI_OX` / `UI_OY` in `src/config.js` are live ES-module bindings**: the first value is decided at module evaluation (before `new Phaser.Game`), and `platform/display.js` changes them through `setViewSize()` + `scale.setGameSize(W, H)`, then emits `EV.DISPLAY_CHANGED { w, h, safe, zoom }`. Rule: read them at use time; no module-level constant may be derived from them (the three that were — `HudKit.SPATIAL`, `Fx` large-flash area, the vignette texture key — are now mutable/functions/keyed).
+
+| Mode | Rule (`config.viewFor`) |
+|---|---|
+| **Menu / desktop** (Title, every modal, Run-end, all non-phones) | H = 360; W = clamp(even(floor(vw / sY)), 640, 800), sY = FIT or integer k from the height |
+| **Phone play** (`display.isPhone`, RunScene live, no modal) | H = even(clamp(ceil(640 / aspect), 288, 360)); W = clamp(even(round(H × aspect)), 640, 800) |
+
+Landscape only: touch devices size for the landscape shape; a phone held in portrait never re-lays the game out (the DOM `#rotate` overlay covers it and the run is held). `display.setPlay()` (RunScene create/shutdown) and `display.setModal()` (`SceneFlow` open with an empty stack / close to empty; the modal is pushed before the flip so listeners see it) flip the size **synchronously**, before the next scene is built; window/toolbar/rotation changes are debounced 150 ms.
+
+| Device (CSS viewport) | Play | Menus / modals |
+|---|---|---|
+| iPhone 12–15 844×390 | 640×296 @ 1.32 | 778×360 @ 1.08 |
+| iPhone Pro Max 932×430 | 642×296 @ 1.45 | 780×360 @ 1.19 |
+| Android 20:9 800×360 | 640×288 @ 1.25 | 800×360 @ 1.00 |
+| Android 740×360 | 640×312 @ 1.15 | 740×360 @ 1.00 |
+| iPad 1024×768 | 640×360 @ 1.6, letterboxed top/bottom | same |
+| Desktop 1920×1080 | 640×360 ×3 (unchanged) | same |
+| Desktop 1920×~970 browser | 800×360 ×2 (was 640 with side bars) | same |
+
+**Consumers.**
+- *Overlays* (`ui/uiSpace.js`): every modal/menu scene is laid out in a fixed 640×360 **design space**; `uiCamera()` scrolls its camera by (−UI_OX, −UI_OY) so the design is centred; `fullRect()` dims span the whole view; `screenX/Y()` convert safe-rect anchors; `onReflow()` re-runs anchors after a live change. `ui/nav.js` hands handlers a design-space pointer, so nav rects, drags and sliders needed no change.
+- *HUD* (`ui/hudLayout.js`): left clusters at sL, right clusters at W − sR, top-centre at W/2, desktop bottom rows at H − 360 offsets; touch at H < 360 uses the one-row **compact centre** (spec §4.1). `spatialFor(L)` sets the world-UI clamp box. `HudScene` hides itself and goes inert under any modal (camera alpha, 90 ms out / 120 ms in) and defers relayout until the modal closes, so a Pause round trip on a phone never rebuilds the HUD.
+- *Camera* (`sim/Camera.js`): `view {x, y, w, h, z}` is the live world rect (identical to Phaser's `worldView`, verified); `gate` = view minus the touch band (the on-screen attack gate and auto-aim use it). Phones get the room-fit zoom z = clamp(floor(zFit·16)/16, 1, 2) with zFit = min(clear.w / (room.w + 8), clear.h / (room.h + 8)) against the play area (touch profile: the clear rect below the 54 px band; desktop profile: the safe-width view), locked and centred in it when the room fits, re-fitted on a TOUCH_PROFILE flip; desktop stays z = 1 (a fractional camera zoom under its integer ×2/×3 canvas would show uneven pixels); taller rooms follow vertically with the top bound raised by the band. World-anchored text (`WorldHud`, `DamageNumbers`) is placed in screen px via `view` and counter-scaled 1/z, so it always draws at 1:1.
 
 **Render config:** `pixelArt: true` (verified in build: sets `antialias=false`, `antialiasGL=false`, `roundPixels=true`), `resolution` left at 1 (the internal canvas *is* the pixel grid; DPR is absorbed by zoom).
 

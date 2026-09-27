@@ -9,7 +9,7 @@
 
 import { hintLine } from '../ui/HudKit.js';
 import Phaser from '../../lib/phaser.esm.min.js';
-import { VIEW_W, VIEW_H } from '../config.js';
+import { UI_W, UI_H } from '../ui/uiSpace.js';   // 640×360 overlay design space
 import { services } from './overlay.js';
 import { ExtraKeys } from '../ui/extraKeys.js';
 import { C, txt } from '../ui/kit.js';
@@ -43,12 +43,12 @@ export class CreditsScene extends Phaser.Scene {
     this.router.clearHeld();
     this.leaving = false;
     this.cameras.main.fadeIn(250, 0, 0, 0);
-    box(this, VIEW_W / 2 - COL_W / 2 - 12, 4, COL_W + 24, 352, 'ornate');
-    txt(this, VIEW_W / 2, 10, t('credits.title'), 'T2', { origin: [0.5, 0] });
+    box(this, UI_W / 2 - COL_W / 2 - 12, 4, COL_W + 24, 352, 'ornate');
+    txt(this, UI_W / 2, 10, t('credits.title'), 'T2', { origin: [0.5, 0] });
     this.col = this.add.container(0, 0);
     this.lines = [];
     let y = 0;
-    const add = (s, role, color) => { const o = txt(this, VIEW_W / 2, y, s, role, { origin: [0.5, 0], wrap: COL_W, align: 'center', color }); this.col.add(o); this.lines.push(o); y += Math.ceil(o.height) + (role === 'T2' ? 6 : 3); };
+    const add = (s, role, color) => { const o = txt(this, UI_W / 2, y, s, role, { origin: [0.5, 0], wrap: COL_W, align: 'center', color }); this.col.add(o); this.lines.push(o); y += Math.ceil(o.height) + (role === 'T2' ? 6 : 3); };
     add(t('credits.studio'), 'T2', C.gold); y += 6;
     const secs = creditSections(this.registry.get('credits'));
     if (!secs) { add(t('credits.pending'), 'T1', C.warn); console.warn('[credits] assets/credits.json not loaded (TA deliverable) — S8 requires it'); }
@@ -66,7 +66,7 @@ export class CreditsScene extends Phaser.Scene {
   buildHint() {
     if (this.hint) this.hint.destroy();
     const fam = this._fam = this.router.promptFamily;
-    this.hint = hintLine(this, VIEW_W / 2, 342, t(fam === 'kbm' ? 'credits.hintKb' : 'credits.hintPad'), this.router, { align: 'center' });
+    this.hint = hintLine(this, UI_W / 2, 342, t(fam === 'kbm' ? 'credits.hintKb' : 'credits.hintPad'), this.router, { align: 'center' });
   }
 
   /** Cull lines outside the visible band (no mask: masks break batching). */

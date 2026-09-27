@@ -54,7 +54,7 @@ export const EV = Object.freeze({
   INTERACT_PROMPT: 'ui:interact',         // ({text, x, y} | null)   world coordinates; null hides
   TOAST: 'ui:toast',                      // ({text, icon?, kind?:'relic'|'reaction'|'info'|'unlock'})
   INPUT_DEVICE: 'input:device',           // (device 'kbm'|'pad', promptFamily 'kbm'|'xbox'|'ps') — on prompt-family change
-  DISPLAY_CHANGED: 'display:changed',     // ({safe:{l,t,r,b}, zoom, isPhone, portrait}) — resize/rotation/safe-inset change (mobile-touch-spec §1)
+  DISPLAY_CHANGED: 'display:changed',     // ({safe:{l,t,r,b}, zoom, isPhone, portrait, w, h}) — view size / zoom / safe-inset change (aspect-ratio-spec §1)
   WELCOME_BACK: 'ui:welcome-back',        // () — the page/landscape returned while a run was held (mobile-touch-spec §7.3)
   TOUCH_PROFILE: 'input:touch-profile',   // (on:boolean) — the touch HUD profile switched (mobile-touch-spec §5.1)
   TOUCH_TAP: 'input:touch-tap',           // (button) — a thumb/HUD button press (haptic tick + touch_ui_tap)

@@ -24,7 +24,7 @@ import { t } from '../core/i18n.js';
 import { EV } from '../core/events.js';
 import { Save } from '../core/save.js';
 import { T } from '../core/tunables.js';
-import { VIEW_W, VIEW_H } from '../config.js';
+import { UI_W, UI_H, screenX, screenY } from './uiSpace.js';   // 640×360 overlay design space
 import { hintLine, ensureHudTextures, hudTex } from './HudKit.js';
 import { placementFor } from './placement.js';
 import { GhostCoach } from './Ftue.js';
@@ -139,6 +139,15 @@ export class WandEditor {
     for (const c of [this.cStatic, this.cA, this.cA2, this.cB, this.cBag, this.cSalv, this.cPrev, this.cC, this.cFoot, this.cMark]) c.y = this.dy;
     this.paneBtnTop = C_Y + C_H - 4 - (PANE_BTN.hPrimary + 2 * PANE_BTN.h + 2 * PANE_BTN.gap);
     this.cBottom = this.touch ? this.paneBtnTop - 4 : C_Y + C_H;
+    // aspect-ratio-spec v2.3 (UX Back-button fix): the touch Back button stays at (sL + 20, sT + 20) with a 40×40 hit
+    // box; when it reaches the wand list, pane A's cards move down so the first card's top clears it by 4 px (design
+    // y ≥ 44 on a notch-free top). The rows compress if the last one would pass the WAND STATS header (y 182 − 4).
+    const disp = this.scene.registry.get('display'), S = disp ? disp.safe : { l: 0, t: 0 };
+    const bRight = screenX(S.l) + 40, bBottom = screenY(S.t) + 40;
+    this.aPush = this.router && this.router.touchProfile && bRight + 4 > 8 ?   // the Back button exists iff touchProfile (overlay.js)
+      Math.max(0, bBottom + 4 - (22 + this.dy)) : 0;
+    const n = Math.max(this.run.wandSlots, this.run.wands.length), end = 22 + this.aPush + (n - 1) * 42 + 40;
+    this.aPitch = n > 1 && end > 178 ? 42 - Math.ceil((end - 178) / (n - 1)) : 42;
   }
 
   deviceChanged() {
@@ -230,7 +239,7 @@ export class WandEditor {
     const s = this.scene, c = this.cStatic;
     c.removeAll(true);
     // region grounds: text never sits on the live game (accessibility-spec §2.2: text on the #2a2a3a panel)
-    c.add(box(s, 4, 20, 128, 322, 'dark'));
+    c.add(box(s, 4, 20 + (this.aPush || 0), 128, 322 - (this.aPush || 0), 'dark'));   // pane A frame follows the Back-button push
     c.add(box(s, 132, 20, 392, 322, 'dark'));
     c.add(txt(s, 8, 182, t('editor.wandStats'), 'T1', { color: C.dim }));      // a11y §2.3 #11: promoted
     c.add(box(s, C_X, C_Y, C_W, C_H, 'dark'));
@@ -262,7 +271,7 @@ export class WandEditor {
     this.nav.clear('w:');
     const slots = Math.max(this.run.wandSlots, this.run.wands.length);
     for (let i = 0; i < slots; i++) {
-      const x = 8, y = 22 + i * 42;
+      const x = 8, y = 22 + (this.aPush || 0) + i * (this.aPitch || 42);
       const w = this.run.wands[i];
       const g = s.add.graphics();
       c.add(g);
@@ -942,7 +951,7 @@ export class WandEditor {
     // full wand cards show ⛔ while holding
     this.run.wands.forEach((w, i) => {
       if (this.run.firstEmptySlot(i) < 0 && !(this.held.origin && this.held.origin.wand === i)) {
-        const gl = glyph(s, 8 + 97, 22 + i * 42 + 2, 'stop'); gl.__stop = true; this.cA.add(gl);
+        const gl = glyph(s, 8 + 97, 22 + (this.aPush || 0) + i * (this.aPitch || 42) + 2, 'stop'); gl.__stop = true; this.cA.add(gl);
       }
     });
     if (this._noTarget) return;
@@ -1452,7 +1461,7 @@ export class WandEditor {
       const p = this._tp || this.scene.input.activePointer;
       const S = CELL * 2, off = T('touchGhostOffsetPx', 56);
       const cy = p.y < T('touchGhostFlipYPx', 72) ? p.y + off : p.y - off;
-      return { x: Math.max(0, Math.min(VIEW_W - S, Math.round(p.x - S / 2))), y: Math.max(0, Math.min(VIEW_H - S, Math.round(cy - S / 2))) };
+      return { x: Math.max(0, Math.min(UI_W - S, Math.round(p.x - S / 2))), y: Math.max(0, Math.min(UI_H - S, Math.round(cy - S / 2))) };
     }
     if (this.pointerMode) {
       const p = this.scene.input.activePointer;
@@ -1502,8 +1511,8 @@ export class WandEditor {
     if (!c || !o) return;
     const S = CELL * 2;
     let x = o.x + S + 4;
-    if (x + c.chipW > VIEW_W) x = o.x - c.chipW - 4;                 // near the right edge: to the left
-    const y = Math.max(0, Math.min(VIEW_H - c.chipH, o.y + Math.round((S - c.chipH) / 2)));
+    if (x + c.chipW > UI_W) x = o.x - c.chipW - 4;                 // near the right edge: to the left
+    const y = Math.max(0, Math.min(UI_H - c.chipH, o.y + Math.round((S - c.chipH) / 2)));
     c.setPosition(Math.max(0, x), y);
   }
   clearChip() { if (this.chipObj) { this.chipObj.destroy(); this.chipObj = null; } }

@@ -155,16 +155,22 @@ export class DamageNumbers {
     const p = Math.min(1, e.age / this.riseMs);
     let y = rm ? e.y0 : e.y0 - this.risePx * easeOutCubic(p);
     if (!rm && e.age < POP_MS) y += 2;
-    // clamp to the spatial box (hud-layout §2.4) in screen space
-    const cam = this.scene.cameras.main;
-    const sx = e.x - cam.scrollX, sy = y - cam.scrollY;
-    const hw = (e.o.width * e.o.scaleX) / 2, hh = e.o.height * e.o.scaleY;
-    const cx = Math.max(SPATIAL.x + hw, Math.min(SPATIAL.x + SPATIAL.w - hw, sx));
-    const cy = Math.max(SPATIAL.y + hh, Math.min(SPATIAL.y + SPATIAL.h, sy));
-    e.o.setPosition(Math.round(cx + cam.scrollX), Math.round(cy + cam.scrollY));
+    // clamp to the spatial box (hud-layout §2.4) in screen space. Phone room zoom (aspect-ratio-spec §3.3): the
+    // number is placed in SCREEN px through the sim camera's live view and counter-scaled by 1/z, so it is drawn
+    // at its integer scale (1 or critScale) whatever the world zoom — never a fractional text scale (O-UX-3).
+    const c = this.scene.ctx && this.scene.ctx.cam, cam = this.scene.cameras.main;
+    const v = (c && c.view) || { x: cam.scrollX, y: cam.scrollY, z: 1 }, z = v.z || 1;
+    const sx = (e.x - v.x) * z, sy = (y - v.y) * z;
+    const k = e.isWord || !e.crit ? 1 : this.critScale;          // on-screen integer scale
+    if (e.o.scaleX !== k / z) e.o.setScale(k / z);
+    if (e.icon && e.icon.scaleX !== 1 / z) e.icon.setScale(1 / z);
+    const hw = (e.o.width * k) / 2, hh = e.o.height * k;
+    const cx = Math.round(Math.max(SPATIAL.x + hw, Math.min(SPATIAL.x + SPATIAL.w - hw, sx)));
+    const cy = Math.round(Math.max(SPATIAL.y + hh, Math.min(SPATIAL.y + SPATIAL.h, sy)));
+    e.o.setPosition(v.x + cx / z, v.y + cy / z);
     const fadeAt = this.riseMs - FADE_MS;
     e.o.setAlpha(e.age <= fadeAt ? 1 : Math.max(0, 1 - (e.age - fadeAt) / FADE_MS));
-    if (e.isWord && e.icon && e.icon.visible) e.icon.setPosition(Math.round(e.o.x - hw - 1), Math.round(e.o.y - 1)).setAlpha(e.o.alpha);
+    if (e.isWord && e.icon && e.icon.visible) e.icon.setPosition(v.x + (cx - hw - 1) / z, v.y + (cy - 1) / z).setAlpha(e.o.alpha);
   }
 
   update(dt) {

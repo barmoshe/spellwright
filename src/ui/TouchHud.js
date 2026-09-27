@@ -11,7 +11,7 @@ import { validateLayout } from './hudLayout.js';
 import { EV } from '../core/events.js';
 import { T } from '../core/tunables.js';
 import { Save } from '../core/save.js';
-import { DEBUG } from '../config.js';
+import { DEBUG, VIEW_W, VIEW_H } from '../config.js';
 
 const BODY = 0x2a2a3a, KEY = 0x222222, LIGHT = 0xfdf7ed;
 
@@ -111,7 +111,7 @@ export class TouchHud {
   _stick(g, s, ring) {
     if (!s.held) return;
     const R = T('touchStickRadiusPx', 28);
-    const bx = Math.max(R + 2, Math.min(640 - R - 2, s.bx)), by = Math.max(R + 2, Math.min(360 - R - 2, s.by));
+    const bx = Math.max(R + 2, Math.min(VIEW_W - R - 2, s.bx)), by = Math.max(R + 2, Math.min(VIEW_H - R - 2, s.by));
     g.fillStyle(KEY, 0.25).fillCircle(bx, by, R);
     g.lineStyle(1, ring, 0.35).strokeCircle(bx, by, R);
     const kx = bx + s.x * R, ky = by + s.y * R;
@@ -125,9 +125,9 @@ export class TouchHud {
     const ctx = sim && sim.ctx;
     const tg = ctx && ctx.autoTarget;
     if (!tg || !ctx.intent || ctx.intent.aimSource !== 'auto' || !ctx.intent.castHeld) return;
-    const v = ctx.cam.view;
-    const x0 = Math.round(tg.x - v.x - tg.w / 2 - 2), y0 = Math.round(tg.y - v.y - (tg.kind === 'enemy' ? tg.h : tg.h / 2) - 2);
-    const x1 = x0 + tg.w + 4, y1 = y0 + (tg.kind === 'enemy' ? tg.h + 4 : tg.h + 4);
+    const v = ctx.cam.view, z = v.z || 1;         // world → screen (phone room zoom, aspect-ratio-spec §3)
+    const x0 = Math.round((tg.x - v.x - tg.w / 2) * z - 2), y0 = Math.round((tg.y - v.y - (tg.kind === 'enemy' ? tg.h : tg.h / 2)) * z - 2);
+    const x1 = x0 + Math.round(tg.w * z) + 4, y1 = y0 + Math.round(tg.h * z) + 4;
     const tick = (x, y, sx, sy) => {
       m.fillStyle(KEY, 1).fillRect(x - (sx < 0 ? 3 : 0) - 1, y - 1, 5, 3).fillRect(x - 1, y - (sy < 0 ? 3 : 0) - 1, 3, 5);
       m.fillStyle(LIGHT, 1).fillRect(x - (sx < 0 ? 2 : 0), y, 3, 1).fillRect(x, y - (sy < 0 ? 2 : 0), 1, 3);
@@ -142,7 +142,7 @@ export class TouchHud {
       if (b.kind === 'circle') d.strokeCircle(b.cx, b.cy, b.r); else d.strokeRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
     }
     for (const [k, r] of Object.entries(L.clusters)) if (r[2] > 0) { d.lineStyle(1, 0x40ff40, 1).strokeRect(r[0] + 0.5, r[1] + 0.5, r[2] - 1, r[3] - 1); void k; }
-    if (L.zones) { d.lineStyle(1, 0x4080ff, 0.6).lineBetween(320, L.zones.move.y, 320, 360).lineBetween(0, L.zones.move.y, 640, L.zones.move.y); }
+    if (L.zones) { d.lineStyle(1, 0x4080ff, 0.6).lineBetween(Math.round(VIEW_W / 2), L.zones.move.y, Math.round(VIEW_W / 2), VIEW_H).lineBetween(0, L.zones.move.y, VIEW_W, L.zones.move.y); }
     const S = L.safe; d.lineStyle(1, 0xffff00, 0.6).strokeRect(S.l + 0.5, S.t + 0.5, S.r - S.l - 1, S.b - S.t - 1);
   }
 

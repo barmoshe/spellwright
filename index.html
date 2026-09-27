@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
-  <!-- mobile-touch-spec §2: home-screen app shell (manifest + icons land with the 2D Artist's app icons) -->
+  <!-- mobile-touch-spec §2: home-screen app shell. Landscape only: the manifest locks Add-to-Home-Screen launches to
+       landscape + fullscreen (icons = assets/src/art/appicon nearest-upscaled ×3 / ×8 into icons/). -->
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon-180.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -15,6 +15,7 @@ import { cat } from '../data/catalog.js';
 import { Save } from '../core/save.js';
 import { EV } from '../core/events.js';
 import { WorldHud } from './WorldHud.js';
+import { VIEW_W, VIEW_H } from '../config.js';
 
 const WORLD = { w: 800, h: 480 };
 
@@ -99,7 +100,7 @@ class HudStub extends Phaser.Scene {
     // optional probe fields requested from the lead (elite HP, last-enemy chevrons): a damaged elite and a far enemy
     const far = { x: WORLD.w - 20, y: WORLD.h - 20 };
     const fx = far.x - cam.scrollX, fy = far.y - cam.scrollY;
-    const offscreen = fx < 0 || fy < 0 || fx > 640 || fy > 360 ? [far] : [];
+    const offscreen = fx < 0 || fy < 0 || fx > VIEW_W || fy > VIEW_H ? [far] : [];
     const e2 = this.enemies[1];
     Object.assign(o.near, { crateDist: d(this.crate), enemyDist, interact, doors: this.doors, pedestals: this.pedestals, shopDist: d(this.shop), hasDangerEnemy: false,
       elites: [{ x: e2.x, y: e2.y - 14, hpFrac: 0.6, damaged: true }], offscreen });

@@ -2,7 +2,7 @@
 //
 // DOM Pointer Events on the WHOLE viewport (#game-root, position:fixed inset:0), not the canvas: a thumb
 // resting in the side letterbox still drives a stick (§1). Only pointerType 'touch' is handled here; mouse
-// and pen stay on the Phaser path. Coordinates are converted to game px (may be < 0 or > 640).
+// and pen stay on the Phaser path. Coordinates are converted to game px (may be < 0 or > VIEW_W).
 //
 // Routing of a touch-down, in order (§3.1): a thumb-button hit circle/square → the zone it landed in (if that
 // zone's stick is free) → nothing (a miss in the top band never moves or fires). One finger per stick.
@@ -16,6 +16,7 @@
 import { T } from '../core/tunables.js';
 import { hitButton, layoutFor } from '../ui/hudLayout.js';
 import { Save } from '../core/save.js';
+import { VIEW_W } from '../config.js';
 
 const PRESS_ACTION = { dash: 'dash', swap: 'wandNext', use: 'interact' };
 const RELEASE_ACTION = { pause: 'pause', edit: 'inventory' };
@@ -62,7 +63,7 @@ export class TouchSticks {
     if (L && L.profile === 'touch') return L;
     if (!L || Save.settings.touchControls === 'off') return null;      // 'off': never touch controls (§5.1)
     const S = this.display.safe, side = Save.settings.touchStickSide;
-    const k = `${S.l},${S.t},${S.r},${S.b},${side}`;
+    const k = `${VIEW_W},${S.l},${S.t},${S.r},${S.b},${side}`;   // VIEW_W is live (display.js)
     if (this._tmpKey !== k) { this._tmpKey = k; this._tmpL = layoutFor('touch', S, { stickSide: side }); }
     return this._tmpL;
   }
