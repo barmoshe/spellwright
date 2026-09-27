@@ -4,6 +4,7 @@
 // (run.cantBuy). A shop wand routes to the wand offer (S4w) and completes via run.buyWand.
 // Data: { focusIndex? }.
 
+import { hintLine } from '../ui/HudKit.js';
 import Phaser from '../../lib/phaser.esm.min.js';
 import { VIEW_W } from '../config.js';
 import { modalChrome } from './overlay.js';
@@ -141,7 +142,9 @@ export class ShopScene extends Phaser.Scene {
     const rb = button(this, 190, 272, 120, 20, label);
     rb.setDisabled(!canReroll);
     const lb = button(this, 330, 272, 120, 20, t('shop.leave'));
-    const eb = richLine(this, VIEW_W / 2, 300, t(this.router.device === 'pad' ? 'shop.editHintPad' : 'shop.editHint'), { align: 'center', color: C.dim });
+    const fam = this._fam = this.router.promptFamily;   // G7 (controller-prompts §4)
+    const eb = fam === 'kbm' ? richLine(this, VIEW_W / 2, 300, t('shop.editHint'), { align: 'center', color: C.dim })
+      : hintLine(this, VIEW_W / 2, 300, t('shop.editHintPad'), this.router, { align: 'center' });
     c.add([rb, lb, eb]);
     this.nav.add({ id: 'f:reroll', x: 190, y: 272, w: 120, h: 20, disabled: !canReroll || !run || !run.shop,
       onDenied: () => { this.mixer.fire('ui_denied'); deniedMotion(this, rb.label); this.setDetail(t('shop.reason.coins', { n: cost - (run ? run.coins : 0) })); },
@@ -250,8 +253,7 @@ export class ShopScene extends Phaser.Scene {
       if (a === 'tabPrev' || a === 'tabNext') continue;
       this.nav.handle(a);
     }
-    const pad = this.router.device === 'pad';
-    if (pad !== this._pad) { this._pad = pad; if (this.run && this.run.shop) { const cur = this.nav.current; this.buildFooter(); this.nav.raise(); if (cur) { this.nav.current = cur; this.nav.refresh(); } } }
+    if (this.router.promptFamily !== this._fam) { if (this.run && this.run.shop) { const cur = this.nav.current; this.buildFooter(); this.nav.raise(); if (cur) { this.nav.current = cur; this.nav.refresh(); } } }
   }
 }
 

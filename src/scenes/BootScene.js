@@ -13,6 +13,7 @@ import { buildCatalog, setCatalog } from '../data/catalog.js';
 import { Save } from '../core/save.js';
 import { Art } from '../core/art.js';
 import { resolveFonts } from '../ui/kit.js';
+import { installPromptAtlas } from '../input/prompts.js';
 import { validateEffects } from '../effects/registry.js';
 import '../sim/Shots.js';
 import '../sim/Effects.js';
@@ -74,6 +75,7 @@ export class BootScene extends Phaser.Scene {
     if (anims) { try { this.anims.fromJSON(anims); } catch (e) { errors.push(`anims: ${e.message}`); } }
     this.registry.set('tileset', this.cache.json.get('manifest.json.tileset') || null);
     Art.index(this, this.cache.json.get('asset-manifest'));
+    installPromptAtlas((this.cache.json.get('asset-manifest') || {}).prompts);   // controller-prompts §3 (TA byStdIndex)
     resolveFonts(this);
 
     makePlaceholders(this);

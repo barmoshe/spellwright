@@ -61,7 +61,7 @@ export class RoomDirector {
     ctx.world = new World(ctx.scene, tpl, { floor: run.floor, rng: ctx.rng.fx, crateHp: ctx.rules.enemies.crateHp });
     ctx.onWorldBuilt();
     this.cleared = false; this.combatActive = false; this.doorsOpen = []; this.pedestal = null;
-    this.waveIndex = -1; this.waves = []; this.waveElapsed = 0; this.bossSpawned = false;
+    this.waveIndex = -1; this.waves = []; this.waveElapsed = 0; this.bossSpawned = false; this.boss = null; this.bossDeathHandled = false;
     this.graceMs = ctx.rules.waves.roomEnterGraceMs;
 
     if (kind === 'combat' || kind === 'elite') this._planWaves(kind, tpl);

@@ -5,6 +5,7 @@
 import Phaser from '../../lib/phaser.esm.min.js';
 import { createBus, EV, listen } from '../core/events.js';
 import { InputRouter } from '../input/InputRouter.js';
+import { Rumble } from '../input/Rumble.js';
 import { AudioMixer } from '../core/audio.js';
 import { SceneFlow } from '../core/sceneflow.js';
 import { TimeControl } from '../core/timecontrol.js';
@@ -26,6 +27,17 @@ export class SystemScene extends Phaser.Scene {
     const timeCtl = new TimeControl(flow);
     reg.set('bus', bus); reg.set('router', router); reg.set('mixer', mixer); reg.set('flow', flow); reg.set('display', display);
     reg.set('time', timeCtl);
+    // controller-prompts §6: rumble is blocked while any modal is up (pause, editor, shop, reward, settings,
+    // confirm) and during room fades; focus loss resets it below.
+    const rumble = new Rumble(router, bus, () => {
+      if (flow.top()) return true;
+      const run = this.game.scene.getScene('run');
+      return !!(run && run.sys && run.sys.isActive() && run.transitioning);
+    });
+    reg.set('rumble', rumble);
+    this.rumble = rumble;
+    window.__SW__ = window.__SW__ || {};
+    window.__SW__.input = router; window.__SW__.rumble = rumble;   // console: __SW__.input.promptFamily, __SW__.rumble.log
     this.timeCtl = timeCtl;
     reg.set('perf', { simMs: 0, proj: 0, enemies: 0, steps: 0 });
     this.router = router; this.flow = flow; this.display = display; this.mixer = mixer;
@@ -35,6 +47,7 @@ export class SystemScene extends Phaser.Scene {
     this.focus = new FocusBoundary({
       onLost: () => {
         router.clearHeld();
+        rumble.stop();
         const sm = this.game.scene;
         // Run may be mid-hit-stop (paused by reason 'hitstop'): still open the pause menu.
         // ?nofocuspause (debug/automation only): skip the auto-pause so scripted verification isn't interrupted
@@ -58,6 +71,7 @@ export class SystemScene extends Phaser.Scene {
 
   update(time, delta) {
     this.router.pollFrame();
+    this.rumble.update();
     this.timeCtl.update(performance.now());
     const sm = this.game.scene;
     const runExists = sm.isActive('run') || sm.isPaused('run');

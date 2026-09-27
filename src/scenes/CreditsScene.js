@@ -7,6 +7,7 @@
 //   { sections:[{ title, lines:[string | {text}|{title,author,license,url,attribution}] }] }
 //   { entries:[{ section?, title|name, author, license, url, attribution? }] }   (grouped by section)
 
+import { hintLine } from '../ui/HudKit.js';
 import Phaser from '../../lib/phaser.esm.min.js';
 import { VIEW_W, VIEW_H } from '../config.js';
 import { services } from './overlay.js';
@@ -55,10 +56,17 @@ export class CreditsScene extends Phaser.Scene {
     this.contentH = y;
     this.scroll = 0;
     this.layout();
-    txt(this, VIEW_W / 2, 342, t(this.router.device === 'pad' ? 'credits.hintPad' : 'credits.hintKb'), 'T1', { origin: [0.5, 0], color: C.dim });
+    this.buildHint();
     this.extra = new ExtraKeys(this, () => !this.leaving, { keys: { PageUp: 'pageUp', PageDown: 'pageDown' }, pad: {} });
     this.input.on('wheel', (p, o, dx, dy) => this.scrollBy(dy > 0 ? 24 : -24));
     this.input.on('pointerdown', (p) => { if (p.button === 2) this.back(); });
+  }
+
+  /** G10 footer: rebuilt whenever the prompt family changes (controller-prompts §4). */
+  buildHint() {
+    if (this.hint) this.hint.destroy();
+    const fam = this._fam = this.router.promptFamily;
+    this.hint = hintLine(this, VIEW_W / 2, 342, t(fam === 'kbm' ? 'credits.hintKb' : 'credits.hintPad'), this.router, { align: 'center' });
   }
 
   /** Cull lines outside the visible band (no mask: masks break batching). */
@@ -83,6 +91,7 @@ export class CreditsScene extends Phaser.Scene {
 
   update() {
     if (this.leaving) return;
+    if (this.router.promptFamily !== this._fam) this.buildHint();
     const page = BOTTOM - TOP - 24;
     for (const a of this.extra.consume()) this.scrollBy(a === 'pageUp' ? -page : page);
     const ui = this.router.consumeUI();

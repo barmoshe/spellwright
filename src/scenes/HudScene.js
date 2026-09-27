@@ -16,7 +16,8 @@ import { T } from '../core/tunables.js';
 import { Save } from '../core/save.js';
 import { cat } from '../data/catalog.js';
 import { C, txt, icon, cardCell } from '../ui/kit.js';
-import { ensureHudTextures, hudImage, hudTex, reducedMotion, flashScale, PIP_FOR_KIND } from '../ui/HudKit.js';
+import { ensureHudTextures, hudImage, hudTex, reducedMotion, flashScale, PIP_FOR_KIND, drawPsSymbol } from '../ui/HudKit.js';
+import { promptEntry } from '../input/prompts.js';
 import { Toasts } from '../ui/Toasts.js';
 
 // hud-layout §2 geometry (internal px)
@@ -497,7 +498,8 @@ export class HudScene extends Phaser.Scene {
     this.badgeFades = [];
     const r = this.run; if (!r) return;
     const slots = Math.min(4, r.wandSlots || 3);
-    const pad = this.router && this.router.device === 'pad';
+    const fam = this.router ? this.router.promptFamily : 'kbm';
+    const pad = fam !== 'kbm';
     for (let i = 0; i < slots; i++) {
       const w = r.wands[i];
       const eq = i === r.activeWand;
@@ -516,14 +518,21 @@ export class HudScene extends Phaser.Scene {
       this.badges.push(b);
       if (!eq) { const f = this._fade([c], 0.7); this.badgeFades.push(f); b.fade = f; }
     }
-    // pad cycle glyphs over the first and last badges: "◂Y" / "RB▸"
+    // pad cycle glyphs over the first and last badges (controller-prompts §4 G4, 8 px micro size):
+    // "◂Y" / "RB▸" (Xbox) · "◂△" / "R1▸" (PS). Shoulders as Tsmall text, PS face buttons as the 5×5 symbol.
     if (pad && r.wands.length > 1) {
       const g = this.add.graphics();
       const last = BADGE_X + BADGE_DX * (r.wands.length - 1);
       g.fillStyle(C.text, 1).fillTriangle(BADGE_X, 326, BADGE_X + 3, 323, BADGE_X + 3, 329).fillTriangle(last + 20, 326, last + 17, 323, last + 17, 329);
-      const y = txt(this, BADGE_X + 5, 322, 'Y', 'Tsmall');
-      const rb = txt(this, last + 15, 322, 'RB', 'Tsmall', { origin: [1, 0] });
-      const c = this.add.container(0, 0, [g, y, rb]);
+      const bind = this.router.pad || {};
+      const micro = (idx, x, right) => {
+        const e = promptEntry(fam, idx);
+        if (!e) return null;
+        if (e.sym) { const sx = right ? x - 5 : x; g.fillStyle(C.stroke, 1).fillRect(sx - 1, 322, 7, 7); drawPsSymbol(g, sx, 323, e.sym); return null; }
+        return txt(this, x, 322, e.text, 'Tsmall', right ? { origin: [1, 0] } : {});
+      };
+      const parts = [g, micro((bind.wandPrev || [3])[0], BADGE_X + 5, false), micro((bind.wandNext || [5])[0], last + 15, true)].filter(Boolean);
+      const c = this.add.container(0, 0, parts);
       this.badgeLayer.add(c);
       this.badges.push({ c, i: -1, deco: true });
     }

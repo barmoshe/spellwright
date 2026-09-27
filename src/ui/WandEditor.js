@@ -17,6 +17,7 @@ import { cat } from '../data/catalog.js';
 import { t } from '../core/i18n.js';
 import { EV } from '../core/events.js';
 import { Save } from '../core/save.js';
+import { hintLine } from './HudKit.js';
 import { SYM, pmDeg, initSymbols, sec, sec2, num, cardOf, cardName, typeWord, rarityWord, cardRows, modifierLines, castShotsText, castDetailLines, warningText } from './fmt.js';
 
 const SLOT_X = 137, SLOT_Y = 42, PITCH = 38, CELL = 36;
@@ -576,7 +577,7 @@ export class WandEditor {
     this.nav.add({ id: 'close', x: 62, y: 344, w: 50, h: 14, onFocus: () => cl.setFocused(true), onBlur: () => cl.setFocused(false),
       onConfirm: () => this.scene.requestClose(), nav: { left: 'revert', right: null, up: () => this.upFromFooter(), down: null } });
     // device hints (drop trailing hints until they fit; Close is always kept)
-    const pad = this.router.device === 'pad';
+    const pad = this.router.promptFamily !== 'kbm';   // G6: [token] strings on a pad family (controller-prompts §3)
     const hk = this.held ? (pad ? 'editor.hintPadHeld' : 'editor.hintKbHeld') : (pad ? 'editor.hintPad' : 'editor.hintKb');
     const parts = t(hk).split(' · ');
     if (this.held && !this.held.origin) parts.unshift(t(pad ? 'editor.hintToBagPad' : 'editor.hintToBag'));
@@ -588,8 +589,8 @@ export class WandEditor {
     for (let n = parts.length; n >= 1; n--) {
       const str = n === parts.length ? parts.join(' · ') : [...parts.slice(0, n - 1), parts[parts.length - 1]].join(' · ');
       if (ht) ht.destroy();
-      ht = txt(s, 118, 345, str, 'T1', { color: C.dim });
-      if (ht.width <= maxW) break;
+      ht = hintLine(s, 118, 345, str, this.router);
+      if (ht._w <= maxW) break;
     }
     c.add(ht);
   }

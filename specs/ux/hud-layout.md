@@ -116,7 +116,7 @@ H1 pulse (§2.1) plus the **single allowed camera-level filter** (architecture �
 
 ### 3.5 Device glyph swap
 
-Every glyph in the HUD (H8 keys, prompts, toasts that name inputs) swaps on the `input:device` event (architecture §8). Keycaps are 12×12 with a T-small or T1 legend. Pad glyphs are the Standard-mapping face positions (A / B / X / Y drawn as **position diamonds with a letter**, so a player on a non-Xbox pad reads the position, not a colour).
+Every glyph in the HUD (H8 keys, prompts, toasts that name inputs) swaps on the `input:device` event (architecture §8). Keycaps are 12×12 with a T-small or T1 legend. Pad glyphs are the Standard-mapping face positions (A / B / X / Y drawn as **position diamonds with a letter**, so a player on a non-Xbox pad reads the position, not a colour). **Prompt families (kbm / Xbox / PlayStation), the glyph table and the 12 px size contract are in `controller-prompts.md`**, which supersedes the pad-legend details here.
 
 ---
 

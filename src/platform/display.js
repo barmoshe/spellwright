@@ -37,7 +37,12 @@ export class DisplayScaler {
   /** Must be called inside (or right after) a user gesture — browsers reject it otherwise. */
   toggleFullscreen() {
     const scale = this.game.scale;
-    if (scale.isFullscreen) scale.stopFullscreen(); else scale.startFullscreen();
+    if (scale.isFullscreen) { scale.stopFullscreen(); return true; }
+    // Gamepad presses are not user activation (HTML spec), so a pad "Fullscreen" would make the browser
+    // reject requestFullscreen with an uncaught promise error. Skip it cleanly instead (F11 / mouse / keys work).
+    if (navigator.userActivation && !navigator.userActivation.isActive) return false;
+    scale.startFullscreen();
+    return true;
   }
 
   get isFullscreen() { return this.game.scale.isFullscreen; }

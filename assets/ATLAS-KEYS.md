@@ -24,6 +24,7 @@ A frame key is the **art-slot-map JSON path** of the slot (dot-joined, `art` seg
 | `ui.<slot>[.hover/.selected/.N]` (Kenney Adventure large tiles) | `ui.panel_dark`, `ui.button.hover`, `ui.banner.1` | ui |
 | `font.<body|heading|small>[_outline]` | `font.small_outline` | ui (glyph sheet frame, see Fonts) |
 | `util.px2` | 2×2 white, tintable | world + ui |
+| `prompt.<xbox|ps|pad>.<id>` (12 px gamepad glyphs; id = controller-prompts §3 atlas id with its first `_` → `.`) | `prompt.ps.cross`, `prompt.pad.dpad_ud` | ui (see Gamepad prompts) |
 
 Deviation from the studio default (kebab-case): keys keep the data ids' `snake_case` and use `.` as the path separator, because the orchestrator contract is *bind by id*. Keys are stable across repacks; a rename is a contract break.
 
@@ -351,7 +352,7 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `wands.twin_fork.drop`
 - `wands.twin_fork.held.0`
 
-### `ui` — 1024×256 (1.0 MB RGBA8), 258 keys / 249 unique rects
+### `ui` — 1024×256 (1.0 MB RGBA8), 288 keys / 279 unique rects
 
 - `font.body`
 - `font.body_outline`
@@ -529,6 +530,36 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `icon32.wands.oak_staff`
 - `icon32.wands.stormcaller_staff`
 - `icon32.wands.twin_fork`
+- `prompt.pad.dpad`
+- `prompt.pad.dpad_down`
+- `prompt.pad.dpad_left`
+- `prompt.pad.dpad_lr`
+- `prompt.pad.dpad_right`
+- `prompt.pad.dpad_ud`
+- `prompt.pad.dpad_up`
+- `prompt.pad.stick_l`
+- `prompt.pad.stick_r`
+- `prompt.ps.circle`
+- `prompt.ps.create`
+- `prompt.ps.cross`
+- `prompt.ps.l1`
+- `prompt.ps.l2`
+- `prompt.ps.options`
+- `prompt.ps.r1`
+- `prompt.ps.r2`
+- `prompt.ps.square`
+- `prompt.ps.touchpad`
+- `prompt.ps.triangle`
+- `prompt.xbox.a`
+- `prompt.xbox.b`
+- `prompt.xbox.lb`
+- `prompt.xbox.lt`
+- `prompt.xbox.menu`
+- `prompt.xbox.rb`
+- `prompt.xbox.rt`
+- `prompt.xbox.view`
+- `prompt.xbox.x`
+- `prompt.xbox.y`
 - `ui.aim_pip_5x5`
 - `ui.badge_20`
 - `ui.badge_20_equipped`
@@ -607,6 +638,45 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `ui.tab`
 - `ui.tab.selected`
 - `util.px2`
+
+## Gamepad prompts (`prompt.*`, ui atlas)
+
+Consumer spec: `specs/ux/controller-prompts.md` §3–§5. Every glyph is **exactly 12 px tall**, drawn natively at 1:1 (never scale — the 12 px slot is the contract). Monochrome: symbol `#fdf7ed`, body `#4b5468`, 1 px `#222222` outline; do not tint (the symbol colour is baked). Keyboard/mouse keys are **not** in the atlas: `kbm` keycaps stay procedural from the live bindings (controller-prompts §1). `xbox_ls/rs`, `ps_l3/r3` are reserved-unpacked (§3).
+
+Lookup by W3C standard index is in `asset-manifest.json` → `prompts.byStdIndex` (family → frame key).
+
+| UX id | Frame key | Size | Std idx |
+|---|---|---|---|
+| `xbox_a` | `prompt.xbox.a` | 12×12 | 0 |
+| `xbox_b` | `prompt.xbox.b` | 12×12 | 1 |
+| `xbox_x` | `prompt.xbox.x` | 12×12 | 2 |
+| `xbox_y` | `prompt.xbox.y` | 12×12 | 3 |
+| `xbox_lb` | `prompt.xbox.lb` | 15×12 | 4 |
+| `xbox_rb` | `prompt.xbox.rb` | 15×12 | 5 |
+| `xbox_lt` | `prompt.xbox.lt` | 15×12 | 6 |
+| `xbox_rt` | `prompt.xbox.rt` | 15×12 | 7 |
+| `xbox_view` | `prompt.xbox.view` | 12×12 | 8 |
+| `xbox_menu` | `prompt.xbox.menu` | 12×12 | 9 |
+| `ps_cross` | `prompt.ps.cross` | 12×12 | 0 |
+| `ps_circle` | `prompt.ps.circle` | 12×12 | 1 |
+| `ps_square` | `prompt.ps.square` | 12×12 | 2 |
+| `ps_triangle` | `prompt.ps.triangle` | 12×12 | 3 |
+| `ps_l1` | `prompt.ps.l1` | 15×12 | 4 |
+| `ps_r1` | `prompt.ps.r1` | 15×12 | 5 |
+| `ps_l2` | `prompt.ps.l2` | 15×12 | 6 |
+| `ps_r2` | `prompt.ps.r2` | 15×12 | 7 |
+| `ps_create` | `prompt.ps.create` | 9×12 | 8 |
+| `ps_options` | `prompt.ps.options` | 9×12 | 9 |
+| `ps_touchpad` | `prompt.ps.touchpad` | 15×12 | 17 |
+| `pad_dpad` | `prompt.pad.dpad` | 12×12 | — |
+| `pad_dpad_ud` | `prompt.pad.dpad_ud` | 12×12 | — |
+| `pad_dpad_lr` | `prompt.pad.dpad_lr` | 12×12 | — |
+| `pad_dpad_up` | `prompt.pad.dpad_up` | 12×12 | 12 |
+| `pad_dpad_down` | `prompt.pad.dpad_down` | 12×12 | 13 |
+| `pad_dpad_left` | `prompt.pad.dpad_left` | 12×12 | 14 |
+| `pad_dpad_right` | `prompt.pad.dpad_right` | 12×12 | 15 |
+| `pad_stick_l` | `prompt.pad.stick_l` | 12×12 | — |
+| `pad_stick_r` | `prompt.pad.stick_r` | 12×12 | — |
 
 ## Tilemap tileset (`tiles_f1`, `tiles_f2`, `tiles_f3`)
 

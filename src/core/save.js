@@ -28,6 +28,9 @@ const SETTINGS_SPEC = {
   aimAssist: { def: 100, min: 0, max: 100 },   // effective = feel aimAssistStrength × aimAssist/100 (O-UX-2)
   bindings: { def: () => ({ kbm: {}, pad: {} }), obj: true },
   language: { def: 'en', str: true },
+  // controller-prompts §7/§8: additive keys, missing ones take defaults on load (no SCHEMA_VERSION bump).
+  promptStyle: { def: 'auto', oneOf: ['auto', 'xbox', 'playstation'] },
+  vibration: { def: 'low', oneOf: ['off', 'low', 'high'] },
 };
 
 function defaultSettings() {

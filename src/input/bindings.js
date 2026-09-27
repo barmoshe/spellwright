@@ -25,8 +25,10 @@ export const KBM_UI = {
   confirm: ['Enter', 'Space'], back: ['Escape', 'Backspace', 'Tab'], tabPrev: ['KeyQ'], tabNext: ['KeyE'],
 };
 
-// W3C Standard Gamepad: 0 A, 1 B, 2 X, 3 Y, 4 LB, 5 RB, 6 LT, 7 RT, 8 Back, 9 Start, 10 L3, 11 R3,
-// 12 Up, 13 Down, 14 Left, 15 Right.
+// W3C Standard Gamepad (Xbox / PlayStation names): 0 A/Cross, 1 B/Circle, 2 X/Square, 3 Y/Triangle,
+// 4 LB/L1, 5 RB/R1, 6 LT/L2, 7 RT/R2, 8 View/Create, 9 Menu/Options, 10 LS/L3, 11 RS/R3, 12 Up, 13 Down,
+// 14 Left, 15 Right, 16 Guide/PS (never bound: the OS may capture it), 17 DualSense touchpad click
+// (Chrome/Edge; platform/gamepad.js remaps raw Sony HID to these indices). Prompts: src/input/prompts.js.
 export const PAD_DEFAULTS = {
   cast: [7],
   altCast: [],
@@ -34,14 +36,23 @@ export const PAD_DEFAULTS = {
   interact: [2],
   wandNext: [5],
   wandPrev: [3],
-  inventory: [8],
+  inventory: [8, 17],            // View/Create + DualSense touchpad click (controller-prompts §2.1)
   pause: [9],
 };
 
 export const PAD_UI = {
   up: [12], down: [13], left: [14], right: [15],
-  confirm: [0], back: [1, 8, 9], tabPrev: [4], tabNext: [5],
+  confirm: [0], back: [1, 8, 9, 17], tabPrev: [4], tabNext: [5],
 };
+
+// Editor-scoped pad intents (ui/extraKeys.js; wand-editor-ux §9): X/Square quick move, Y/Triangle salvage,
+// LT/L2 · RT/R2 switch wand. Also the source of the editor prompt tokens (prompts.js).
+export const PAD_EDITOR = { 2: 'quickMove', 3: 'salvage', 6: 'wandPrev', 7: 'wandNext' };
+
+// Analog triggers (standard 6/7) use hysteresis: feel-spec `padTriggerPress` / `padTriggerRelease`,
+// installed by InputRouter.applyTunables(). Every other button is pressed at value > 0.5.
+export const PAD_TRIGGERS = [6, 7];
+export const PAD_DIGITAL_PRESS = 0.5;
 
 // Stick shaping: pre-boot defaults only. After Boot, InputRouter.applyTunables() replaces the two
 // deadzones with feel-spec `moveStickDeadzone` / `aimStickDeadzone` (verbatim).

@@ -9,6 +9,7 @@
 import { Art } from '../core/art.js';
 import { Save } from '../core/save.js';
 import { C, txt } from './kit.js';
+import { promptEntry, promptText, tokenKeys } from '../input/prompts.js';
 
 // ---------------------------------------------------------------------------------------------
 // settings-derived helpers
@@ -166,10 +167,24 @@ export function hudImageC(scene, x, y, name) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// device glyphs (hud-layout §3.5, ftue-flow §2 rules 10–11: current bindings, current device)
+// device glyphs (hud-layout §3.5, ftue-flow §2 rules 10–11, controller-prompts §3–§5: current
+// bindings, current PROMPT FAMILY). Pad legends resolve through input/prompts.js only.
 // ---------------------------------------------------------------------------------------------
-const PAD_BTN = { cast: 'RT', dash: 'A', interact: 'X', inventory: 'View', pause: 'Menu', wandNext: 'RB', wandPrev: 'Y', altDash: 'LB' };
-const FACE = { A: 'bottom', B: 'right', X: 'left', Y: 'top' };
+/** controller-prompts §5 5×5 PlayStation symbols ('#' = symbol colour). Never the letters X / O. */
+const PS_SYM = {
+  cross: ['#...#', '.#.#.', '..#..', '.#.#.', '#...#'],
+  circle: ['.###.', '#...#', '#...#', '#...#', '.###.'],
+  square: ['#####', '#...#', '#...#', '#...#', '#####'],
+  triangle: ['..#..', '.#.#.', '.#.#.', '#...#', '#####'],
+};
+const BODY = 0x4b5468;
+
+/** Draw a 5×5 PS symbol into Graphics g at (x, y) (top-left), 1 px outline-free (callers add the halo). */
+export function drawPsSymbol(g, x, y, sym, color = C.text) {
+  const rows = PS_SYM[sym]; if (!rows) return;
+  g.fillStyle(color, 1);
+  for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) if (rows[r][c] === '#') g.fillRect(x + c, y + r, 1, 1);
+}
 
 function codeLabel(code) {
   if (!code) return '?';
@@ -178,67 +193,93 @@ function codeLabel(code) {
 }
 
 /**
- * Glyph labels for a prompt token on the current device. Returns an array of labels (joined with "/"
- * in prompts). Tokens: move · aim · cast · dash · interact · inventory · wandNext · wand13 · pause.
+ * Glyph specs for a prompt token on the current prompt family. Keyboard: `{ key: label }` keycaps from
+ * the live bindings. Pad: `{ fam, idx }` where idx is a W3C standard index or a prompts.js pseudo-key.
+ * Tokens: gameplay actions + move · aim · wand13, and the UI tokens of controller-prompts §3.
  */
-export function glyphLabels(router, token) {
-  const pad = router && router.device === 'pad';
+export function glyphSpecs(router, token) {
+  const fam = router ? router.promptFamily : 'kbm';
+  if (fam !== 'kbm') return tokenKeys(router, token).map((idx) => ({ fam, idx }));
   const kbm = (router && router.kbm) || {};
   switch (token) {
     case 'move': {
-      if (pad) return ['L'];
       const k = ['moveUp', 'moveLeft', 'moveDown', 'moveRight'].map((a) => codeLabel((kbm[a] || [])[0]));
-      return k.every((s) => s.length === 1) ? [k.join('')] : [k.join(' ')];
+      return [{ key: k.every((x) => x.length === 1) ? k.join('') : k.join(' ') }];
     }
-    case 'aim': return [pad ? 'R' : 'Mouse'];
-    case 'wand13': return pad ? ['RB', 'Y'] : [[1, 2, 3].map((i) => codeLabel((kbm[`wand${i}`] || [])[0])).join('-')];
-    case 'dash': return pad ? ['A', 'LB'] : (kbm.dash || []).slice(0, 2).map(codeLabel);
-    case 'wandNext': return pad ? ['RB', 'Y'] : (kbm.wandNext || []).slice(0, 2).map(codeLabel).reverse();
-    default:
-      if (pad) return [PAD_BTN[token] || token];
-      return [codeLabel((kbm[token] || [])[0])];
+    case 'aim': return [{ key: 'Mouse' }];
+    case 'wand13': return [{ key: [1, 2, 3].map((i) => codeLabel((kbm[`wand${i}`] || [])[0])).join('-') }];
+    case 'dash': return (kbm.dash || []).slice(0, 2).map((c) => ({ key: codeLabel(c) }));
+    case 'wandNext': return (kbm.wandNext || []).slice(0, 2).map((c) => ({ key: codeLabel(c) })).reverse();
+    default: return [{ key: codeLabel((kbm[token] || [])[0]) }];
   }
+}
+/** Text-only labels for a token (tooltips / logs): "Cross", "L1", "RT" … never "X" for Cross. */
+export function glyphLabels(router, token) {
+  return glyphSpecs(router, token).map((g) => (g.key !== undefined ? g.key : promptText(g.fam, g.idx)));
 }
 
 /**
- * A glyph for one label: keycap (KB+M), or a pad face-position diamond with the letter (A/B/X/Y are
- * drawn as positions so a non-Xbox pad reads by position, not colour), or a pad pill (RT/LB/…).
- * Returns a Container of width `._w` (Phaser 4 containers own `w`/`h`), height 12, origin top-left.
+ * One glyph, 12 px tall, origin top-left, width in `._w`. `spec` is a glyphSpecs() entry (or a plain
+ * keycap label string). Pad glyphs use the TA's 12 px `prompt.*` atlas frame when packed; otherwise the
+ * controller-prompts §5 fallback: position diamond + letter (Xbox) or + 5×5 symbol (PS), pills for the
+ * rest. Returns a Container (Phaser 4 containers own `w`/`h`, hence `_w`).
  */
-export function glyph(scene, x, y, label, pad) {
+export function glyph(scene, x, y, spec) {
+  if (typeof spec === 'string') spec = { key: spec };
   const c = scene.add.container(x, y);
-  const g = scene.add.graphics();
-  c.add(g);
-  if (pad && FACE[label]) {
-    // 12×12 diamond of four 3×3 dots; the pressed position is filled, then the letter.
-    const pos = { top: [4, 0], left: [0, 4], right: [8, 4], bottom: [4, 8] };
-    g.fillStyle(C.stroke, 1).fillRect(-1, -1, 14, 14);
-    for (const [k, [px, py]] of Object.entries(pos)) {
-      g.fillStyle(k === FACE[label] ? C.text : 0x4b5468, 1).fillRect(px, py, 4, 4);
-    }
-    const t = txt(scene, 14, 6, label, 'Tsmall', { origin: [0, 0.5] });
-    c.add(t);
-    c._w = 14 + Math.max(5, label.length * 5);
+  const e = spec.key === undefined ? promptEntry(spec.fam, spec.idx) : null;
+  const a = e && e.atlas ? Art.getQuiet(e.atlas) : null;
+  if (a) {
+    const im = scene.add.image(0, 0, a.key, a.frame).setOrigin(0, 0);
+    c.add(im);
+    c._w = Math.round(im.width);
   } else {
-    const w = Math.max(12, label.length * 5 + 5);
-    const round = pad;
-    g.fillStyle(C.stroke, 1).fillRect(round ? 1 : 0, 0, w - (round ? 2 : 0), 12).fillRect(0, round ? 1 : 0, w, round ? 10 : 12);
-    g.fillStyle(0x4b5468, 1).fillRect(1, 1, w - 2, 10).fillStyle(0x6a7590, 1).fillRect(1, 1, w - 2, 1);
-    c.add(txt(scene, Math.floor(w / 2), 6, label, 'Tsmall', { origin: [0.5, 0.5] }));
-    c._w = w;
+    const g = scene.add.graphics();
+    c.add(g);
+    if (e && e.face) {
+      // 12×12 diamond of four 4×4 dots; the pressed position is filled, then the legend (letter or symbol).
+      const pos = { top: [4, 0], left: [0, 4], right: [8, 4], bottom: [4, 8] };
+      g.fillStyle(C.stroke, 1).fillRect(-1, -1, 14, 14);
+      for (const [k, [px, py]] of Object.entries(pos)) g.fillStyle(k === e.face ? C.text : BODY, 1).fillRect(px, py, 4, 4);
+      if (e.sym) {
+        g.fillStyle(C.stroke, 1).fillRect(13, 2, 7, 7);          // 1 px #222222 halo (accessibility-spec §2.2)
+        drawPsSymbol(g, 14, 3, e.sym);
+        c._w = 20;
+      } else {
+        c.add(txt(scene, 14, 6, e.text, 'Tsmall', { origin: [0, 0.5] }));
+        c._w = 14 + Math.max(5, e.text.length * 5);
+      }
+    } else if (e && e.dpad) {
+      // D-pad plus: arms filled for the directions the prompt names ('all' | 'ud' | 'lr' | one direction)
+      g.fillStyle(C.stroke, 1).fillRect(3, -1, 6, 14).fillRect(-1, 3, 14, 6);
+      g.fillStyle(BODY, 1).fillRect(4, 0, 4, 12).fillRect(0, 4, 12, 4);
+      const on = { all: ['up', 'down', 'left', 'right'], ud: ['up', 'down'], lr: ['left', 'right'] }[e.dpad] || [e.dpad];
+      const arm = { up: [4, 0, 4, 4], down: [4, 8, 4, 4], left: [0, 4, 4, 4], right: [8, 4, 4, 4] };
+      g.fillStyle(C.text, 1);
+      for (const d of on) { const r = arm[d]; if (r) g.fillRect(r[0], r[1], r[2], r[3]); }
+      c._w = 12;
+    } else {
+      const label = e ? (e.pill || e.text) : (spec.key !== undefined ? spec.key : '?');
+      const pill = spec.key === undefined;               // pad: rounded pill; keyboard: square keycap
+      const w = Math.max(12, label.length * 5 + 5);
+      g.fillStyle(C.stroke, 1).fillRect(pill ? 1 : 0, 0, w - (pill ? 2 : 0), 12).fillRect(0, pill ? 1 : 0, w, pill ? 10 : 12);
+      g.fillStyle(BODY, 1).fillRect(1, 1, w - 2, 10).fillStyle(0x6a7590, 1).fillRect(1, 1, w - 2, 1);
+      c.add(txt(scene, Math.floor(w / 2), 6, label, 'Tsmall', { origin: [0.5, 0.5] }));
+      c._w = w;
+    }
   }
   c.setSize(c._w, 12);
   return c;
 }
 
 /**
- * Lay out a prompt string with `[token]` placeholders into a row of glyphs and T1 text.
+ * Lay out a prompt string with `[token]` placeholders into a row of glyphs and text.
  * Returns a Container (origin top-left) with `._w` / `._h` / `.lines`. Example: "Hold [cast] to keep casting".
  */
-export function promptRow(scene, str, router, role = 'T1', maxW = Infinity) {
+export function promptRow(scene, str, router, role = 'T1', maxW = Infinity, color = undefined) {
   const c = scene.add.container(0, 0);
-  const pad = router && router.device === 'pad';
   const LINE = 13, GAP = 3;
+  const topts = color === undefined ? { origin: [0, 0.5] } : { origin: [0, 0.5], color };
   let x = 0, y = 0, w = 0;
   const place = (obj, ow) => {
     if (x > 0 && x + ow > maxW) { x = 0; y += LINE; }
@@ -252,20 +293,21 @@ export function promptRow(scene, str, router, role = 'T1', maxW = Infinity) {
     if (!p) continue;
     const m = /^\[([a-zA-Z0-9]+)\]$/.exec(p);
     if (m) {
-      const labels = glyphLabels(router, m[1]);
+      const specs = glyphSpecs(router, m[1]);
+      if (!specs.length) { const t = txt(scene, 0, 0, m[1], role, topts); t.__vc = true; place(t, Math.ceil(t.width)); continue; }
       // a multi-glyph token ("Space/RMB") stays on one line
       const grp = scene.add.container(0, 0);
       let gx = 0;
-      labels.forEach((lab, i) => {
-        if (i > 0) { const s = txt(scene, gx, 6, '/', role, { origin: [0, 0.5] }); grp.add(s); gx += Math.ceil(s.width) + 1; }
-        const gl = glyph(scene, gx, 0, lab, pad);
+      specs.forEach((sp, i) => {
+        if (i > 0) { const s = txt(scene, gx, 6, '/', role, topts); grp.add(s); gx += Math.ceil(s.width) + 1; }
+        const gl = glyph(scene, gx, 0, sp);
         grp.add(gl); gx += gl._w + 1;
       });
       place(grp, Math.max(1, gx - 1));
     } else {
       for (const word of p.split(/\s+/)) {
         if (!word) continue;
-        const t = txt(scene, 0, 0, word, role, { origin: [0, 0.5] });
+        const t = txt(scene, 0, 0, word, role, topts);
         t.__vc = true;
         place(t, Math.ceil(t.width));
       }
@@ -275,6 +317,22 @@ export function promptRow(scene, str, router, role = 'T1', maxW = Infinity) {
   c._h = y + 12;
   c.lines = y / LINE + 1;
   return c;
+}
+
+/**
+ * A footer / hint line on the current prompt family: keyboard strings render as plain text (unchanged
+ * look); pad strings carry `[token]`s and render through promptRow. `align` positions the row about x;
+ * `y` is the row's TOP. Returns the display object with `._w`.
+ */
+export function hintLine(scene, x, y, str, router, { align = 'left', color = C.dim, role = 'T1' } = {}) {
+  if (!router || router.promptFamily === 'kbm' || !/\[[a-zA-Z0-9]+\]/.test(str)) {
+    const t = txt(scene, x, y, str, role, { origin: [align === 'center' ? 0.5 : align === 'right' ? 1 : 0, 0], color });
+    t._w = Math.ceil(t.width);
+    return t;
+  }
+  const r = promptRow(scene, str, router, role, Infinity, color);
+  r.setPosition(align === 'center' ? Math.round(x - r._w / 2) : align === 'right' ? x - r._w : x, y);
+  return r;
 }
 
 /** Dark panel (ui-artwork §1 panel_dark) drawn into Graphics at (x, y, w, h). */

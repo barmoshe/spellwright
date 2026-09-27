@@ -8,9 +8,10 @@
 // by the next sample(), so taps are never lost at any render rate.
 
 import { KBM_DEFAULTS, KBM_UI, PAD_DEFAULTS, PAD_UI, PAD_MOVE_DEADZONE, PAD_AIM_DEADZONE,
-  PAD_MENU_FLICK, PAD_MENU_REARM, mergeBindings } from './bindings.js';
+  PAD_MENU_FLICK, PAD_MENU_REARM, PAD_DIGITAL_PRESS, mergeBindings } from './bindings.js';
 import { EV } from '../core/events.js';
 import { Save } from '../core/save.js';
+import { PadReader, PAD_BUTTONS } from '../platform/gamepad.js';
 
 const EDGE_ACTIONS = ['cast', 'altCast', 'dash', 'interact', 'wandNext', 'wandPrev', 'wand1', 'wand2', 'wand3', 'wand4', 'inventory', 'pause'];
 const UI_ACTIONS = ['up', 'down', 'left', 'right', 'confirm', 'back', 'tabPrev', 'tabNext'];
@@ -30,7 +31,12 @@ export class InputRouter {
     this._pressed = new Set();          // latched gameplay edges (action names)
     this._ui = [];                      // latched UI edges, IN ORDER (menus replay them in sequence)
     this._uiOut = [];                   // swap buffer returned by consumeUI() (no per-frame allocation)
-    this._padPrev = new Float32Array(17);
+    this.padReader = new PadReader();   // platform/gamepad.js: the ONE Gamepad-API reader (standard indices)
+    this._padPrev = new Float32Array(PAD_BUTTONS);
+    this.padNow = new Float32Array(PAD_BUTTONS);   // this frame's digital-ised state (triggers latched 0/1) — ExtraKeys reads it
+    this._famSent = 'kbm';                          // last prompt family announced on EV.INPUT_DEVICE
+    this._trig = [false, false];         // latched analog-trigger state (6, 7)
+    this.trigPress = 0.2; this.trigRelease = 0.1;   // pre-boot defaults; applyTunables sets the feel-spec values
     this._menuStickArmed = true;
     this.lastAimX = 1; this.lastAimY = 0;
     this.pointerX = 0; this.pointerY = 0;
@@ -57,12 +63,39 @@ export class InputRouter {
     scene.input.on('pointermove', (p) => { this.pointerX = p.x; this.pointerY = p.y; this._setDevice('kbm'); });
     scene.input.on('wheel', (p, over, dx, dy) => { if (dy) this._onDown(dy > 0 ? 'WheelDown' : 'WheelUp', true); });
     if (scene.input.mouse) scene.input.mouse.disableContextMenu();
+    // promptStyle is a prompt-family input: a settings change re-announces the family (controller-prompts §1 rule 4)
+    bus.on(EV.SETTINGS_CHANGED, (k) => { if (k === 'promptStyle') this._checkFamily(); });
+  }
+
+  /**
+   * controller-prompts §1: the ONE prompt-family resolver. 'kbm' whenever the last input was the
+   * keyboard/mouse (promptStyle never overrides the keyboard); otherwise the forced setting, else the
+   * auto-classified family of the pad in hand. Every scene compares THIS, never `device === 'pad'`.
+   */
+  get promptFamily() { return this.device === 'kbm' ? 'kbm' : this.padPromptFamily; }
+  /** The pad family even while the keyboard is in use (Settings Controls table pad column, §4 G8). */
+  get padPromptFamily() {
+    const s = Save.settings.promptStyle;
+    if (s === 'xbox') return 'xbox';
+    if (s === 'playstation') return 'ps';
+    return this.padReader.family;          // last pad seen (persists across disconnect); 'xbox' if none yet
+  }
+  _checkFamily() {
+    const f = this.promptFamily;
+    if (f === this._famSent) return;
+    this._famSent = f;
+    this.bus.emit(EV.INPUT_DEVICE, this.device, f);
   }
 
   /** Called once by Boot after the feel-spec is parsed: deadzones come from it verbatim. */
   applyTunables(T) {
     this.moveDead = T('moveStickDeadzone', PAD_MOVE_DEADZONE);
     this.aimDead = T('aimStickDeadzone', PAD_AIM_DEADZONE);
+    // analog triggers 6/7: press/release hysteresis (feel-spec §cast 6). An inverted pair is clamped
+    // to release = press − 0.05, as the spec requires.
+    this.trigPress = T('padTriggerPress', 0.2);
+    const rel = T('padTriggerRelease', 0.1);
+    this.trigRelease = rel < this.trigPress ? rel : Math.max(0, this.trigPress - 0.05);
   }
 
   applyBindings(overrides = {}) {
@@ -84,7 +117,7 @@ export class InputRouter {
   _setDevice(d) {
     if (this.device === d) return;
     this.device = d;
-    this.bus.emit(EV.INPUT_DEVICE, d);
+    this._checkFamily();                   // a device switch always changes the family (kbm <-> pad)
   }
 
   /**
@@ -116,13 +149,13 @@ export class InputRouter {
     return false;
   }
 
-  _getPad() {
-    const gp = this.scene.input.gamepad;
-    if (!gp || !gp.total) return null;
-    return gp.pad1 || gp.getPad(0) || null;
-  }
+  /** This frame's normalised pad snapshot (polled once in pollFrame), or null when none is connected. */
+  _getPad() { return this.padReader.connected ? this.padReader : null; }
 
-  _padBtn(pad, idx) { const b = pad.buttons[idx]; return b ? b.value > 0.5 : false; }
+  /** Digital state of a pad button. Triggers (6/7) use the latched hysteresis state from pollFrame. */
+  _padBtn(pad, idx) { if (idx === 6 || idx === 7) return this._trig[idx - 6]; return pad.buttons[idx] > PAD_DIGITAL_PRESS; }
+  /** Update + return a trigger's latched state: pressed at ≥ trigPress, released only below trigRelease. */
+  _trigger(i, v) { const k = i - 6; this._trig[k] = this._trig[k] ? v >= this.trigRelease : v >= this.trigPress; return this._trig[k]; }
   _padHeld(pad, action) {
     const list = this.pad[action]; if (!list || !pad) return false;
     for (let i = 0; i < list.length; i++) if (this._padBtn(pad, list[i])) return true;
@@ -131,11 +164,16 @@ export class InputRouter {
 
   /** Called every render frame by SystemScene.update: latch gamepad edges. */
   pollFrame() {
-    const pad = this._getPad();
-    if (!pad || !this.enabled) return;
-    const n = Math.min(pad.buttons.length, 17);
-    for (let i = 0; i < n; i++) {
-      const v = pad.buttons[i].value;
+    const pad = this.padReader.poll();
+    if (!pad) { this.padNow.fill(0); this._trig[0] = this._trig[1] = false; return; }
+    for (let i = 0; i < PAD_BUTTONS; i++) {
+      // triggers: map the hysteresis latch onto 0/1 so every edge test stays one rule (> 0.5)
+      this.padNow[i] = (i === 6 || i === 7) ? (this._trigger(i, pad.buttons[i]) ? 1 : 0) : pad.buttons[i];
+    }
+    if (this.device === 'pad') this._checkFamily();   // pad-to-pad swap with a different id (§1 rule 4)
+    if (!this.enabled) return;
+    for (let i = 0; i < PAD_BUTTONS; i++) {
+      const v = this.padNow[i];
       if (v > 0.5 && this._padPrev[i] <= 0.5) {
         this._setDevice('pad');
         for (const [a, list] of Object.entries(this.pad)) if (list.includes(i)) this._pressed.add(a);

@@ -11,6 +11,7 @@ import { FocusNav } from '../ui/nav.js';
 import { RunSetup, setupEligible } from '../ui/RunSetup.js';
 import { CodexView } from '../ui/CodexView.js';
 import { C, txt } from '../ui/kit.js';
+import { hintLine } from '../ui/HudKit.js';
 import { button, glyph } from '../ui/draw.js';
 import { cat } from '../data/catalog.js';
 import { Save } from '../core/save.js';
@@ -69,9 +70,17 @@ export class TitleScene extends Phaser.Scene {
         onConfirm: () => { b.press(); this.mixer.unlock(); this.mixer.fire('ui_confirm'); it.act(); } });
     });
     this.nav.linkList(items.map((i) => `t:${i.id}`), 'v', true);
-    c.add(txt(this, cx, VIEW_H - 14, t(this.router.device === 'pad' ? 'title.hintPad' : 'title.hintKb'), 'T1', { origin: [0.5, 0.5], color: C.dim }));
+    this.buildHint();
     this.nav.raise();
     this.nav.focus(this.lastMain || 't:start', { silent: true, snap: true });
+  }
+
+  /** G9 footer: rebuilt whenever the prompt family changes (controller-prompts §4). */
+  buildHint() {
+    if (this.hint) this.hint.destroy();
+    const fam = this._fam = this.router.promptFamily;
+    this.hint = hintLine(this, VIEW_W / 2, VIEW_H - 20, t(fam === 'kbm' ? 'title.hintKb' : 'title.hintPad'), this.router, { align: 'center' });
+    this.mainC.add(this.hint);
   }
 
   startPressed() {
@@ -125,6 +134,7 @@ export class TitleScene extends Phaser.Scene {
   }
 
   update() {
+    if (this.mainC && this.router.promptFamily !== this._fam) this.buildHint();
     if (this.flow.top() || this.leaving) return;         // a modal (settings) owns UI input
     const ui = this.router.consumeUI();
     if (ui.length) this.mixer.unlock();

@@ -78,6 +78,7 @@ feel-tunables:
 
 5. **Forgiveness.** Cast buffer (taps). Swap lock is deliberately *un*-forgiving (it is the cost that bounds D6).
 6. **Modality variants.** Pad buffers +33 ms (2 frames): pad triggers have more travel before actuation.
+   **Analog triggers (every pad, including PS5 DualSense; standard-mapping button indices 6/7):** a trigger counts as *pressed* when its value is ≥ `padTriggerPress` 0.20 and as *released* only when it drops below `padTriggerRelease` 0.10. The hysteresis stops a trigger held near the threshold from chattering cast on and off. The press value is set below the UX proposal of 0.30: the DualSense has long trigger travel, and 30% travel adds actuation delay against the 2-frame pad cast budget (§audit-latency). The anchor is XInput's standard trigger threshold (30/255 ≈ 0.12); we sit a little above it to survive worn or noisy triggers. The runtime must keep `padTriggerRelease` < `padTriggerPress` (the ranges are allowed to overlap, but a tuning-panel value that inverts them is clamped to release = press − 0.05).
 
 ```yaml
 feel-tunables:
@@ -92,6 +93,8 @@ feel-tunables:
     - { param: sputterFlashMs, value: 90, unit: ms, source_ref: Noita-no-mana-puff, range: [50, 150], frozen: false }
     - { param: sputterMinIntervalMs, value: 250, unit: ms, source_ref: Noita-no-mana-puff, range: [150, 500], frozen: false }
     - { param: wandSwapMs, value: 120, unit: ms, source_ref: Noita-wand-swap, range: [80, 200], frozen: false }
+    - { param: padTriggerPress, value: 0.2, unit: ratio, source_ref: XInput-trigger-threshold, range: [0.1, 0.4], frozen: false }
+    - { param: padTriggerRelease, value: 0.1, unit: ratio, source_ref: XInput-trigger-threshold, range: [0.05, 0.3], frozen: false }
 ```
 
 ---

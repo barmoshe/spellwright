@@ -15,7 +15,9 @@ import { Save } from '../core/save.js';
 import { EV } from '../core/events.js';
 import { T } from '../core/tunables.js';
 import { t } from '../core/i18n.js';
-import { KBM_DEFAULTS, PAD_DEFAULTS } from '../input/bindings.js';
+import { KBM_DEFAULTS } from '../input/bindings.js';
+import { promptListText } from '../input/prompts.js';
+import { hintLine } from '../ui/HudKit.js';
 
 // Defaults are settings-spec §1 (the save module owns validation; this table owns the "Reset group" values).
 const GROUPS = [
@@ -36,6 +38,7 @@ const GROUPS = [
     { k: 'reducedMotion', type: 'enum', values: [null, true, false], def: null },
     { k: 'screenShake', type: 'slider', step: 10, def: 100, pct: true },
     { k: 'flashIntensity', type: 'slider', step: 10, def: 100, pct: true },
+    { k: 'vibration', type: 'enum', values: ['off', 'low', 'high'], def: 'low', noPreview: true },   // controller-prompts §7
     { k: 'enemyShotEmphasis', type: 'enum', values: ['standard', 'high'], def: 'standard' },
     { k: 'damageNumbers', type: 'toggle', def: true },
     { k: 'showHitbox', type: 'toggle', def: false },
@@ -43,6 +46,8 @@ const GROUPS = [
   { k: 'gameplay', preview: true, rows: [
     { k: 'castMode', type: 'enum', values: ['hold', 'toggle'], def: 'hold', descPer: true },
     { k: 'aimAssist', type: 'slider', step: 10, def: 100, pct: true },
+    // controller-prompts §7 fallback placement: the Controls table fills its group, so Button prompts sits here
+    { k: 'promptStyle', type: 'enum', values: ['auto', 'xbox', 'playstation'], def: 'auto', noPreview: true },
     { k: 'tutorialHints', type: 'toggle', def: true },
     { k: '__resetTutorial', type: 'button' },
   ] },
@@ -54,7 +59,6 @@ const GROUPS = [
 ];
 // Controls table (settings-spec §2). Esc (pause) and mouse aim are locked.
 const ACTIONS = ['moveUp', 'moveDown', 'moveLeft', 'moveRight', 'cast', 'dash', 'interact', 'wandNext', 'wandPrev', 'wand1', 'wand2', 'wand3', 'inventory', 'pause'];
-const PAD_NAMES = { 0: 'A', 1: 'B', 2: 'X', 3: 'Y', 4: 'LB', 5: 'RB', 6: 'LT', 7: 'RT', 8: 'View', 9: 'Start' };
 
 const ROW_Y = 30, ROW_H = 18, LABEL_X = 160, CTRL_R = 616;
 
@@ -213,7 +217,8 @@ export class SettingsScene extends Phaser.Scene {
     this.drawRow(id);
     this.onMove(this.nav.cur());
     this.previewCue(row);
-    if (GROUPS[this.group].preview) this.firePreview(row.k);
+    if (row.k === 'vibration') { const rb = this.registry.get('rumble'); if (rb) rb.preview(); }   // §6 rule 5: same-screen preview
+    else if (GROUPS[this.group].preview && !row.noPreview) this.firePreview(row.k);
   }
 
   apply(k, v) {
@@ -285,6 +290,7 @@ export class SettingsScene extends Phaser.Scene {
   // ------------------------------------------------------------------------------------ controls
   buildControls() {
     const c = this.contentC;
+    this._padFam = this.router.padPromptFamily;
     const kbm = this.router.kbm;
     c.add(txt(this, LABEL_X, 30, t('settings.col.action'), 'T1', { color: C.dim }));
     c.add(txt(this, 380, 30, t('settings.col.kbm'), 'T1', { origin: [0.5, 0], color: C.dim }));
@@ -308,7 +314,8 @@ export class SettingsScene extends Phaser.Scene {
         this.nav.add({ id, x, y: y - 1, w: 84, h: 13, action: a, slot: k, locked, onConfirm: () => this.startCapture(a, k, locked) });
         ids.push(id);
       }
-      const pad = a === '__aim' ? t('settings.pad.rstick') : /^move/.test(a) ? t('settings.pad.lstick') : (PAD_DEFAULTS[a] || []).map((b) => PAD_NAMES[b] || b).join(' · ') || '-';
+      // G8: the §3 TEXT column for the pad family (the last pad seen while on keyboard), live bindings
+      const pad = a === '__aim' ? t('settings.pad.rstick') : /^move/.test(a) ? t('settings.pad.lstick') : promptListText(this._padFam, this.router.pad[a]) || '-';
       c.add(txt(this, 572, y, pad, 'T1', { origin: [0.5, 0], color: C.dim }));
     });
     const ry = 44 + rows.length * 14 + 4;
@@ -432,6 +439,7 @@ export class SettingsScene extends Phaser.Scene {
       if (row.k === '__resetGroup') s = t('settings.desc.__resetGroup');
       else if (row.descPer) s = t(`settings.desc.${row.k}.${String(Save.settings[row.k])}`);
       else s = t(`settings.desc.${row.k}`);
+      if (row.k === 'vibration' && this.router.padReader.connected && !this.router.padReader.actuator) s += ' ' + t('settings.desc.vibrationNoActuator');
     } else if (it.action) s = it.locked ? t(it.action === 'pause' ? 'settings.lockedEsc' : 'settings.lockedAim') : t('settings.desc.rebind', { action: t(`settings.action.${it.action}`) });
     else if (it.id === 'k:reset') s = t('settings.desc.resetControls');
     c.add(txt(this, 160, 318, s, 'T1', { color: C.dim, wrap: 456 }));
@@ -439,9 +447,8 @@ export class SettingsScene extends Phaser.Scene {
 
   buildFooter() {
     const c = this.footC; c.removeAll(true);
-    const pad = this.router.device === 'pad';
-    c.add(txt(this, 16, 344, t(pad ? 'settings.hintPad' : 'settings.hintKb'), 'T1', { color: C.dim }));
-    this._pad = pad;
+    const fam = this._fam = this.router.promptFamily;
+    c.add(hintLine(this, 16, 344, t(fam === 'kbm' ? 'settings.hintKb' : 'settings.hintPad'), this.router));
   }
 
   close() {
@@ -471,6 +478,12 @@ export class SettingsScene extends Phaser.Scene {
       }
       this.nav.handle(a);
     }
-    if ((this.router.device === 'pad') !== this._pad) this.buildFooter();
+    // controller-prompts §4 G8: footer + Controls pad column re-render on the frame the family changes
+    if (this.router.promptFamily !== this._fam) this.buildFooter();
+    if (GROUPS[this.group].controls && this.router.padPromptFamily !== this._padFam && !this.capture) {
+      const cur = this.nav.current;
+      this.buildGroup(); this.nav.raise();
+      if (cur && this.nav.has(cur)) this.nav.focus(cur, { silent: true, snap: true });
+    }
   }
 }

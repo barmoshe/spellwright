@@ -13,6 +13,7 @@ import Phaser from '../../lib/phaser.esm.min.js';
 import { DEPTH, VIEW_W, VIEW_H } from '../config.js';
 import { Art } from '../core/art.js';
 import { Save } from '../core/save.js';
+import { EV } from '../core/ev.js';
 
 const MAX_PARTICLES = 1200;
 const LARGE_FLASH_AREA = 0.25 * VIEW_W * VIEW_H;   // 57 600 px²
@@ -96,6 +97,9 @@ export class Fx {
     this.flipbook('fx.explosion', x, y, { scale: r >= 40 ? 3 : 2 });
     this.particles('ember', x, y, Math.min(10, 4 + (r / 8) | 0), { color: hostile ? 0xdc4a7b : 0xee8e2e, speed: r * 2, lifeMs: 280, gravity: 0 });
     this.particles('smoke', x, y, 3, { speed: 15, lifeMs: 500 });
+    // rumble hook (controller-prompts §6 "big explosion"): only explosions the player can see
+    const v = this.scene.cameras.main.worldView;
+    if (this.ctx.bus && x + r >= v.x && x - r <= v.right && y + r >= v.y && y - r <= v.bottom) this.ctx.bus.emit(EV.FX_EXPLOSION, { x, y, r, hostile });
   }
 
   /** Global large-flash limiter (accessibility-spec §4.3): summed area per step; ≤ 3 large flashes / 1 s. */

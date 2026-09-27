@@ -245,12 +245,4 @@ export function keycap(scene, x, y, label) {
   return c;
 }
 
-/** The glyph shown for an action on the current device (bindings are the source of truth). */
-export function actionGlyph(router, action) {
-  const pad = router.device === 'pad';
-  const PAD = { cast: 'RT', dash: 'A', interact: 'X', inventory: 'Back', pause: 'Start', wandNext: 'RB', wandPrev: 'Y', confirm: 'A', back: 'B', tabPrev: 'LB', tabNext: 'RB' };
-  if (pad) return PAD[action] || action;
-  const codes = (router.kbm && router.kbm[action]) || [];
-  const c = codes[0] || '';
-  return c.replace(/^Key/, '').replace(/^Digit/, '').replace('Mouse0', 'LMB').replace('Mouse2', 'RMB').replace('Escape', 'Esc').replace('Space', 'Space');
-}
+// (kit.actionGlyph was removed: pad legends resolve only through input/prompts.js via ui/HudKit.js glyphSpecs/glyph.)

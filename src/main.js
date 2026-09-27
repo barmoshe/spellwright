@@ -27,7 +27,7 @@ const config = {
   scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H, zoom: 1 },
   pixelArt: true,                 // antialias off + roundPixels on (verified in the 4.1.0 build)
   render: { pixelArt: true, antialias: false, roundPixels: true },
-  input: { gamepad: true, keyboard: true, mouse: true, touch: false },
+  input: { gamepad: false, keyboard: true, mouse: true, touch: false },   // pads: platform/gamepad.js (one Gamepad-API boundary)
   disableContextMenu: true,
   physics: {
     default: 'arcade',

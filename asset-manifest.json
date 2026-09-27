@@ -1,7 +1,7 @@
 {
  "version": 1,
  "game": "spellwright",
- "buildHash": "ec25c138",
+ "buildHash": "a0f7bbd4",
  "keyContract": "assets/ATLAS-KEYS.md",
  "premultipliedAlpha": false,
  "pixelArt": true,
@@ -727,8 +727,8 @@
    ]
   },
   "ui": {
-   "image": "assets/atlases/ui-3b8301c3.png",
-   "data": "assets/atlases/ui-3b8301c3.json",
+   "image": "assets/atlases/ui-ebed5e00.png",
+   "data": "assets/atlases/ui-ebed5e00.json",
    "format": "phaser-json",
    "pageWidth": 1024,
    "pageHeight": 256,
@@ -736,8 +736,8 @@
    "padding": 2,
    "extrude": 1,
    "premultipliedAlpha": false,
-   "frameCount": 258,
-   "uniqueRects": 249,
+   "frameCount": 288,
+   "uniqueRects": 279,
    "frames": [
     "font.body",
     "font.body_outline",
@@ -915,6 +915,36 @@
     "icon32.wands.oak_staff",
     "icon32.wands.stormcaller_staff",
     "icon32.wands.twin_fork",
+    "prompt.pad.dpad",
+    "prompt.pad.dpad_down",
+    "prompt.pad.dpad_left",
+    "prompt.pad.dpad_lr",
+    "prompt.pad.dpad_right",
+    "prompt.pad.dpad_ud",
+    "prompt.pad.dpad_up",
+    "prompt.pad.stick_l",
+    "prompt.pad.stick_r",
+    "prompt.ps.circle",
+    "prompt.ps.create",
+    "prompt.ps.cross",
+    "prompt.ps.l1",
+    "prompt.ps.l2",
+    "prompt.ps.options",
+    "prompt.ps.r1",
+    "prompt.ps.r2",
+    "prompt.ps.square",
+    "prompt.ps.touchpad",
+    "prompt.ps.triangle",
+    "prompt.xbox.a",
+    "prompt.xbox.b",
+    "prompt.xbox.lb",
+    "prompt.xbox.lt",
+    "prompt.xbox.menu",
+    "prompt.xbox.rb",
+    "prompt.xbox.rt",
+    "prompt.xbox.view",
+    "prompt.xbox.x",
+    "prompt.xbox.y",
     "ui.aim_pip_5x5",
     "ui.badge_20",
     "ui.badge_20_equipped",
@@ -2816,11 +2846,84 @@
   "combat_pages": 5,
   "note": "world + ui + 1 tileset page bound in a room (3 of 8 WebGL1 units)"
  },
+ "prompts": {
+  "atlas": "ui",
+  "spec": "specs/ux/controller-prompts.md",
+  "glyphHeight": 12,
+  "palette": {
+   "outline": "#222222",
+   "body": "#4b5468",
+   "symbol": "#fdf7ed"
+  },
+  "note": "1:1 only; kbm keycaps are procedural (not in atlas)",
+  "byStdIndex": {
+   "0": {
+    "xbox": "prompt.xbox.a",
+    "ps": "prompt.ps.cross"
+   },
+   "1": {
+    "xbox": "prompt.xbox.b",
+    "ps": "prompt.ps.circle"
+   },
+   "2": {
+    "xbox": "prompt.xbox.x",
+    "ps": "prompt.ps.square"
+   },
+   "3": {
+    "xbox": "prompt.xbox.y",
+    "ps": "prompt.ps.triangle"
+   },
+   "4": {
+    "xbox": "prompt.xbox.lb",
+    "ps": "prompt.ps.l1"
+   },
+   "5": {
+    "xbox": "prompt.xbox.rb",
+    "ps": "prompt.ps.r1"
+   },
+   "6": {
+    "xbox": "prompt.xbox.lt",
+    "ps": "prompt.ps.l2"
+   },
+   "7": {
+    "xbox": "prompt.xbox.rt",
+    "ps": "prompt.ps.r2"
+   },
+   "8": {
+    "xbox": "prompt.xbox.view",
+    "ps": "prompt.ps.create"
+   },
+   "9": {
+    "xbox": "prompt.xbox.menu",
+    "ps": "prompt.ps.options"
+   },
+   "12": {
+    "xbox": "prompt.pad.dpad_up",
+    "ps": "prompt.pad.dpad_up"
+   },
+   "13": {
+    "xbox": "prompt.pad.dpad_down",
+    "ps": "prompt.pad.dpad_down"
+   },
+   "14": {
+    "xbox": "prompt.pad.dpad_left",
+    "ps": "prompt.pad.dpad_left"
+   },
+   "15": {
+    "xbox": "prompt.pad.dpad_right",
+    "ps": "prompt.pad.dpad_right"
+   },
+   "17": {
+    "ps": "prompt.ps.touchpad"
+   }
+  }
+ },
  "credits": "assets/credits.json",
  "licenses": "LICENSES.md",
  "sourcePacks": [
   "0x72_dungeontileset-ii",
   "kenney_fonts",
+  "kenney_input-prompts-pixel",
   "kenney_ui-pack-pixel-adventure",
   "oga_16x16-explosion",
   "oga_496-rpg-icons",

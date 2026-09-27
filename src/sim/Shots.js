@@ -64,7 +64,7 @@ export class ShotSystem {
   _acquire() {
     let s = this.free.pop();
     if (!s) { warnOnce('shot-pool', `shot pool exhausted (${MAX_SHOTS})`); track('projectile_refused'); return null; }
-    s.alive = true; s.seq = ++this.seq; s.age = 0; s.hits.length = 0; s.rehit = null; s.released = false; s.collided = false;
+    s.alive = true; s._spawnChecked = false; s.seq = ++this.seq; s.age = 0; s.hits.length = 0; s.rehit = null; s.released = false; s.collided = false;
     s.killedByCap = false; s.wallNormal = null; s.noSplit = false; s.payload = null; s.trigger = null; s.onTick = null; s.tickT = 0;
     this.live.push(s);
     return s;
@@ -234,6 +234,9 @@ export class ShotSystem {
     const n = Math.max(1, Math.ceil(Math.max(Math.abs(dx), Math.abs(dy)) / (TILE * 0.5)));
     const sx = dx / n, sy = dy / n;
     const w = this.ctx.world;
+    // point-blank: an enemy already overlapping the shot at spawn is hit before any wall test
+    // (a cornered player firing into the wall behind a body-blocking enemy must still connect)
+    if (!s._spawnChecked) { s._spawnChecked = true; if (s.behavior !== 'mine') { this._hitEnemies(s); if (!s.alive) return; } }
     for (let k = 0; k < n && s.alive; k++) {
       let nx = s.x + sx, ny = s.y + sy;
       if (walls) {
@@ -256,6 +259,7 @@ export class ShotSystem {
             s.heading = Math.atan2(s.vy, s.vx) / DEG;
             this.ctx.fx.particles('spark', s.x, s.y, 2, { color: ELEMENT_TINT[s.element], speed: 40, lifeMs: 150 });
           } else {
+            if (s.behavior !== 'mine') { this._hitEnemies(s); if (!s.alive) return; }   // enemy pressed against the wall
             s.wallNormal = { x: nxv, y: nyv };
             if (s.behavior === 'boomerang' && s.phase === 0) { s.phase = 1; s.hits.length = 0; return; }   // a wall hit turns it early
             this._end(s, 'wall'); return;

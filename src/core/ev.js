@@ -53,7 +53,8 @@ export const EV = Object.freeze({
   // world UI
   INTERACT_PROMPT: 'ui:interact',         // ({text, x, y} | null)   world coordinates; null hides
   TOAST: 'ui:toast',                      // ({text, icon?, kind?:'relic'|'reaction'|'info'|'unlock'})
-  INPUT_DEVICE: 'input:device',           // ('kbm'|'pad')
+  INPUT_DEVICE: 'input:device',           // (device 'kbm'|'pad', promptFamily 'kbm'|'xbox'|'ps') — on prompt-family change
+  FX_EXPLOSION: 'fx:explosion',           // ({x, y, r, hostile}) — every explosion ring (rumble, controller-prompts §6)
   SETTINGS_CHANGED: 'settings:changed',   // (key, value)
   FTUE: 'ftue:event',                     // (name, data) — generic FTUE signal
 });

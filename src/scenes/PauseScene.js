@@ -20,6 +20,7 @@ import { cat } from '../data/catalog.js';
 import { Art } from '../core/art.js';
 import { t } from '../core/i18n.js';
 import { rarityWord } from '../ui/fmt.js';
+import { glyph as padGlyph, glyphSpecs } from '../ui/HudKit.js';
 
 const TABS = ['wands', 'relics', 'map', 'codex', 'menu'];
 const TAB_W = 76, TAB_X0 = Math.round((VIEW_W - TAB_W * TABS.length) / 2);
@@ -54,10 +55,7 @@ export class PauseScene extends Phaser.Scene {
   buildTabBar() {
     const p = this.m.panel;
     p.add(box(this, 0, 0, VIEW_W, 20, 'dark'));
-    const pad = this.router.device === 'pad';
-    this.kPrev = keycap(this, 10, 4, pad ? 'LB' : 'Q');
-    this.kNext = keycap(this, VIEW_W - 24, 4, pad ? 'RB' : 'E');
-    p.add([this.kPrev, this.kNext]);
+    this.buildTabKeys();
     this.tabTexts = TABS.map((k, i) => {
       const x = TAB_X0 + i * TAB_W;
       const tx = txt(this, x + TAB_W / 2, 3, t(`pause.tab.${k}`), 'T1', { origin: [0.5, 0], color: C.dim });
@@ -260,6 +258,21 @@ export class PauseScene extends Phaser.Scene {
     }, { swap: !!rt });
   }
 
+  /** G5 tab-bar keys: Q/E keycaps on keyboard, [tabPrev]/[tabNext] glyphs (LB/RB · L1/R1) on a pad. */
+  buildTabKeys() {
+    if (this.kPrev) { this.kPrev.destroy(); this.kNext.destroy(); }
+    const fam = this._fam = this.router.promptFamily;
+    if (fam === 'kbm') {
+      this.kPrev = keycap(this, 10, 4, 'Q');
+      this.kNext = keycap(this, VIEW_W - 24, 4, 'E');
+    } else {
+      this.kPrev = padGlyph(this, 10, 4, glyphSpecs(this.router, 'tabPrev')[0]);
+      this.kNext = padGlyph(this, 0, 4, glyphSpecs(this.router, 'tabNext')[0]);
+      this.kNext.x = VIEW_W - 12 - this.kNext._w;
+    }
+    this.m.panel.add([this.kPrev, this.kNext]);
+  }
+
   update() {
     if (this.flow.top() !== 'pause') return;
     const ui = this.router.consumeUI();
@@ -267,8 +280,8 @@ export class PauseScene extends Phaser.Scene {
     for (let i = 0; i < ui.length; i++) this.onIntent(ui[i]);
     for (let i = 0; i < ex.length; i++) this.onExtra(ex[i]);
     if (this.editor && this.editor.heldObj && this.editor.pointerMode) this.editor.drawHeld();
-    const pad = this.router.device === 'pad';
-    if (pad !== this._pad) { this._pad = pad; this.kPrev.list[1].setText(pad ? 'LB' : 'Q'); this.kNext.list[1].setText(pad ? 'RB' : 'E'); if (this.editor) this.editor.buildFooter(); }
+    // controller-prompts §4 G5/G6: tab keycaps + editor footer follow the prompt family live
+    if (this.router.promptFamily !== this._fam) { this.buildTabKeys(); if (this.editor) this.editor.buildFooter(); }
   }
 
   onIntent(a) {

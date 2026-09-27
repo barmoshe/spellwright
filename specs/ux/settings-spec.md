@@ -88,6 +88,7 @@ Table rows (T1, 14 px pitch), columns: **Action** · **Keyboard / mouse** (2 cel
 - **UI navigation keys** (arrows, Enter, Esc, Q/E) are not rebindable; they are the menu channel (architecture §8), which keeps every screen reachable whatever the gameplay bindings are.
 - **Gamepad remapping is deferred** (the table shows the bindings with a note: "Gamepad remapping: use your system or Steam Input for now"). The HUD and prompts always render the current bindings (`ftue-flow.md` §2 rule 11).
 - **Reset controls to defaults** is the last row (it resets `bindings.kbm` only).
+- **Delta (Wave 3):** the rows `vibration` (Comfort) and `promptStyle` (Controls) and the PlayStation pad column are specified in `controller-prompts.md` §7.
 
 ---
 
