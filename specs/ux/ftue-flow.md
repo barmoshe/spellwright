@@ -89,3 +89,63 @@ Title ─Start Run─► SANCTUM (move+cast) ─door─► FIRST BLOOD (cast und
 - **State-driven, not timed:** every trigger in §1 is a player-state predicate (inactivity, proximity, press pattern, spawn of a teaching enemy, inventory state).
 - **Introduce → isolate → recombine** is the designer's room order. The prompts attach to the *introduce* beat only and never reappear in the recombine rooms.
 - **Holds with hints off:** with every "hints off" prompt suppressed, the layout still gates the Sanctum door behind casting and the Gauntlet lane still rewards dashing. The editor still opens on the first modifier pick (P3 is not a hint; it is the verb's entry point).
+
+---
+
+## §5 v2 delta: engine-derived coaching, first-block tips, touch variants
+
+**Status:** v2 Wave A1. The §2 runner rules apply unchanged to everything below: state-triggered, one verb prompt at a time, completion beats display, show caps, and the hints setting.
+
+### 5.1 Ghost-hand coach (upgrades P3; used for every coached grant)
+
+The coach **never hard-codes a slot index.** A layout that is "right" today can be wrong after a data change (v2 makes mana scarce and adds keywords). So the goal is computed by the same engine the preview uses.
+
+1. **When:** a coached card is held in the editor. That means P3 (the first modifier), **P13** (the first trigger card, when `design-v2.md` keeps triggers), and **P14** (the first card that enables a counter keyword, offered after a first-block tip, §5.2).
+2. **Goal search:** for the equipped wand, enumerate every legal placement of the held card: each empty slot, plus each **insert** position (`wand-editor-ux.md` §10.3). Call `previewCycle` on each. Score them:
+   - **(a)** it introduces **no new** W-warning (§5.4 of the editor spec);
+   - **(b)** the lesson's objective: P3 → the largest ≈DPS gain; P13 → a valid carrier and payload with the largest payload damage; P14 → the target keyword appears in **Enables**;
+   - **(c)** the smallest mana-per-second increase (v2 mana pressure);
+   - **(d)** the leftmost position.
+
+   The winner is the **goal**. If every candidate ties on (b), there is no ghost, and pane C says "Any slot works here."
+3. **Show (only after 1.5 s without editor input**, so a player who already knows isn't lectured):
+   - a **ghost hand** (16×16 pointing hand) plus a 1× translucent copy of the card travel from the card's cell to the goal cell over 900 ms, hold 500 ms, and loop;
+   - the goal cell gets a pulsing 2 px ring;
+   - pane C shows a coach line built from the diff: "{card} powers the spells to its right — put it before {spell}. ≈DPS {a} → {b}".
+   - **Reduced motion:** a static hand on the goal cell, a 1 px dotted line from the source to the goal, and a static ring.
+   - It is hidden while the card is being dragged or a card is selected, and re-shown 1.5 s after the next idle.
+4. **Complete** when the player makes **any** placement that satisfies (a), and (b) is at least partially met (a DPS gain > 0 / a valid payload / the keyword enabled). The player isn't forced into the exact goal. If a placement creates a warning, pane C shows the warning's text, and the ghost restarts from the card's new cell.
+5. **Multi-step goals** (e.g. a trigger needing both carrier and payload order): walk them **one move at a time**. After each move, recompute the goal from the new state.
+6. **Touch:** the ghost hand is drawn *above* the path (offset −16 px), so the player's own finger never hides it.
+
+### 5.2 First-block defence tips (P12; one per defence type)
+
+| Trigger (bus) | Toast (H14; on touch, top-centre) | Second line (engine-derived) | Flag |
+|---|---|---|---|
+| the first `EV.DEFENCE` with result `blocked` / `reduced` / `absorbed` for defence **D** (`shield` / `armour` / `ward`, `rules.defences`; one per type per profile, `firstBlockTipOncePerType`) on a player hit | icon D + the glossary line for D, e.g. "Shielded — PIERCE gets through. It only guards its front, and wears down after 7 blocks." · "Armoured — BLAST hits hard (×2.5); direct hits barely scratch it (×0.4)." · "Warded — SHOCK breaks the ward. It soaks 3 hits, even burns." (numbers come from `rules.defences` at runtime) (the exact wording is the Designer's glossary; UX fixes the shape: **name — counter — one consequence**) | if a carried wand already counters D: "Wand {k} has {KEYWORD}: [wandNext]" (the glyph is SWAP on touch). Else: "No {KEYWORD} yet — look for it in drafts. Doors show threats." | `ftue.block.{D}` |
+
+- **The damage number** on that first block is the word ("BLOCKED" + icon, `hud-layout.md` §9.6). Blocks keep showing the word afterwards, aggregated per 500 ms.
+- **The next draft** after a first-block tip marks any offered card that enables D's counter with a **"Counters: {D}"** T1 tag and the counter pip. This gives the player's attention the Designer's counter guarantee without extra text.
+- **Hints setting:** the P12 toast follows the Tutorial hints setting, like P5. The BLOCKED word and the HUD counter pips are **always** shown, so a player with hints off still gets the information through shapes.
+
+### 5.3 Touch variants (the prompt family is `touch`, `controller-prompts.md` §9)
+
+The *triggers* are unchanged. The *text* varies by family where the verb itself differs on touch:
+
+| ID | KB+M / pad (unchanged) | **Touch** text | Touch completion |
+|---|---|---|---|
+| P1 | `[move] Move` | "[move] Drag the left side to move" | 1.0 s of cumulative stick movement |
+| P2 | `Aim · Hold [cast] Cast` | **auto-fire:** shown **on the first auto-fire at an enemy** (First Blood, room 1): "Your wand fires at enemies on its own. [aim] Aim yourself any time." **stick mode:** covered by P2t | auto: the first aim-stick override (usually already done in the Sanctum via P2t), **or** 3 rooms cleared. Stick: P2t's completion. |
+| **P2t** (touch only; the Sanctum crate lesson) | — | "[aim] Drag the right side to aim and cast". Trigger (player state): the player is within **3 tiles (48 px) of a crate**, **no living enemy** is in the room, and there has been **no aim-stick cast for 2 s**. This fires at the Sanctum crate wall on the first run, and in any later enemy-free room with crates until it completes. It is shown in **both** `touchFire` modes, because auto-fire never targets crates. The target crate gets a static 1 px dashed ring (a shape, not a colour). The prompt is **not** hint-gated, because without it a hints-off touch player could be stuck at the first door. | the first **aim-stick cast** that hits a crate → `ftue.aimStick` (this also completes P2 on touch). Show cap: none until complete; it re-shows 4 s after each failed idle. It is never shown while any enemy is alive. |
+| P2b | hold, don't tap | **not shown on touch** (the stick *is* the hold) | — |
+| P3b | `[inventory] Edit wands…` | "[inventory] EDIT your wand — slot your new card" (the EDIT button also shows its `+` badge) | the editor opened |
+| P4 | `[dash] Dash — dodge through attacks` | "[dash] Tap DASH to dodge through attacks" | the first dash |
+| P8 | `[wandNext] Switch wand` | "[wandNext] SWAP switches wand" | the first swap |
+| P9 (v2 text, all families) | — | "Out of mana — your wand spends faster than it refills. [inventory] shows how long it lasts." (it points at the editor's "Runs dry after N s" bar) | on show |
+| P10 | shop | "Tap an item, then Buy. [inventory] edits wands here too." | the first shop opened |
+
+The glyph tokens resolve to the touch glyphs (the DASH, SWAP, EDIT button icons, and the left/right thumb pictograms), so the prompt shows the same picture as the button it names.
+
+### 5.4 Flags added to §3
+
+`aimStick` (P2t) · `block.shield · block.armour · block.ward` (named per `design-v2.md`'s defence ids) · `coach.trigger` (P13) · `coach.counter` (P14) · `a2hs.shown` (int) and `a2hs.dismissed` (int) (`mobile-touch-spec.md` §7.2; stored in `meta`, not `ftue`, because Reset tutorial must not re-show the install card).

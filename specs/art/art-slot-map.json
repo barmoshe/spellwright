@@ -1,5 +1,5 @@
 {
- "version": 1,
+ "version": 2,
  "owner": "2D Artist",
  "artifact": "art-slot-map (ad-hoc; consumed by TA Wave 3 atlas + Animator clip binding)",
  "conventions": {
@@ -12,7 +12,7 @@
    "0x72 tile_list: wall_edge_top_left x 31 -> 32"
   ],
   "projectile_scale": "visual scale = 1 if radius multiplier < 1.5, 2 if 1.5-2.49, 3 if >= 2.5 (size_up x1.6 -> x2). Hitbox follows data exactly; player visuals may exceed hitboxes, enemy bullets never do.",
-  "ebullet_rule": "enemy projectile radius r -> ebullet.<element>.<2r+1> (frost 9/13 px have a rim broken at the 4 diagonals = segmented crystal ring, the grayscale cue for the slowing shot); radius 3/4/6 map exactly; any other radius -> nearest size DOWN (hitbox never smaller than the dark core). Death on wall/expiry: fx.ebullet_pop."
+  "ebullet_rule": "enemy projectile radius r -> ebullet.<element>.<2r+1> (frost 9/13 px have a rim broken at the 4 diagonals = segmented crystal ring, the grayscale cue for the slowing shot); radius 3/4/6 map exactly; any other radius -> nearest size UP (v2: radius 5 -> 11 px) so the visible disc covers the hitbox + 1 px. Death on wall/expiry: fx.ebullet_pop."
  },
  "sources": {
   "0x72": {
@@ -482,6 +482,147 @@
     "#b0a3a3": "#5f2d56",
     "#988787": "#2a2a3a",
     "#776161": "#2a2a3a"
+   }
+  },
+  "L_SENTINEL": {
+   "applies": "0x72 orc_warrior_* -> Tomb Sentinel (grey tomb-stone skin, iron darks)",
+   "map": {
+    "#3d734f": "#aa8d7a",
+    "#8f4029": "#483b3a",
+    "#62232f": "#2a2a3a"
+   }
+  },
+  "L_WARDEN": {
+   "applies": "0x72 orc_warrior_* x2 -> Grave Warden (bone skin, gold belt; captain of the sentinels)",
+   "map": {
+    "#3d734f": "#d3bfa9",
+    "#8f4029": "#facb3e",
+    "#62232f": "#8f4029"
+   }
+  },
+  "L_MATRON": {
+   "applies": "0x72 pumpkin_dude_* x2 -> Lantern Matron (brighter lantern head, plum robe)",
+   "map": {
+    "#ee8a2e": "#facb3e",
+    "#c56025": "#ee8e2e",
+    "#8f4029": "#5f2d56",
+    "#62232f": "#2a2a3a"
+   }
+  },
+  "L_IRON": {
+   "applies": "0x72 masked_orc_* x2 -> Iron Colossus (steel plates, pale mask)",
+   "map": {
+    "#3d734f": "#417089",
+    "#8f4029": "#314152",
+    "#62232f": "#2a2a3a",
+    "#fdf7ed": "#b6cbcf",
+    "#d3bfa9": "#fdf7ed",
+    "#314152": "#1a2230"
+   }
+  },
+  "L_SFX_STEEL": {
+   "applies": "simplefx grey shields -> held shield overlay (steel), NORMAL blend, outlined (enemy-owned)",
+   "map": {
+    "#7f7f7f": "#417089",
+    "#c3c3c3": "#b6cbcf",
+    "#ffffff": "#fdf7ed",
+    "#000000": "#222222"
+   }
+  },
+  "L_DW_PRISM": {
+   "applies": "DevWizard Arcane Bolt -> prism_spark (evolved spark: white-lavender-cyan)",
+   "map": {
+    "#76428a": "#8b7cf0",
+    "#d77bba": "#cae6f5",
+    "#5b6ee1": "#fdf7ed"
+   }
+  },
+  "L_ARCHER": {
+   "applies": "0x72 skelet_* -> Bone Archer (dustier, darker bone than the melee skeleton)",
+   "map": {
+    "#fdf7ed": "#d3bfa9",
+    "#d3bfa9": "#aa8d7a"
+   }
+  },
+  "L_BOW": {
+   "applies": "0x72 weapon_bow (its crimson string/grip leaves the reserved hostile band)",
+   "map": {
+    "#550f0a": "#62232f",
+    "#9b1a0a": "#8f4029"
+   }
+  },
+  "L_DROWNED": {
+   "applies": "0x72 zombie_anim_* (TA fix f10->f0) -> Drowned Thrall (waterlogged slate skin, algae)",
+   "map": {
+    "#d3bfa9": "#6f8fa0",
+    "#aa8d7a": "#4a6272",
+    "#97da3f": "#4ba747",
+    "#4ba747": "#3d734f"
+   }
+  },
+  "L_LEECH": {
+   "applies": "0x72 tiny_slug_anim_* -> Mire Leech (brown leech, red mouth)",
+   "map": {
+    "#4ba747": "#8a503e",
+    "#3d734f": "#62232f",
+    "#323e4f": "#2a2a3a",
+    "#62232f": "#da4e38",
+    "#483b3a": "#314152"
+   }
+  },
+  "L_ARMOR": {
+   "applies": "0x72 knight_m_* -> Animated Armour (dull steel, empty dark visor, crimson plume) \u2014 the ONLY 0x72 hero sheet allowed as an enemy (style-guide \u00a712.4)",
+   "map": {
+    "#72d6ce": "#6f8fa0",
+    "#417089": "#314152",
+    "#da4e38": "#62232f",
+    "#ee8e2e": "#9f294e",
+    "#fdf7ed": "#1a2230"
+   }
+  },
+  "L_HALBERD": {
+   "applies": "0x72 weapon_waraxe -> Animated Armour halberd",
+   "map": {
+    "#72d6ce": "#b6cbcf",
+    "#55a894": "#6f8fa0"
+   }
+  },
+  "L_INK": {
+   "applies": "0x72 imp_* -> Ink Imp (violet-black ink; same silhouette as fire_imp = same archetype and telegraph)",
+   "map": {
+    "#da4e38": "#5956bd",
+    "#5f2d56": "#314152",
+    "#62232f": "#2a2a3a"
+   }
+  },
+  "L_EXPL_INK": {
+   "applies": "BitingChaos explosion -> Ink Imp blast (hostile ring colour still telegraph-rim)",
+   "map": {
+    "#ff004d": "#2a2a3a",
+    "#7e2553": "#1a2230",
+    "#ffa300": "#314152",
+    "#ffec27": "#5956bd",
+    "#fff1e8": "#cfc0ff",
+    "#5f574f": "#222222"
+   }
+  },
+  "L_PUNY_DRAIN": {
+   "applies": "Puny sewer-drain wall tiles (cols 8-15, rows 1-4) -> W2 wall decor in the f2 slate ramp; sludge becomes algae, the drip highlight becomes water",
+   "map": {
+    "#525252": "#4a6272",
+    "#474747": "#2f3b47",
+    "#3f3f3f": "#27313b",
+    "#3a3a3a": "#1a2230",
+    "#777777": "#6f8fa0",
+    "#686868": "#6f8fa0",
+    "#585652": "#4a6272",
+    "#406d44": "#3d734f",
+    "#548257": "#4ba747",
+    "#3c6133": "#3d734f",
+    "#3e673b": "#3d734f",
+    "#384c33": "#27313b",
+    "#2c382a": "#1a2230",
+    "#7ea56e": "#72d6ce"
    }
   }
  },
@@ -1351,11 +1492,350 @@
    "lut": "L_GOLEM",
    "bullet": "ebullet.arcane.9",
    "stomp_fx": "fx.explosion (radius 44, hostile)"
+  },
+  "tomb_sentinel": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "orc_warrior_idle_anim_f0",
+     "orc_warrior_idle_anim_f1",
+     "orc_warrior_idle_anim_f2",
+     "orc_warrior_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "orc_warrior_run_anim_f0",
+     "orc_warrior_run_anim_f1",
+     "orc_warrior_run_anim_f2",
+     "orc_warrior_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    23
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_SENTINEL",
+   "overlays": {
+    "shield": "DEFENCES.shield.held (12x12 steel shield, larger than its head: the shield IS the read)",
+    "weapon": {
+     "src": "0x72",
+     "frames": [
+      "weapon_spear"
+     ]
+    }
+   },
+   "thrust_fx": "fx.enemy_slash frames 1-3 only, narrow (arcDeg 40)",
+   "defence": "shield",
+   "note": "grey tomb-stone guard; unique silhouette = body + oversized tower shield + spear"
+  },
+  "lantern_acolyte": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "pumpkin_dude_idle_anim_f0",
+     "pumpkin_dude_idle_anim_f1",
+     "pumpkin_dude_idle_anim_f2",
+     "pumpkin_dude_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "pumpkin_dude_run_anim_f0",
+     "pumpkin_dude_run_anim_f1",
+     "pumpkin_dude_run_anim_f2",
+     "pumpkin_dude_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    23
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "light": "authored glow_16 ADD tint torch-light #ee8e2e alpha 0.35 at head (it carries a lantern; also lights the dark twist)",
+   "ward_cast_fx": "fx.ward_kindle",
+   "defence": "ward 2",
+   "note": "the lantern-headed support; orange head never carries a projectile (it does not shoot), so it cannot be misread as fire magic"
+  },
+  "bone_archer": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "skelet_idle_anim_f0",
+     "skelet_idle_anim_f1",
+     "skelet_idle_anim_f2",
+     "skelet_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "skelet_run_anim_f0",
+     "skelet_run_anim_f1",
+     "skelet_run_anim_f2",
+     "skelet_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_ARCHER",
+   "overlays": {
+    "weapon": {
+     "src": "0x72",
+     "frames": [
+      "weapon_bow"
+     ],
+     "lut": "L_BOW",
+     "rule": "held at `hand`, rotated to the aim (weapons may rotate); the drawn bow IS the telegraph"
+    }
+   },
+   "bullet": "ebullet.arcane.7",
+   "world": "w1",
+   "note": "same body as skeleton but dustier + a bow taller than itself: melee vs ranged skeleton reads at a glance"
+  },
+  "drowned_thrall": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "zombie_anim_f0",
+     "zombie_anim_f1",
+     "zombie_anim_f2",
+     "zombie_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "zombie_anim_f0",
+     "zombie_anim_f1",
+     "zombie_anim_f2",
+     "zombie_anim_f3"
+    ]
+   },
+   "class": "B",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_DROWNED",
+   "world": "w2",
+   "defence": "ward 2 (rune pips)",
+   "water": "body y-offset +2 px and a 1 px #cae6f5 ripple ring (Graphics) while standing in water"
+  },
+  "mire_leech": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "tiny_slug_anim_f0",
+     "tiny_slug_anim_f1",
+     "tiny_slug_anim_f2",
+     "tiny_slug_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "tiny_slug_anim_f0",
+     "tiny_slug_anim_f1",
+     "tiny_slug_anim_f2",
+     "tiny_slug_anim_f3"
+    ]
+   },
+   "class": "B (flyer)",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_LEECH",
+   "flying": true,
+   "world": "w2",
+   "note": "0x72 slug in native style (not trashmobz): a swarm \"swimmer\"; bob per flyer rule"
+  },
+  "animated_armor": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "knight_m_idle_anim_f0",
+     "knight_m_idle_anim_f1",
+     "knight_m_idle_anim_f2",
+     "knight_m_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "knight_m_run_anim_f0",
+     "knight_m_run_anim_f1",
+     "knight_m_run_anim_f2",
+     "knight_m_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    28
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_ARMOR",
+   "overlays": {
+    "weapon": {
+     "src": "0x72",
+     "frames": [
+      "weapon_waraxe"
+     ],
+     "lut": "L_HALBERD"
+    }
+   },
+   "defence": "armour 36 (plate bar)",
+   "world": "w3",
+   "swipe_fx": "fx.enemy_slash",
+   "note": "16x28 like the player, so it is kept maximally unlike the wizard: grey steel, no hat, dark visor, crimson plume, halberd"
+  },
+  "bound_tome": {
+   "idle": {
+    "src": "authored",
+    "frames": [
+     "bound_tome_f0"
+    ]
+   },
+   "move": {
+    "src": "authored",
+    "frames": [
+     "bound_tome_f0"
+    ]
+   },
+   "class": "D",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "windup_frame": {
+    "src": "authored",
+    "frames": [
+     "bound_tome_f1"
+    ]
+   },
+   "world": "w3",
+   "bullet": "ebullet.arcane.7 (page_storm) \u00b7 ebullet.poison.7 (ink_bolt)",
+   "note": "authored floating grimoire (plum cover, gilt clasp); opens and glares for every windup"
+  },
+  "ink_imp": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "imp_idle_anim_f0",
+     "imp_idle_anim_f1",
+     "imp_idle_anim_f2",
+     "imp_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "imp_run_anim_f0",
+     "imp_run_anim_f1",
+     "imp_run_anim_f2",
+     "imp_run_anim_f3"
+    ]
+   },
+   "class": "A",
+   "frame_size": [
+    16,
+    16
+   ],
+   "origin": [
+    0.5,
+    1.0
+   ],
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_10x3"
+    ]
+   },
+   "lut": "L_INK",
+   "world": "w3",
+   "blast_fx": "fx.explosion (radius 34) with expl16 through L_EXPL_INK; ring = telegraph-rim"
   }
  },
  "elite": {
   "scale": 1.0,
-  "outline": "TA bakes an elite variant of every eliteCandidates sheet: 1px outline in token elite-gold #facb3e around the existing #222222 silhouette (frame grows +2 px each axis; origin unchanged)",
+  "outline": "v2: the affix outline overlay (ring1/ring2 recipe, AFFIX_OUTLINE_RECIPE; tinted by the affix outline token) replaces the v1 baked elite-gold outline",
   "ground": "authored shadow ellipse drawn in #facb3e alpha 0.5 under the regular shadow",
   "objection": "rules.enemies.elite.scale 1.25 \u2014 see art-slot-map.md \u00a7Objections"
  },
@@ -1400,7 +1880,9 @@
     ]
    },
    "bullet": "ebullet.arcane.9",
-   "hitbox_fit": "radius 12 vs content 18x27: OK"
+   "hitbox_fit": "radius 12 vs content 18x27: OK",
+   "tier": "boss",
+   "v2": "shield_wall (guard): boss_knight_blade swaps for a x1 warden_shield-style overlay (SHIELD_STATES fresh) + shield_arc_r16 frontal bubble for durationMs; bone_rain (heat) = hazard + authored bone_shard"
   },
   "mire_queen": {
    "idle": {
@@ -1435,7 +1917,9 @@
    },
    "bullet": "ebullet.poison.9 (aimed_glob radius 6 -> ebullet.poison.13)",
    "hazard": "hazard.acid_pool",
-   "hitbox_fit": "radius 14 vs content 20 wide: contact reads ~1 px early \u2014 note to Game Designer (radius 12 would fit); not blocking"
+   "hitbox_fit": "radius 14 vs content 20 wide: contact reads ~1 px early \u2014 note to Game Designer (radius 12 would fit); not blocking",
+   "tier": "boss",
+   "v2": "veil (ward_allies self): 5 ward runes above her head (two rows 3+2)"
   },
   "archlich": {
    "idle": {
@@ -1482,7 +1966,143 @@
     ]
    },
    "bullet": "ebullet.arcane.9 / ebullet.frost.9",
-   "hazard": "hazard.fire_zone"
+   "hazard": "hazard.fire_zone",
+   "tier": "boss",
+   "v2": "mirror_volley: fan preview = one 1 px telegraph-rim line per shot (count read from the player) during windup; grand_spiral uses spiral grammar"
+  },
+  "grave_warden": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "orc_warrior_idle_anim_f0",
+     "orc_warrior_idle_anim_f1",
+     "orc_warrior_idle_anim_f2",
+     "orc_warrior_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "orc_warrior_run_anim_f0",
+     "orc_warrior_run_anim_f1",
+     "orc_warrior_run_anim_f2",
+     "orc_warrior_run_anim_f3"
+    ]
+   },
+   "lut": "L_WARDEN",
+   "frame_size": [
+    16,
+    23
+   ],
+   "scale": 2,
+   "tier": "mini",
+   "scale_note": "x2 exception E1 (Archlich precedent): captain of the tomb_sentinels; shield overlay and arcs also x2-size (arc r22 authored, not scaled)",
+   "weapon_overlay": {
+    "warden_shield": {
+     "src": "simplefx",
+     "rect": [
+      50,
+      66,
+      12,
+      12
+     ],
+     "lut": [
+      "L_SFX_STEEL"
+     ],
+     "scale": 2
+    },
+    "warden_spear": {
+     "src": "0x72",
+     "frames": [
+      "weapon_spear"
+     ],
+     "scale": 2
+    }
+   },
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_22x5"
+    ]
+   },
+   "bullet": "ebullet.arcane.9 (bone_toss)",
+   "defence": "shield (wears after 7; states fresh/worn/cracked)",
+   "hitbox_fit": "radius 10 vs content 24x32: OK"
+  },
+  "lantern_matron": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "pumpkin_dude_idle_anim_f0",
+     "pumpkin_dude_idle_anim_f1",
+     "pumpkin_dude_idle_anim_f2",
+     "pumpkin_dude_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "pumpkin_dude_run_anim_f0",
+     "pumpkin_dude_run_anim_f1",
+     "pumpkin_dude_run_anim_f2",
+     "pumpkin_dude_run_anim_f3"
+    ]
+   },
+   "lut": "L_MATRON",
+   "frame_size": [
+    16,
+    23
+   ],
+   "scale": 2,
+   "tier": "mini",
+   "scale_note": "x2 exception E1: matriarch of the lantern_acolytes",
+   "light": "authored glow_64 ADD torch-light alpha 0.4",
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_22x5"
+    ]
+   },
+   "bullet": "ebullet.fire.9 (ember_fan) \u00b7 ebullet.arcane.9 (lantern_ring)",
+   "defence": "ward 6: two rows of 3 ward runes",
+   "hitbox_fit": "radius 11 vs content 26x30: OK"
+  },
+  "iron_colossus": {
+   "idle": {
+    "src": "0x72",
+    "frames": [
+     "masked_orc_idle_anim_f0",
+     "masked_orc_idle_anim_f1",
+     "masked_orc_idle_anim_f2",
+     "masked_orc_idle_anim_f3"
+    ]
+   },
+   "move": {
+    "src": "0x72",
+    "frames": [
+     "masked_orc_run_anim_f0",
+     "masked_orc_run_anim_f1",
+     "masked_orc_run_anim_f2",
+     "masked_orc_run_anim_f3"
+    ]
+   },
+   "lut": "L_IRON",
+   "frame_size": [
+    16,
+    23
+   ],
+   "scale": 2,
+   "tier": "mini",
+   "scale_note": "x2 exception E1: the brute (armour anchor) grown to a steel colossus",
+   "shadow": {
+    "src": "authored",
+    "frames": [
+     "shadow_22x5"
+    ]
+   },
+   "bullet": "ebullet.arcane.11 (rock_volley radius 5)",
+   "defence": "armour 260: 32x3 plate bar",
+   "hitbox_fit": "radius 13 vs content 24x32: ~1 px generous, OK"
   }
  },
  "boss_telegraph": {
@@ -1499,7 +2119,11 @@
    "blink": "fx.blink_puff at origin and destination; body alpha steps 1 -> 0.5 -> 0",
    "sequence": "each step uses its own type",
    "self_destruct": "(fire_imp) decal: filled circle at blast radius 36 telegraph-fill + rim from windup start; body: telegraph-hot + 1/8-step swell 1.0 -> 1.25 over the windup (Animator R4 transient) + FILL flash every 100 ms in the last 300 ms; act: fx.explosion hostile variant",
-   "phase_change": "invuln tint (R5 p5) + fx.phase_burst from core + camera flash owned by Animator/UX (reduced-motion safe)"
+   "phase_change": "invuln tint (R5 p5) + fx.phase_burst from core + camera flash owned by Animator/UX (reduced-motion safe)",
+   "guard": "shield raised: held shield overlay appears on the facing side + shield_arc bubble at alpha 0.8 for the guard duration; windup = shield lifts 2 px over 3 steps (Animator)",
+   "ward_allies": "caster core glyph fx.ward_kindle (8_protectioncircle tinted #72d6ce, 4 f) + a 1 px #72d6ce line to each target during windup; each target gains its ward runes on act",
+   "mirror": "fan preview lines (telegraph-rim) whose COUNT equals the shots the player fired in their last cast \u2014 the \"reads your wand\" beat must be countable",
+   "heat_attack": "heat attacks reuse their type grammar (hazard / ring / spiral); bone_rain adds authored bone_shard falling into each mark"
   }
  },
  "tiles": {
@@ -1991,6 +2615,62 @@
    },
    "fps": 8,
    "radius": 6,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "arcane.11": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_arcane_11_f0",
+     "ebullet_arcane_11_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 5,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "frost.11": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_frost_11_f0",
+     "ebullet_frost_11_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 5,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "poison.11": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_poison_11_f0",
+     "ebullet_poison_11_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 5,
+   "blend": "NORMAL",
+   "depth": 62,
+   "rotate": false
+  },
+  "fire.11": {
+   "art": {
+    "src": "authored",
+    "frames": [
+     "ebullet_fire_11_f0",
+     "ebullet_fire_11_f1"
+    ]
+   },
+   "fps": 8,
+   "radius": 5,
    "blend": "NORMAL",
    "depth": 62,
    "rotate": false
@@ -2712,6 +3392,1032 @@
    "blend": "NORMAL body depth 60 + ADD glow depth 61",
    "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
    "corner_badge": "ui_authored elem_<element> 7x7 bottom-right"
+  },
+  "spark_bolt_2": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Arcane Bolt",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_ARCANE"
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #8b7cf0 a0.5 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (arcane)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow08",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "spark_bolt",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "magic_missile_2": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Magic Orb",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_ARCANE"
+   },
+   "fps": 12,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.5 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (arcane)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow10",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "magic_missile",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "bouncing_burst_2": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     118,
+     37,
+     6,
+     6
+    ],
+    "lut": [
+     "L_SFX_ARCANE",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.5 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (arcane); on wall bounce: 1-step FILL flash #fdf7ed",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "bouncing_burst",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "fire_bolt_2": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Fireball",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ]
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #ee8e2e a0.5 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (fire) + 2 ember motes",
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "fire_bolt",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "fireball_2": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Firebomb",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ]
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_32 #ee8e2e a0.45 (+0.15 alpha: level 2)",
+   "impact": "onExpire explode r32 -> fx.explosion (fire)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "fireball",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "ice_shard_2": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     5,
+     35,
+     5,
+     9
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ],
+    "orientation": "long axis vertical in source: rotate = velocity angle + 90deg"
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #5fcde4 a0.5 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (frost)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Ice03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "ice_shard",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "frost_nova_2": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     5,
+     35,
+     5,
+     9
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ],
+    "orientation": "as ice_shard"
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #5fcde4 a0.4 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (frost); cast burst: simplefx r2 c9-c10 snow burst 2 f @ 20 fps at caster",
+   "icon": {
+    "src": "icons",
+    "file": "S_Ice02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "frost_nova",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "frost_lance_2": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Ice Lance",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ]
+    ]
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #5fcde4 a0.5 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (frost)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Ice09",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "frost_lance",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "chain_lightning_2": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Light Bolt",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_LIGHT_SHOCK"
+   },
+   "fps": 20,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #facb3e a0.6 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (shock); each jump = fx.chain_arc",
+   "icon": {
+    "src": "icons",
+    "file": "S_Thunder01",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "chain_lightning",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "thunder_orb_2": {
+   "projectile": {
+    "src": "simplefx",
+    "cells": [
+     [
+      14,
+      4
+     ],
+     [
+      15,
+      4
+     ]
+    ],
+    "lut": [
+     "L_SFX_SHOCK",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 12,
+   "rotate_to_velocity": false,
+   "glow": "glow_32 #facb3e a0.55 (+0.15 alpha: level 2)",
+   "impact": "each tick zap: fx.zap_bolt on the target + fx.chain_arc from orb",
+   "icon": {
+    "src": "icons",
+    "file": "S_Thunder03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "thunder_orb",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "venom_dart_2": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     3,
+     54,
+     10,
+     3
+    ],
+    "lut": [
+     "L_SFX_POISON_DART",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #97da3f a0.4 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (poison)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Poison08",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "venom_dart",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "toxic_flask_2": {
+   "projectile": {
+    "src": "0x72",
+    "frames": [
+     "flask_green"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #97da3f a0.4 (+0.15 alpha: level 2)",
+   "impact": "shatter: fx.poison_burst; zone: zone.player_poison (radius 26)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Poison05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "spin": "rotate 540 deg/s while flying (non-character sprite, allowed by R4)",
+   "level": 2,
+   "base": "toxic_flask",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "boomerang_blade_2": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     40,
+     110,
+     22,
+     10
+    ],
+    "lut": [
+     "L_SFX_WHITE_ARCANE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.4 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (arcane) per pass",
+   "icon": {
+    "src": "icons",
+    "file": "S_Physic02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "spin": "rotate 720 deg/s",
+   "level": 2,
+   "base": "boomerang_blade",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "arcane_orbit_2": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     132,
+     35,
+     10,
+     10
+    ],
+    "lut": [
+     "L_SFX_ARCANE",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.6 (+0.15 alpha: level 2)",
+   "impact": "fx.hit_ring (arcane)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow12",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "arcane_orbit",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "rune_mine_2": {
+   "projectile": {
+    "src": "simplefx",
+    "cells": [
+     [
+      12,
+      0
+     ],
+     [
+      13,
+      0
+     ]
+    ],
+    "lut": [
+     "L_SFX_FIRE_STAR",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #ee8e2e a0.3 (settling) -> a0.7 (armed) (+0.15 alpha: level 2)",
+   "impact": "onExpire explode r40 -> fx.explosion (fire)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire08",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "states": "settling: frame c12 static; armed: c12/c13 alternate @ 6 fps",
+   "level": 2,
+   "base": "rune_mine",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "blink_bolt_2": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Pure Bolt 2",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_PURE_ARCANE"
+   },
+   "fps": 15,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #cfc0ff a0.6 (+0.15 alpha: level 2)",
+   "impact": "onExpire teleport: fx.blink_puff at origin and destination (tint #cfc0ff)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Magic05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "blink_bolt",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "comet_2": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     208,
+     34,
+     16,
+     11
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ],
+    "orientation": "faces +x (tail left)"
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_32 #ee8e2e a0.6 (+0.15 alpha: level 2)",
+   "impact": "onExpire explode r48 -> fx.explosion (fire, large)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Fire05",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "comet",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "vortex_2": {
+   "projectile": {
+    "src": "codemanu",
+    "file": "13_vortex",
+    "cells_index": "every 5th of 0..60 (13 f)",
+    "trim": [
+     14,
+     12,
+     77,
+     76
+    ],
+    "lut": "L_GREY_BAKE",
+    "tint": "#8b7cf0",
+    "blend": "ADD"
+   },
+   "fps": 20,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #cfc0ff a0.8 at centre (the bright core) (+0.15 alpha: level 2)",
+   "impact": "onExpire explode r36 -> fx.explosion (arcane)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 2,
+   "base": "vortex",
+   "card_badge": "ui_authored lvl_pips_36 / lvl_pips_18 + \"II\" in the name; icon shared with the base by design (level is a card cue, not a new identity)"
+  },
+  "sunburst": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     224,
+     16,
+     16,
+     16
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ],
+    "orientation": "faces +x"
+   },
+   "fps": 0,
+   "rotate_to_velocity": true,
+   "glow": "glow_32 #facb3e a0.6 + glow_16 #fdf7ed a0.4 (double glow = evolved)",
+   "impact": "onExpire explode r44 -> fx.explosion (fire, k=3) + zone.player_fire r36",
+   "icon": {
+    "src": "icons",
+    "file": "S_Light02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 3,
+   "card_badge": "ui_authored g_star_7 top-left + card_evolved_corners_36 / _18 (gold corner brackets)"
+  },
+  "tempest_chain": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     160,
+     0,
+     32,
+     16
+    ],
+    "lut": [
+     "L_SFX_SHOCK",
+     "L_DELETE_OUTLINE"
+    ],
+    "alt_frame": [
+     128,
+     0,
+     32,
+     16
+    ]
+   },
+   "fps": 20,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #facb3e a0.6 + glow_16 #fdf7ed a0.4",
+   "impact": "fx.hit_ring (shock); 7 jumps of fx.chain_arc",
+   "icon": {
+    "src": "icons",
+    "file": "S_Thunder02",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 3,
+   "card_badge": "ui_authored g_star_7 top-left + card_evolved_corners_36 / _18 (gold corner brackets)"
+  },
+  "glacier_spike": {
+   "projectile": {
+    "src": "simplefx",
+    "cells": [
+     [
+      3,
+      1
+     ],
+     [
+      4,
+      1
+     ]
+    ],
+    "lut": [
+     "L_SFX_BASE",
+     "L_DELETE_OUTLINE"
+    ]
+   },
+   "fps": 10,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #5fcde4 a0.6 + glow_16 #fdf7ed a0.4",
+   "impact": "fx.hit_ring (frost); onExpire split 4 -> ice_shard bodies",
+   "icon": {
+    "src": "icons",
+    "file": "S_Ice04",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 3,
+   "card_badge": "ui_authored g_star_7 top-left + card_evolved_corners_36 / _18 (gold corner brackets)"
+  },
+  "blight_needle": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Plant Missle",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ]
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #97da3f a0.5 + glow_16 #fdf7ed a0.3",
+   "impact": "fx.hit_ring (poison) + zone.player_poison r16",
+   "icon": {
+    "src": "icons",
+    "file": "S_Bow12",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 3,
+   "card_badge": "ui_authored g_star_7 top-left + card_evolved_corners_36 / _18 (gold corner brackets)"
+  },
+  "prism_spark": {
+   "projectile": {
+    "src": "devwizard",
+    "file": "Arcane Bolt",
+    "cells": [
+     [
+      0,
+      0
+     ],
+     [
+      1,
+      0
+     ],
+     [
+      2,
+      0
+     ],
+     [
+      3,
+      0
+     ],
+     [
+      4,
+      0
+     ],
+     [
+      5,
+      0
+     ]
+    ],
+    "lut": "L_DW_PRISM"
+   },
+   "fps": 15,
+   "rotate_to_velocity": true,
+   "glow": "glow_16 #cae6f5 a0.6 + glow_16 #fdf7ed a0.4",
+   "impact": "fx.hit_ring (arcane); onExpire split 4 -> spark_bolt bodies (L_DW_PRISM)",
+   "icon": {
+    "src": "icons",
+    "file": "S_Light03",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "level": 3,
+   "card_badge": "ui_authored g_star_7 top-left + card_evolved_corners_36 / _18 (gold corner brackets)"
+  },
+  "reaper_disc": {
+   "projectile": {
+    "src": "simplefx",
+    "rect": [
+     72,
+     110,
+     22,
+     17
+    ],
+    "lut": [
+     "L_SFX_WHITE_ARCANE"
+    ]
+   },
+   "fps": 0,
+   "rotate_to_velocity": false,
+   "glow": "glow_16 #8b7cf0 a0.5 + glow_16 #fdf7ed a0.3",
+   "impact": "fx.hit_ring (arcane); chain 2 via fx.chain_arc tinted #cfc0ff",
+   "icon": {
+    "src": "icons",
+    "file": "S_Shadow09",
+    "lut": [
+     "L_OUTLINE"
+    ],
+    "sizes": {
+     "icon32": "34x34 native (1px margin)",
+     "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+    }
+   },
+   "blend": "NORMAL body depth 60 + ADD glow depth 61",
+   "card_frame": "ui_authored card_spell_36 / card_spell_18, MULTIPLY tint = element light",
+   "corner_badge": "ui_authored elem_<element> 7x7 bottom-right",
+   "spin": "rotate 900 deg/s",
+   "level": 3,
+   "card_badge": "ui_authored g_star_7 top-left + card_evolved_corners_36 / _18 (gold corner brackets)"
   }
  },
  "modifiers": {
@@ -3123,83 +4829,6 @@
   }
  },
  "relics": {
-  "arcane_whetstone": {
-   "src": "icons",
-   "file": "I_SilverBar",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "winged_boots": {
-   "src": "icons",
-   "file": "A_Shoes04",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "magnet_charm": {
-   "src": "icons",
-   "file": "Ac_Necklace04",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "mana_font": {
-   "src": "icons",
-   "file": "I_Crystal01",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "deep_well": {
-   "src": "icons",
-   "file": "P_Blue05",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "heart_vessel": {
-   "src": "icons",
-   "file": "P_Red07",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "greed_ring": {
-   "src": "icons",
-   "file": "Ac_Ring01",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
   "ember_heart": {
    "src": "icons",
    "file": "I_Ruby",
@@ -3236,39 +4865,6 @@
   "plague_vial": {
    "src": "icons",
    "file": "P_Green05",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "glass_lens": {
-   "src": "icons",
-   "file": "I_Mirror",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "quickened_quill": {
-   "src": "icons",
-   "file": "I_Feather01",
-   "lut": [
-    "L_OUTLINE"
-   ],
-   "sizes": {
-    "icon32": "34x34 native (1px margin)",
-    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
-   }
-  },
-  "sand_hourglass": {
-   "src": "icons",
-   "file": "I_Clock",
    "lut": [
     "L_OUTLINE"
    ],
@@ -3402,6 +4998,237 @@
   "phoenix_feather": {
    "src": "icons",
    "file": "I_Feather02",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "last_stand": {
+   "src": "icons",
+   "file": "C_Elm03",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "first_light": {
+   "src": "icons",
+   "file": "P_Yellow05",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "still_hand": {
+   "src": "icons",
+   "file": "W_Fist001",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "crowd_reader": {
+   "src": "icons",
+   "file": "I_Book",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "full_focus": {
+   "src": "icons",
+   "file": "I_Mirror",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "tally_stone": {
+   "src": "icons",
+   "file": "I_Rock01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "unbroken_seal": {
+   "src": "icons",
+   "file": "Ac_Medal03",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "misers_ring": {
+   "src": "icons",
+   "file": "Ac_Ring01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "deepening_well": {
+   "src": "icons",
+   "file": "P_Blue05",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "hollow_runes": {
+   "src": "icons",
+   "file": "I_Rock03",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "echoing_payload": {
+   "src": "icons",
+   "file": "I_Cannon03",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "endless_page": {
+   "src": "icons",
+   "file": "I_Scroll",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "overflow_cell": {
+   "src": "icons",
+   "file": "I_Crystal01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "steam_engine": {
+   "src": "icons",
+   "file": "I_Cannon01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "storm_furnace": {
+   "src": "icons",
+   "file": "I_Cannon02",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "plague_bloom": {
+   "src": "icons",
+   "file": "I_Clover",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "thorn_blaze": {
+   "src": "icons",
+   "file": "I_ScorpionClaw",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "cracked_crown": {
+   "src": "icons",
+   "file": "C_Elm04",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "hungry_rune": {
+   "src": "icons",
+   "file": "E_Bones03",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "blood_ink": {
+   "src": "icons",
+   "file": "I_Ink",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "unstable_core": {
+   "src": "icons",
+   "file": "I_Coal",
    "lut": [
     "L_OUTLINE"
    ],
@@ -3920,12 +5747,82 @@
    "lut": "L_GREY_BAKE",
    "tint": "telegraph-rim (enemy) \u2014 core glyph during boss windups",
    "blend": "ADD"
+  },
+  "ward_kindle": {
+   "src": "codemanu",
+   "file": "8_protectioncircle",
+   "cells_index": "every 4th (16 f)",
+   "trim": [
+    34,
+    39,
+    34,
+    34
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "#72d6ce",
+   "blend": "ADD"
+  },
+  "forge_merge": {
+   "src": "codemanu",
+   "file": "12_nebula",
+   "cells_index": "every 5th of 0..60 (13 f)",
+   "trim": [
+    15,
+    15,
+    75,
+    77
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "#facb3e",
+   "blend": "ADD",
+   "use": "Forge merge (UI scene), centred on the result card"
+  },
+  "forge_evolve": {
+   "layers": [
+    "fx.forge_merge tinted #fdf7ed",
+    "ui_authored g_star_7 pops in at frame 8 (Animator)"
+   ],
+   "use": "Forge evolve"
+  },
+  "duo_unlock": {
+   "src": "codemanu",
+   "file": "12_nebula",
+   "cells_index": "every 5th of 0..60 (13 f)",
+   "trim": [
+    15,
+    15,
+    75,
+    77
+   ],
+   "lut": "L_GREY_BAKE",
+   "tint": "#8b7cf0",
+   "blend": "ADD",
+   "use": "duo relic formed (reward screen)"
+  },
+  "block_spark": {
+   "src": "expl16",
+   "cells": [
+    [
+     0,
+     0
+    ],
+    [
+     1,
+     0
+    ]
+   ],
+   "lut": "L_EXPL16",
+   "fps": 20,
+   "tint": "MULTIPLY #b6cbcf",
+   "note": "shield/armour block (grey)"
   }
  },
  "zones": {
   "zone.player_poison": "Graphics disc radius r: fill #3d734f alpha 0.45, 1 px rim #97da3f; 3 poison-drip overlays (STATUS.poison art) scattered inside, re-seeded every 800 ms. No pink anywhere.",
   "hazard.acid_pool": "Graphics disc: fill #3d734f alpha 0.5 + telegraph-rim dual keyline outside (hostile signature) + 1 px inner rim #97da3f; drips as above",
-  "hazard.fire_zone": "Graphics disc: fill #8f4029 alpha 0.5 + telegraph-rim dual keyline outside + 1 px inner rim #ee8e2e; burn overlay flames (STATUS.burn art) x3 inside"
+  "hazard.fire_zone": "Graphics disc: fill #8f4029 alpha 0.5 + telegraph-rim dual keyline outside + 1 px inner rim #ee8e2e; burn overlay flames (STATUS.burn art) x3 inside",
+  "zone.player_fire": "sunburst lingering fire: Graphics disc fill #8f4029 alpha 0.4 + 1 px rim #ee8e2e; burn-overlay flames x3 inside. No pink.",
+  "hazard.bone_rain": "hazard grammar (telegraph-rim dual keyline + telegraph-fill) for windup; active = authored bone_shard falls 24 px in 150 ms per mark, then fx.ebullet_pop"
  },
  "telegraph_tokens": {
   "telegraph-fill": "#dc4a7b at alpha 0.18 -> 0.35 in the final 150 ms (aim lock)",
@@ -4218,6 +6115,183 @@
      "skull"
     ]
    }
+  },
+  "defence_icons": {
+   "src": "ui_authored",
+   "frames": [
+    "def_shield",
+    "def_armour",
+    "def_ward"
+   ],
+   "use": "counter pips (filled = #fdf7ed rim / hollow alpha 0.5), BLOCKED numbers, door labels"
+  },
+  "keyword_icons": {
+   "src": "ui_authored",
+   "frames": [
+    "kw_pierce",
+    "kw_blast",
+    "kw_shock"
+   ],
+   "use": "Enables chips, SWAP-button pips"
+  },
+  "affix_glyphs": {
+   "src": "ui_authored",
+   "frames": [
+    "def_armour",
+    "def_ward",
+    "def_shield",
+    "affix_wing",
+    "affix_burst"
+   ],
+   "use": "elite nameplate, persistent, 3 px above the sprite"
+  },
+  "ward_runes": {
+   "src": "ui_authored",
+   "frames": [
+    "ward_rune_full",
+    "ward_rune_spent",
+    "ward_rune_regrow"
+   ]
+  },
+  "card_level": {
+   "src": "ui_authored",
+   "level2": [
+    "lvl_pips_36",
+    "lvl_pips_18"
+   ],
+   "evolved": [
+    "g_star_7",
+    "card_evolved_corners_36",
+    "card_evolved_corners_18"
+   ]
+  },
+  "relic_badges": {
+   "src": "ui_authored",
+   "corrupted": "g_corrupt_7",
+   "duo": "UX chip"
+  },
+  "door_icons": {
+   "src": "ui_authored",
+   "frames": [
+    "door_armour",
+    "door_none",
+    "door_ranged",
+    "door_risk",
+    "door_shield",
+    "door_summoner",
+    "door_swarm",
+    "door_unknown",
+    "door_ward"
+   ]
+  },
+  "modes": {
+   "icons32": {
+    "standard": "C_Hat01",
+    "gentle": "I_Feather01",
+    "daily": "I_Scroll02"
+   },
+   "heat": [
+    "heat_0",
+    "heat_1",
+    "heat_2",
+    "heat_3",
+    "heat_4",
+    "heat_5"
+   ]
+  },
+  "goals": {
+   "done": "ui_authored g_ok",
+   "next": "ui_authored g_goal_next",
+   "later": "ui_authored g_goal_later",
+   "queued": "ui_authored g_goal_queued"
+  },
+  "forge": {
+   "tab_icon": "icon I_GoldBar",
+   "types": {
+    "merge": {
+     "src": "composite",
+     "layers": [
+      "two card cells offset 4 px",
+      "ui_authored g_arrow",
+      "result cell + lvl_pips"
+     ]
+    },
+    "evolve": {
+     "src": "composite",
+     "layers": [
+      "card cell",
+      "catalyst icon16",
+      "ui_authored g_arrow",
+      "result cell + g_star_7"
+     ]
+    },
+    "slot": {
+     "src": "composite",
+     "layers": [
+      "cell_empty_36",
+      "ui_authored g_plus_7"
+     ]
+    }
+   },
+   "panel": "panel_ornate over #2a2a3a, three 196 px columns separated by 1 px #515f6b rules"
+  },
+  "reward": {
+   "reroll": "ui_authored g_recharge + cost",
+   "skip": "coin_icon + \"+{gold}\" (T1)",
+   "counter_chip": "def_* + kw_* on the UX chip"
+  },
+  "daily": {
+   "icon": "icon I_Scroll02",
+   "share": "ui_authored share_12 (x2 = 24 CSS px for the DOM card)"
+  },
+  "touch": {
+   "buttons": {
+    "round_38": [
+     "btn_round_38",
+     "btn_round_38_pressed",
+     "btn_round_38_disabled"
+    ],
+    "square_28": [
+     "btn_sq_28",
+     "btn_sq_28_pressed"
+    ]
+   },
+   "icons16": [
+    "t_dash",
+    "t_swap",
+    "t_use_hand",
+    "t_use_coin",
+    "t_use_stair",
+    "t_use_eye",
+    "t_pause",
+    "t_edit"
+   ],
+   "edit_badge": "g_plus_7",
+   "stick": [
+    "stick_ring_58",
+    "stick_knob_22"
+   ],
+   "target_tick": "target_tick_3",
+   "back": [
+    "btn_sq_28",
+    "g_back_12"
+   ],
+   "share": "share_12",
+   "rotate_pictogram": "rotate_32 (DOM: export x2 / x3)",
+   "ghost_hand": [
+    "ghost_hand_16",
+    "ghost_hand_tap_16"
+   ],
+   "app_icons": {
+    "appicon_64": "assets/src/art/appicon/appicon_64.png -> 192 (x3), 512 (x8), maskable 512 (same art, full-bleed)",
+    "appicon_60": "assets/src/art/appicon/appicon_60.png -> 180 (x3)"
+   },
+   "prompt_glyphs_12": "controller-prompts \u00a79 touch family is the TA script scripts/author-prompt-glyphs.py (Wave B): redraw at 12 px from these 16 px icons (t_dash, t_swap, t_use_hand, t_edit, t_pause, g_back_12, ghost_hand_16 for tap/drag, stick = ring+knob in a phone outline)"
+  },
+  "intro_card": {
+   "letterbox": "Graphics bars #0d0a10 16 px",
+   "name": "T2 + T1 epithet on no panel (outlined glyphs)",
+   "mini_bar": "bar_frame_6 9-slice at x0.6 width"
   }
  },
  "fonts": {
@@ -4268,22 +6342,552 @@
    "vertical_9x16": "360x640 re-compose (not crop): wordmark top third, hero centre, enemies stacked below the door; x3 export 1080x1920"
   }
  },
+ "defences": {
+  "shield": {
+   "held": {
+    "fresh": {
+     "src": "simplefx",
+     "rect": [
+      50,
+      66,
+      12,
+      12
+     ],
+     "lut": [
+      "L_SFX_STEEL"
+     ]
+    },
+    "worn": {
+     "src": "simplefx",
+     "rect": [
+      34,
+      50,
+      12,
+      12
+     ],
+     "lut": [
+      "L_SFX_STEEL"
+     ]
+    },
+    "cracked": {
+     "src": "simplefx",
+     "rect": [
+      66,
+      50,
+      12,
+      12
+     ],
+     "lut": [
+      "L_SFX_STEEL"
+     ]
+    }
+   },
+   "held_rule": "overlay at the `hand` anchor on the facing side (flipX with the body); state by blocks taken: fresh < 1/3 wearBlocks <= worn < 2/3 <= cracked",
+   "bubble": {
+    "src": "authored",
+    "frames": [
+     "shield_arc_r10",
+     "shield_arc_r12",
+     "shield_arc_r14",
+     "shield_arc_r16",
+     "shield_arc_r18",
+     "shield_arc_r22"
+    ]
+   },
+   "bubble_hit": {
+    "src": "authored",
+    "frames": [
+     "shield_arc_r10_hit",
+     "shield_arc_r12_hit",
+     "shield_arc_r14_hit",
+     "shield_arc_r16_hit",
+     "shield_arc_r18_hit",
+     "shield_arc_r22_hit"
+    ]
+   },
+   "bubble_rule": "150 deg frontal arc, radius = body radius + 4 (nearest provided size up; x2 bosses use the x2-radius arc, never a scaled arc); faces +x, rotate to facing; shown at alpha 0.5 while the shield stands, the _hit frame for 2 steps on each block",
+   "break": "fx.freeze_shatter LUT-steel (#b6cbcf debris) + \"BROKEN\" word (UX) + held overlay removed",
+   "ui_icon": "ui_authored def_shield (7x7) / door_shield (16x16)"
+  },
+  "armour": {
+   "bar": "Graphics 16x3 above the head (x2 bosses: 32x3): 1 px #222222 keyline, fill #b6cbcf, 1 px #417089 notch every 25 % = the plates; drains with points",
+   "hit_fx": {
+    "src": "authored",
+    "frames": [
+     "armour_chip_f0",
+     "armour_chip_f1",
+     "armour_chip_f2"
+    ]
+   },
+   "hit_rule": "direct hit on armour -> 1 chip + grey \"ARMOURED\" number; blast hit -> 3 chips + bar flash FILL #fdf7ed 1 step",
+   "break": "fx.crate_break LUT-steel + \"BROKEN\"",
+   "ui_icon": "ui_authored def_armour / door_armour"
+  },
+  "ward": {
+   "pips": {
+    "src": "authored",
+    "frames": [
+     "ward_rune_full",
+     "ward_rune_spent",
+     "ward_rune_regrow"
+    ]
+   },
+   "pip_rule": "one 5x5 rune per max hit, centred row 3 px above the head, 1 px apart (max 6 -> 35 px); full = charge left, spent = used, regrow = regrowing (elite ward regrowMs)",
+   "absorb_fx": "fx.hit_ring tinted #72d6ce + the spent rune flips",
+   "strip_fx": "fx.chain_arc short burst tinted #fdf7ed across the pips on a shock hit",
+   "ui_icon": "ui_authored def_ward / door_ward",
+   "distinct_from_player_shield": "the player warding_sigil shield is the 8_protectioncircle ring; enemy wards are rune pips only \u2014 no ring"
+  },
+  "dark_twist_outline": "rules.twists.dark.enemyOutline: every enemy draws its ring1 frame tinted #fdf7ed (see affix_outline recipe); player light = authored light_r72, spells = light_r28 (erase brush on a #0d0a10 alpha 0.85 RenderTexture)"
+ },
+ "affix_outline_recipe": "scripts/author-art.py outline_rings(): TA bakes ring1 + ring2 (white, Chebyshev distance 1 / 2 from the silhouette, frame padded 2 px, origin +2,+2) for every enemy sheet frame (all enemies: the dark twist outlines everyone). Runtime tints ring1 with the first affix token, ring2 with the second (Heat 2+). Replaces the v1 elite-gold bake: the elite read is now affix outline + glyph + title.",
+ "affixes": {
+  "armoured": {
+   "outline_token": "outline.steel",
+   "hex": "#b6cbcf",
+   "glyph": "ui_authored def_armour (shield-plate)",
+   "title_key": "affix.armoured"
+  },
+  "warded": {
+   "outline_token": "outline.cyan",
+   "hex": "#72d6ce",
+   "glyph": "ui_authored def_ward (ward-rune)",
+   "title_key": "affix.warded"
+  },
+  "shielded": {
+   "outline_token": "outline.bone",
+   "hex": "#e2b694",
+   "glyph": "ui_authored def_shield (tower-shield)",
+   "title_key": "affix.shielded"
+  },
+  "hasted": {
+   "outline_token": "outline.gold",
+   "hex": "#facb3e",
+   "glyph": "ui_authored affix_wing (wing)",
+   "title_key": "affix.hasted"
+  },
+  "volatile": {
+   "outline_token": "outline.ember",
+   "hex": "#ffad3b",
+   "glyph": "ui_authored affix_burst (burst = its death ring)",
+   "title_key": "affix.volatile"
+  }
+ },
+ "relic_treatment": {
+  "duo": {
+   "ids": [
+    "steam_engine",
+    "storm_furnace",
+    "plague_bloom",
+    "thorn_blaze"
+   ],
+   "ui": "DUO chip (UX, procedural) + both parent icon16 with \u2714 (g_ok) per owned parent",
+   "world": "pedestal glow = two glow_16 (one per parent element) offset 3 px",
+   "fx": "fx.duo_unlock"
+  },
+  "corrupted": {
+   "ids": [
+    "cracked_crown",
+    "hungry_rune",
+    "blood_ink",
+    "unstable_core"
+   ],
+   "ui": "ui_authored g_corrupt_7 badge top-right on the icon cell (cracked plum seal; shape, not hue)",
+   "world": "pedestal glow_16 MULTIPLY #5f2d56 (a dim, not a glow) + slow 1 px jitter (Animator)",
+   "rule": "corrupted is a player-owned RISK, not an enemy: never the hostile pink band"
+  }
+ },
+ "modes": {
+  "standard": {
+   "src": "icons",
+   "file": "C_Hat01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   },
+   "heat": "ui_authored heat_0..heat_5 (9x9 flame numerals)"
+  },
+  "gentle": {
+   "src": "icons",
+   "file": "I_Feather01",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "daily": {
+   "src": "icons",
+   "file": "I_Scroll02",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  }
+ },
+ "feature_icons": {
+  "daily": {
+   "src": "icons",
+   "file": "I_Scroll02",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "forge": {
+   "src": "icons",
+   "file": "I_GoldBar",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "duos": {
+   "src": "icons",
+   "file": "Ac_Necklace04",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "corrupted": {
+   "src": "icons",
+   "file": "E_Bones02",
+   "lut": [
+    "L_OUTLINE"
+   ],
+   "sizes": {
+    "icon32": "34x34 native (1px margin)",
+    "icon16": "icons16 (assets/src/art/icons16.png, authored + reviewed at x3; ui-artwork.md \u00a76)"
+   }
+  },
+  "heat": {
+   "src": "ui_authored",
+   "frames": [
+    "heat_1"
+   ]
+  },
+  "startCapacity": {
+   "src": "composite",
+   "layers": [
+    "icon W_Staff01",
+    "ui_authored g_plus_7 bottom-right"
+   ]
+  }
+ },
+ "goals": {
+  "status_glyphs": {
+   "done": "ui_authored g_ok",
+   "next": "ui_authored g_goal_next",
+   "later": "ui_authored g_goal_later",
+   "queued": "ui_authored g_goal_queued"
+  },
+  "reward_icon_rule": "the unlocked card/relic/wand/loadout icon; features use FEATURE_ICONS; later-goal rewards shown as the icon silhouette (fill #2a2a3a, keyline #778d9f) \u2014 no spoiler"
+ },
+ "forge_types": {
+  "merge": {
+   "src": "composite",
+   "layers": [
+    "two card cells offset 4 px",
+    "ui_authored g_arrow",
+    "result cell + lvl_pips"
+   ]
+  },
+  "evolve": {
+   "src": "composite",
+   "layers": [
+    "card cell",
+    "catalyst icon16",
+    "ui_authored g_arrow",
+    "result cell + g_star_7"
+   ]
+  },
+  "slot": {
+   "src": "composite",
+   "layers": [
+    "cell_empty_36",
+    "ui_authored g_plus_7"
+   ]
+  }
+ },
+ "threat_icons": {
+  "threat.none": "door_none",
+  "threat.swarm": "door_swarm",
+  "threat.shield": "door_shield",
+  "threat.armour": "door_armour",
+  "threat.ward": "door_ward",
+  "threat.ranged": "door_ranged",
+  "threat.summoner": "door_summoner",
+  "door.risk": "door_risk",
+  "door.unknown": "door_unknown"
+ },
+ "twists": {
+  "ambush": "spawn portals (fx.spawn_portal) at portalMs 1100 in a ring; banner only",
+  "dark": "rules.twists.dark.enemyOutline: every enemy draws its ring1 frame tinted #fdf7ed (see affix_outline recipe); player light = authored light_r72, spells = light_r28 (erase brush on a #0d0a10 alpha 0.85 RenderTexture)",
+  "candlelight": "candlelight twist: authored light_r28 per candle at ambient 0.55 (the dark-twist renderer); torches everywhere else, torch-light #ee8e2e",
+  "flooded": "flooded twist `water` tile: shallow, walkable, slows; lighter + shimmering so it never reads as a pit; shock arcs in water = fx.chain_arc tinted #72d6ce",
+  "bookshelves": "bookshelves twist tile (pillar variant): 16x32, feet on the cell, 16 px overhang, y-sorted like column; burning = flame frames + glow_16 #ee8e2e; collapses to floor debris"
+ },
+ "worlds": {
+  "w1_sunken_crypt": {
+   "tileset": "tiles_f1",
+   "floor": "TILES.floor (native 0x72)",
+   "walls": "native",
+   "pits": "void + edge_down",
+   "props": {
+    "candles": {
+     "src": "authored",
+     "frames": [
+      "candle_f0",
+      "candle_f1",
+      "candle_f2"
+     ]
+    },
+    "bone_pile": {
+     "src": "authored",
+     "frames": [
+      "bone_pile"
+     ]
+    },
+    "cobweb": {
+     "src": "authored",
+     "frames": [
+      "cobweb"
+     ]
+    },
+    "banners": "wall_banner_red",
+    "crates": "crate",
+    "columns": "column"
+   },
+   "light": "candlelight twist: authored light_r28 per candle at ambient 0.55 (the dark-twist renderer); torches everywhere else, torch-light #ee8e2e",
+   "placement": "candles on floor cells adjacent to walls/pillars (3-6 per room, data); bone piles 1-3 per room; cobwebs in NW/NE inner corners only"
+  },
+  "w2_drowned_halls": {
+   "tileset": "tiles_f2",
+   "floor": "TILES.floor through L_FLOOR_F2 + moss_a/moss_b overlays on 12 % of floor cells (never within 1 tile of a door or spawn)",
+   "walls": "L_FLOOR_F2",
+   "pits": {
+    "src": "authored",
+    "frames": [
+     "tile_pit_water_f0",
+     "tile_pit_water_f1",
+     "tile_pit_water_f2"
+    ],
+    "fps": 4,
+    "lip": "edge_down (L_FLOOR_F2)",
+    "rule": "deep water = impassable; darker than shallow water"
+   },
+   "water": {
+    "src": "authored",
+    "frames": [
+     "tile_water_f0",
+     "tile_water_f1",
+     "tile_water_f2"
+    ],
+    "fps": 4,
+    "edge": "water_edge_n rotated 90/180/270 where a water cell borders floor",
+    "rule": "flooded twist `water` tile: shallow, walkable, slows; lighter + shimmering so it never reads as a pit"
+   },
+   "props": {
+    "drain": {
+     "src": "puny",
+     "cells": [
+      [
+       8,
+       2
+      ],
+      [
+       9,
+       2
+      ],
+      [
+       10,
+       2
+      ],
+      [
+       11,
+       2
+      ],
+      [
+       12,
+       2
+      ],
+      [
+       13,
+       2
+      ],
+      [
+       14,
+       2
+      ],
+      [
+       15,
+       2
+      ]
+     ],
+     "lut": "L_PUNY_DRAIN",
+     "fps": 8,
+     "note": "north-wall decor, animated drip (Puny rows 2-3 are the 2-tile tall drain)"
+    },
+    "drip": {
+     "src": "authored",
+     "frames": [
+      "drip_f0",
+      "drip_f1",
+      "drip_f2",
+      "drip_f3"
+     ]
+    },
+    "moss": {
+     "src": "authored",
+     "frames": [
+      "moss_a",
+      "moss_b"
+     ]
+    },
+    "fountain": "wall_fountain_*_blue_anim",
+    "banners": "wall_banner_blue",
+    "goo": "wall_goo"
+   },
+   "light": "cold: torches swapped for blue fountains + glow_32 ADD #72d6ce alpha 0.25 at each drain/fountain; no warm light except lantern_acolyte/matron"
+  },
+  "w3_last_library": {
+   "tileset": "tiles_f3",
+   "floor": {
+    "src": "authored",
+    "frames": [
+     "floor_w3_a",
+     "floor_w3_b",
+     "floor_w3_c"
+    ],
+    "weights": [
+     60,
+     25,
+     15
+    ],
+    "rule": "dark parquet replaces the 0x72 stone floor (floor band L 0.029-0.04)"
+   },
+   "walls": "L_FLOOR_F3 + wall_shelf over every north-face wall tile except door frames and torch cells",
+   "pits": "void + edge_down (L_FLOOR_F3)",
+   "bookshelf": {
+    "src": "authored",
+    "frames": [
+     "bookshelf_a",
+     "bookshelf_b"
+    ],
+    "burning": [
+     "bookshelf_burning_f0",
+     "bookshelf_burning_f1",
+     "bookshelf_burning_f2"
+    ],
+    "burning_fps": 10,
+    "collapsed": "bookshelf_collapsed",
+    "rule": "bookshelves twist tile (pillar variant): 16x32, feet on the cell, 16 px overhang, y-sorted like column; burning = flame frames + glow_16 #ee8e2e; collapses to floor debris"
+   },
+   "props": {
+    "candelabra": {
+     "src": "authored",
+     "frames": [
+      "candelabra_f0",
+      "candelabra_f1",
+      "candelabra_f2"
+     ]
+    },
+    "scroll_pile": {
+     "src": "authored",
+     "frames": [
+      "scroll_pile"
+     ]
+    },
+    "book_pile": {
+     "src": "authored",
+     "frames": [
+      "book_pile"
+     ]
+    },
+    "lectern": {
+     "src": "authored",
+     "frames": [
+      "lectern"
+     ]
+    },
+    "rune_circle": {
+     "src": "authored",
+     "frames": [
+      "rune_circle"
+     ]
+    },
+    "banners": "wall_banner_yellow"
+   },
+   "light": "candlelit + arcane: candelabra glow_16 #facb3e alpha 0.35; rune circles glow_32 ADD #5956bd alpha 0.2 (static, never pulsing \u2014 only telegraphs pulse)"
+  }
+ },
+ "world_cards": {
+  "w1_sunken_crypt": {
+   "emblem": {
+    "src": "authored",
+    "frames": [
+     "bone_pile"
+    ]
+   },
+   "accent": "#ee8e2e",
+   "backdrop": "native crypt wall strip + 2 candles"
+  },
+  "w2_drowned_halls": {
+   "emblem": {
+    "src": "authored",
+    "frames": [
+     "drip_f2"
+    ]
+   },
+   "accent": "#72d6ce",
+   "backdrop": "slate wall strip + drain + shallow water row"
+  },
+  "w3_last_library": {
+   "emblem": {
+    "src": "authored",
+    "frames": [
+     "candelabra_f0"
+    ]
+   },
+   "accent": "#facb3e",
+   "backdrop": "bookshelf wall strip + candelabra pair"
+  },
+  "rule": "world-entry card = a 640x96 band: the world backdrop strip at 1x, emblem at 1x, name T2 + fantasy line T1 (outlined glyphs); accent = the world light colour. No sprite upscaling."
+ },
  "coverage": {
   "enemies": {
-   "data_ids": 13,
-   "mapped": 13,
+   "data_ids": 21,
+   "mapped": 21,
    "missing": [],
    "stale": []
   },
   "bosses": {
-   "data_ids": 3,
-   "mapped": 3,
+   "data_ids": 6,
+   "mapped": 6,
    "missing": [],
    "stale": []
   },
   "spells": {
-   "data_ids": 18,
-   "mapped": 18,
+   "data_ids": 42,
+   "mapped": 42,
    "missing": [],
    "stale": []
   },
@@ -4294,8 +6898,8 @@
    "stale": []
   },
   "relics": {
-   "data_ids": 26,
-   "mapped": 26,
+   "data_ids": 37,
+   "mapped": 37,
    "missing": [],
    "stale": []
   },
@@ -4308,6 +6912,51 @@
   "loadouts": {
    "data_ids": 4,
    "mapped": 4,
+   "missing": [],
+   "stale": []
+  },
+  "affixes": {
+   "data_ids": 5,
+   "mapped": 5,
+   "missing": [],
+   "stale": []
+  },
+  "modes": {
+   "data_ids": 3,
+   "mapped": 3,
+   "missing": [],
+   "stale": []
+  },
+  "features": {
+   "data_ids": 6,
+   "mapped": 6,
+   "missing": [],
+   "stale": []
+  },
+  "forge": {
+   "data_ids": 25,
+   "mapped": 25,
+   "missing": [],
+   "stale": [],
+   "types": []
+  },
+  "threat_icons": {
+   "data_ids": 8,
+   "mapped": 8,
+   "missing": [],
+   "stale": [],
+   "frames_missing": []
+  },
+  "worlds": {
+   "data_ids": 3,
+   "mapped": 3,
+   "missing": [],
+   "stale": [],
+   "natives_unmapped": []
+  },
+  "twists": {
+   "data_ids": 5,
+   "mapped": 5,
    "missing": [],
    "stale": []
   },

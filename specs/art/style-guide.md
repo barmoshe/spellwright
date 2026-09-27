@@ -78,13 +78,13 @@ Floor tone band **L 0.029–0.048** (f3/f1), crack pixels ≤ 0.122. Every actor
 
 ### 3.3 Pixel density — one grid, three named exceptions
 All art renders at **1 texel = 1 internal pixel** (640×360, `pixelArt: true`). No fractional scaling of any sprite with outlines. Sanctioned exceptions:
-- **E1 — Final boss ×2.** `archlich` = 0x72 `necromancer_anim` at integer ×2 (the only character upscale; every overlay on it is also ×2).
+- **E1 — Boss-tier ×2.** `archlich` = 0x72 `necromancer_anim` at integer ×2 (v1 precedent). **v2** extends the same rule to the three mini-bosses, each the ×2 *captain* of its floor's test anchor: `grave_warden` = `orc_warrior` (the tomb_sentinel's sheet), `lantern_matron` = `pumpkin_dude` (the lantern_acolyte's), `iron_colossus` = `masked_orc` (the brute's). Conditions: integer ×2 only, boss tier only, every overlay on it also ×2 (or authored at the ×2 size, e.g. `shield_arc_r22`), and a palette LUT that separates it from its ×1 troops. No regular enemy is ever upscaled.
 - **E2 — Transient light ×2/×3.** Explosion flipbooks (`expl16`) may render at integer ×2 (radius ≤ 32) or ×3; ≤ 400 ms, ADD, no outline.
 - **E3 — Player projectile size steps.** `size_up` etc. snap the *visual* to ×1/×2/×3 (radius mult < 1.5 / < 2.5 / ≥ 2.5); hitboxes follow data exactly. Enemy bullets never scale (they have exact authored sizes).
 - Animator R4's 1/8-quantized transient pulses (≤ 120 ms squash/stretch) are accepted. The **sustained** elite ×1.25 is not — see the objection in `art-slot-map.md`.
 
 ### 3.4 Lighting model
-- Room fully lit at native values; **no RenderTexture darkness/light mask** (cost + it would darken enemy bullets).
+- Room fully lit at native values; **no RenderTexture darkness/light mask** (cost + it would darken enemy bullets). **v2 exception, the Dark twist only** (`rules.twists.dark`): a `#0d0a10` α 0.85 layer with authored *stepped* light cookies erased out (`light_r72` player, `light_r28` per spell), and every enemy drawn with its pre-baked `ring1` outline tinted `#fdf7ed` so threats stay readable in the dark. Enemy bullets draw **above** the dark layer (depth 62 stays on top): the twist hides the room, never a shot.
 - Light *accents* only, all ADD sprites in the single ADD band (depth 61): wall torches (Puny torch 8 f + `glow_32` `torch-light`), player spell glows, pickup glows (rarity token), boss telegraph glow.
 - One camera-level filter max (architecture §9): the low-HP vignette (UX/Animator). Bloom stays off by default.
 
@@ -197,6 +197,65 @@ Two Kenney materials for panels and buttons: **slate** (`#515f6b #637585 #647685
 
 ---
 
+
+## §11 v2 visual language (Wave A2)
+
+### 11.1 Defences — each has a distinct *shape* in the world and one 7×7 icon in the UI
+| Defence | World read (pre-baked frames, no per-sprite shader) | Wear / state cue | Break | UI icon |
+|---|---|---|---|---|
+| **Shield** (frontal 150°, pierce) | a held steel shield on the facing side (simplefx shields through `L_SFX_STEEL`) + a **150° bubble arc** (`shield_arc_r10…r22`, dual keyline `#222222`/`#72d6ce`+`#cae6f5`) at α 0.5 | shield overlay steps **fresh → worn → cracked** at ⅓ / ⅔ of `wearBlocks`; each block flashes the `_hit` arc for 2 steps + grey `block_spark` | steel debris + "BROKEN" | `def_shield` (tower shield) |
+| **Armour** (blast) | a **plate bar** above the head: `#222222` keyline, `#b6cbcf` fill, a `#417089` notch every 25 % | drains with points; direct hits throw 1 `armour_chip`, blasts throw 3 and flash the bar | steel debris + "BROKEN" | `def_armour` (breastplate) |
+| **Ward** (shock) | **rune pips** 3 px above the head, one per hit (max 6, two rows for the Matron) | 3 pip states: **full** (lit cyan, white core) · **spent** (hollow keyline) · **regrow** (dim cross) | chain-arc flash across the pips | `def_ward` (rune ring) |
+Enemy wards are *only* pips — never the protection-circle ring, which stays the player's warding-sigil shield.
+
+### 11.2 Elite affixes — never colour-only
+Every elite gets (1) a pre-baked **outline ring** (`ring1`; `ring2` for a second affix at Heat 2+) tinted by the affix token, (2) its **7×7 glyph** persistently 3 px above the sprite, and (3) the **title** for 1.5 s (UX). Tokens, all ≥ 3.28:1 on every floor tone (min over the 6 floor/crack colours): steel `#b6cbcf` (armoured, plate glyph) · cyan `#72d6ce` (warded, rune glyph) · bone `#e2b694` (shielded, tower-shield glyph) · gold `#facb3e` (hasted, wing glyph) · ember `#ffad3b` (volatile, death-ring glyph). Steel vs cyan and gold vs ember are near in hue on purpose — the glyph is the identity, the colour is redundant. The gold ground ring (Animator R10) still marks "elite".
+
+### 11.3 Card levels
+- **Level 2** (`*_2`): the same icon and projectile as the base (one identity), plus **2 pips** (2×2) on the frame's top edge, "II" in the name, and +0.15 α on the projectile glow.
+- **Evolved** (6): a new projectile *and* a new icon, a **★ badge** (7×7, top-left), **gold corner brackets** on the card frame, and a **double glow** in the world (element glow + a `#fdf7ed` inner glow_16) — the only player projectiles with two glows, so an evolution reads at a glance mid-fight.
+
+### 11.4 Relic classes
+Duo = UX DUO chip + both parent icons; pedestal shows two element glows. **Corrupted** = `g_corrupt_7` (a cracked plum seal) on the icon cell, pedestal *dimmed* (MULTIPLY `#5f2d56`) rather than lit. Corrupted is the player's own risk, so it never uses the hostile pink band.
+
+### 11.5 New actors
+`tomb_sentinel` = `orc_warrior` + `L_SENTINEL` + a steel shield larger than its head + a spear (the shield *is* the silhouette). `lantern_acolyte` = `pumpkin_dude` native + a `torch-light` glow (its lantern head also lights the Dark twist; it never shoots, so orange can't be misread as fire magic). Mini-bosses per E1. Enemy bullets add an **11 px** size (radius 5), and the size rule is now *nearest size up* (visual ⊇ hitbox + 1 px).
+
+### 11.6 UI & touch
+Door threat icons (16 px) share the shapes of the 7×7 defence icons; risk = amber diamond with `!` (the warn colour), unknown = `?`. Touch buttons are `#2a2a3a` discs/squares with a `#222222` keyline and a `#778d9f` inner ring (pressed: `#515f6b` body + `#fdf7ed` ring); touch icons are monochrome `#fdf7ed` silhouettes with an auto-drawn `#222222` keyline. App icon = the hero wizard at ×2 over an arcane glow on `#2a2a3a` (full-bleed, so the maskable safe zone holds the figure).
+
+## §12 Worlds (addendum: "at least 2 worlds" — 3 delivered, all fully distinct)
+
+**Rule:** a world changes **material, silhouette of the props, and light** — not just a hue. Every world keeps the same hand (0x72 construction, `#222222` outlines, 16 px grid, the floor value band L ≤ 0.05) so the enemy-bullet and hostile-band rules of §4 hold in all three. Frame lists: `art-slot-map.json → worlds`, `world_cards`.
+
+| | **W1 The Sunken Crypt** | **W2 The Drowned Halls** | **W3 The Last Library** |
+|---|---|---|---|
+| Palette shift | native 0x72 warm brown stone (floor `#483b3a`) | cold slate `L_FLOOR_F2` (floor `#2f3b47`, walls `#6f8fa0`/`#b6cbcf`) | wine-brown `L_FLOOR_F3` walls; **dark parquet** floor (`#3e2a33` / gaps `#2e1f26` / worn `#4d3238`) |
+| Floor material | cracked flagstones | wet slate + dim moss patches (12 %) + **shallow water** tiles (animated, lighter, shimmering) | **wood parquet** (authored `floor_w3_a/b/c`) |
+| Walls | brick + red banners | slate + **sewer drains** (Puny drain, `L_PUNY_DRAIN`) + **wall drips** + goo, blue banners, blue fountains | stone + **bookshelves on every north face** (`wall_shelf`), yellow banners |
+| Pits | void `#0d0a10` | **deep water** (darker, slow ripples; still the darkest thing = impassable) | void |
+| Signature props | candles, bone piles, cobwebs, crates, columns | drains, drips, moss, fountains | **bookshelves** (breakable tile; burning + collapsed states), candelabras, scroll piles, book piles, lecterns, **rune circles** |
+| Light mood | warm candle pools (candlelight twist: ambient 0.55, light cookies per candle) | cold cyan: `#72d6ce` glows at drains/fountains; only lanterns are warm | candle-gold `#facb3e` + static arcane-violet rune glows |
+| Native art | bone_archer (dusty skeleton + bow) | drowned_thrall (slate zombie + algae), mire_leech (brown slug-leech) | animated_armor (steel knight, halberd), bound_tome (authored grimoire), ink_imp (violet imp) |
+
+### 12.1 Readability guards (checked)
+- Shallow water (`#314152` base) is **lighter** than deep water/pits (`#1a2230`) and animated; pits stay the darkest area in every world.
+- Moss and rune decals use only dim tones (`#27313b`/`#3d734f`, violet at α ≈ 0.6) — never the bright player-element or hostile tones, so no floor decal is mistaken for a projectile or a danger mark.
+- Book spines exclude the hostile pink band and the bright element tones.
+- Bookshelf fire uses fire colours: it is fire *the player* lit (it never hurts the player — `rules` note).
+
+### 12.2 Sourcing decision
+The admitted packs plus authored pixels cover all three biomes, so **no new download is required**. I checked three candidates before deciding:
+- OGA "16x16 Dungeon Tiles" (ETTiNGRiNDER): CC0, but rejected on style (rounded grey blocks, different hand).
+- Kenney "Roguelike Indoors": CC0, but rejected on style (bright, domestic, no outlines).
+- OGA "Sewer tileset" (MrBeast): rejected on licence (CC-BY 3.0 / GPL 2.0).
+
+### 12.3 World variants of an archetype
+Same behaviour, same silhouette: `ink_imp` is `fire_imp`'s sheet re-inked, so the bomber telegraph is learned once. A new behaviour gets a new silhouette.
+
+### 12.4 One hero sheet as an enemy
+`animated_armor` uses 0x72 `knight_m` (16×28, the player's size). It is the one exception to the no-hero-sheets rule, and only through `L_ARMOR`: grey steel, no hat, a dark empty visor, a crimson plume and a halberd. So it shares no colour and no head shape with the blue-robed, pointy-hatted, white-bearded wizard.
+
 ## §10 DOG self-check (style-definition-and-guide)
 - **Another artist can produce on-style work from this:** palette, outline rule, value band, shape families, LUT recipe, and exemplar files are all explicit. ✔
-- **Falsifiable claims** (reviewers can disprove): every enemy bullet is a closed-outline dark-core disc with rim ≥ 3:1 on all floors; no player-owned pixel falls in the reserved pink band after LUTs; no outlined sprite renders at a non-integer sustained scale except E1–E3; every data id has a slot (`art-slot-map.md` §G9). ✔
+- **Falsifiable claims** (reviewers can disprove): every v2 elite shows glyph + outline (never colour alone); every defence has a distinct world shape; every data id including v2's 42 spells / 37 relics / 6 bosses / 5 affixes / 3 modes / 25 forge recipes / door threats maps (builder exit 0); every enemy bullet is a closed-outline dark-core disc with rim ≥ 3:1 on all floors; no player-owned pixel falls in the reserved pink band after LUTs; no outlined sprite renders at a non-integer sustained scale except E1–E3; every data id has a slot (`art-slot-map.md` §G9). ✔

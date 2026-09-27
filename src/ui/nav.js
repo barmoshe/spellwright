@@ -8,12 +8,21 @@
 //   weighted 2:1 against the off-axis offset. Explicit `nav` neighbours override it (ids, null = stop).
 //   Wrap-around only inside explicit 1-D lists (linkList(..., wrap:true)).
 // - Mouse hover moves focus ONLY on real pointer motion (a parked cursor never steals focus).
-// - Left click = focus + confirm (item.onClick if given). Right click = item.onRightClick or nav.onBack.
+// - Left click / tap = focus + confirm (item.onClick if given), on RELEASE over the SAME item (v2,
+//   mobile-touch-spec §6 rule 1: sliding off cancels; mouse gets it too). Right click = item.onRightClick or nav.onBack.
+// - Open-guard (§6 rule 2): for `uiOpenGuardMs` after the nav is created (= the screen opened) or
+//   rearmGuard(), pointer-downs are ignored, and an up whose down predates the open never activates.
+// - Two-tap inspect on touch (§5.2): items flagged `twoTap` take a first tap to focus (inspect) and a
+//   second to activate, so inspect is never accidentally take.
+// Keyboard and pad input are never guarded (pointer-only rules).
 // - Focus ring = kit.drawFocus (1 px gold + 1 px dark), tweened 50 ms (ui-focus-move); snaps under reduced motion.
 // Rects are in the coordinates of `layer` (a Container, default the scene root at 0,0).
 
 import { drawFocus } from './kit.js';
 import { reduced } from './draw.js';
+import { T } from '../core/tunables.js';
+
+const now = () => performance.now();
 
 export class FocusNav {
   constructor(scene, opts = {}) {
@@ -33,6 +42,8 @@ export class FocusNav {
     this._tw = null;
     this._last = { x: -1, y: -1 };
     this.suspended = false;
+    this.openAt = now();
+    this._press = null;                         // { id, at } of the item the pointer went down on
 
     const input = scene.input;
     this._onMove = (p) => {
@@ -44,7 +55,8 @@ export class FocusNav {
       if (it && !it.noHover && !it.clickOnly && it.id !== this.current) this.focus(it.id);
     };
     this._onDown = (p) => {
-      if (!this._live()) return;
+      this._press = null;
+      if (!this._live() || this.guarded()) return;
       if (this.onPointerDown && this.onPointerDown(p) === true) return;
       const it = this.hit(p.x, p.y);
       if (p.button === 2) {
@@ -53,11 +65,18 @@ export class FocusNav {
         return;
       }
       if (p.button !== 0 || !it) return;
-      if (it.clickOnly) { if (it.onClick) it.onClick(p); return; }
-      if (it.id !== this.current) this.focus(it.id, { silent: true });
-      if (it.onClick) it.onClick(p); else this.confirm();
+      if (it.pressOnDown) { this._activate(it, p); return; }     // drag sources etc. opt out of release-over-same
+      this._press = { id: it.id, at: now() };
     };
-    this._onUp = (p) => { if (this._live() && this.onPointerUp) this.onPointerUp(p); };
+    this._onUp = (p) => {
+      const pr = this._press; this._press = null;
+      if (!this._live()) return;
+      if (this.onPointerUp) this.onPointerUp(p);
+      if (!pr || pr.at < this.openAt || p.button === 2) return;
+      const it = this.hit(p.x, p.y);
+      if (!it || it.id !== pr.id) return;                        // slid off: cancelled
+      this._activate(it, p);
+    };
     this._onWheel = (p, over, dx, dy) => { if (this._live() && this.onWheel) this.onWheel(p, dy); };
     input.on('pointermove', this._onMove);
     input.on('pointerdown', this._onDown);
@@ -67,6 +86,18 @@ export class FocusNav {
   }
 
   _live() { return !this.suspended && this.isActive(); }
+  /** True inside the open-guard window (mobile-touch-spec §6 rule 2). */
+  guarded() { return now() - this.openAt < T('uiOpenGuardMs', 180); }
+  /** Re-arm the open-guard (a modal revealed again, e.g. the welcome-back pause, §7.3). */
+  rearmGuard() { this.openAt = now(); this._press = null; }
+
+  _activate(it, p) {
+    if (it.clickOnly) { if (it.onClick) it.onClick(p); return; }
+    const inspectFirst = it.twoTap && p.wasTouch && it.id !== this.current;
+    if (it.id !== this.current) this.focus(it.id, { silent: !inspectFirst });
+    if (inspectFirst) return;                                    // first tap = inspect
+    if (it.onClick) it.onClick(p); else this.confirm();
+  }
 
   /** Layer offset (a moving panel container shifts every rect). */
   _off() { return this.layer ? { x: this.layer.x, y: this.layer.y } : { x: 0, y: 0 }; }

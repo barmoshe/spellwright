@@ -2,8 +2,9 @@
 // (assets/audio/cue-spec.json, gain-corrected runtime copy) + mix-bus-topology. Gameplay calls
 // mixer.fire(eventOrCueId, opts) ONLY; this module owns routing, files, buses, voices, ducks and music.
 //
-//  • LOADING by load_group (Audio Director objection, accepted): boot+title at Boot; run at run start;
-//    floor3 / boss_a / boss_final on entry; groups left behind are unloaded (decoded budget ≤ 128 MB).
+//  • LOADING by load_group (Audio Director objection, accepted): boot+title at Boot (title reloaded on return);
+//    world_wN on FLOOR_ENTER (one resident at a time) · boss_a / boss_final on boss-room entry; groups left behind are
+//    unloaded (decoded budget ≤ 128 MB).
 //  • fire order (cue-spec mixer.fire_order): routing → step coalescing (one voice per cue per 16.67 ms step,
 //    +1.5 dB per doubling, cap +3 dB) → min_interval_ms (drop, never queue) → per-cue polyphony/steal →
 //    sub-bus cap then global cap (steal lowest priority, ties oldest, only if new ≥ victim; never_victim safe)
@@ -12,6 +13,11 @@
 //    dropped (cue-spec fallback clause) — gain moves are kept.
 //  • music state machine: TITLE · EXPLORE · COMBAT · RELEASE · BOSS(p) · DEATH with equal-power crossfades;
 //    beds pause/resume to keep their position; loops use the rendered loop points (Safari .m4a pad fix).
+//  • worlds (cue-spec world_audio; floors[].world.music/ambience): the beds are the CURRENT world's
+//    music.wN {explore, combat, boss[]} + amb.wN. On FLOOR_ENTER into a new world: the old explore bed + ambience
+//    fade out (1500 ms), stg.wN fires with the world card (w1 = run_start, nothing extra), load_group world_wN
+//    loads, the explore bed fades in (2000 ms) from the stinger end and the ambience (1500 ms); world_<prev> is
+//    unloaded once the new bed is audible. Only ONE world group is resident at a time (plus a boss group).
 
 import { Save } from './save.js';
 import { EV } from './ev.js';
@@ -27,11 +33,24 @@ const ALIAS = {
   low_hp: ['low_hp_heartbeat'], victory: [], relic_proc: [], crate_hit: [], shop_enter: [], pickup_heart: [],
   status_chill: ['status_chill'], status_freeze: ['status_freeze'],
 };
+// fallback only: cue-spec event_routing.kill.family is read first (it covers the v2 + Worlds natives)
 const KILL_FAMILY = { skeleton: 'bone', skull: 'bone', bat: 'flesh', brute: 'flesh', slime: 'slime', slimelet: 'slime', wraith: 'spirit',
-  cultist: 'caster', frost_mage: 'caster', necromancer: 'caster', eye_turret: 'construct', stone_golem: 'construct', fire_imp: null };
+  cultist: 'caster', frost_mage: 'caster', necromancer: 'caster', eye_turret: 'construct', stone_golem: 'construct', fire_imp: null,
+  tomb_sentinel: 'construct', lantern_acolyte: 'caster', bone_archer: 'bone', drowned_thrall: 'drowned', mire_leech: 'drowned',
+  animated_armor: 'construct', bound_tome: 'paper', ink_imp: null };
+const W1_DEFAULT = { key: 'w1', explore: 'mus_explore', combat: 'mus_combat_a', boss: ['mus_boss_a_p1', 'mus_boss_a_p2'], ambience: 'amb_cave', stinger: null, group: 'world_w1' };
 const WINDUP = { melee_swipe: 'windup_swipe', shoot: 'windup_shoot', ring: 'windup_ring', spiral: 'windup_spiral', charge: 'windup_charge',
-  slam: 'windup_slam', summon: 'windup_summon', blink: 'windup_blink', self_destruct: 'windup_self_destruct' };
+  slam: 'windup_slam', summon: 'windup_summon', blink: 'windup_blink', self_destruct: 'windup_self_destruct',
+  ward_allies: 'windup_ward', guard: 'windup_guard', mirror: 'windup_mirror' };                       // v2 (cue-spec 1.2)
 const BOSS_KEY = { ossuary_knight: 'knight', mire_queen: 'queen', archlich: 'lich' };
+// v2 mini-bosses (cue-spec event_routing.boss_map): roar cue ids
+const MINI_ROAR = { grave_warden: 'miniboss_roar_warden', lantern_matron: 'miniboss_roar_matron', iron_colossus: 'miniboss_roar_colossus' };
+// v2 defence reads (cue-spec event_routing.defence) by {type, result}; armour hit + blast → armour_clang_blast; DoT ticks route nothing
+const DEFENCE_CUE = {
+  shield: { blocked: 'shield_block', wear: 'shield_wear', break: 'shield_shatter' },
+  armour: { reduced: 'armour_clang_chip', break: 'armour_break' },
+  ward: { absorbed: 'ward_pop', break: 'ward_break' },
+};
 
 export class AudioMixer {
   constructor(game) {
@@ -50,6 +69,9 @@ export class AudioMixer {
     this.music = { state: null, beds: new Map(), current: null, fades: [] };
     this.unlocked = !this.sound.locked;
     this.coinStreak = 0; this.lastCoinMs = 0;
+    this.rateGroups = [];           // cue-spec mixer.rate_groups (v2 defence_chip): [{cues:Set, minMs, cap, critMs, last}]
+    this.rateOf = new Map();        // cueId -> group
+    this.lastCriticalStart = -1e9;  // sfx.critical voice starts (rate-group critical window)
     this._limiter();
     this.refreshVolumes();
   }
@@ -58,6 +80,12 @@ export class AudioMixer {
   configure(cueSpec, manifest) {
     this.spec = cueSpec || { cues: [] };
     this.subBuses = (this.spec.mixer && this.spec.mixer.sub_buses) || {};
+    this.rateGroups.length = 0; this.rateOf.clear();
+    for (const [name, g] of Object.entries((this.spec.mixer && this.spec.mixer.rate_groups) || {})) {
+      const grp = { name, cues: new Set(g.cues || []), minMs: g.group_min_interval_ms || 0, cap: g.group_voice_cap || Infinity, critMs: g.critical_window_ms || 0, last: -1e9 };
+      this.rateGroups.push(grp);
+      for (const id of grp.cues) this.rateOf.set(id, grp);
+    }
     this.globalCap = (this.spec.mixer && this.spec.mixer.global_voice_cap) || 30;
     const man = (manifest && manifest.audio && manifest.audio.cues) || {};
     const ogg = typeof Audio !== 'undefined' && new Audio().canPlayType('audio/ogg; codecs="vorbis"') !== '';
@@ -96,8 +124,13 @@ export class AudioMixer {
     this.loadedGroups.delete(g);
     for (const id of this.groups[g] || []) {
       const cue = this.cues.get(id);
+      // a bed of this group may still be mid-fade (world swap): drop its fade + handle BEFORE its sound is destroyed,
+      // or the fade's completion would pause() a destroyed WebAudioSound (null manager → TypeError)
+      const bed = this.music.beds.get(id);
+      if (bed) { this.music.fades = this.music.fades.filter((f) => f.bed !== bed); bed.snd = null; }
       for (const k of cue.keys) { this.sound.removeByKey(k); if (this.game.cache.audio.exists(k)) this.game.cache.audio.remove(k); }
       this.music.beds.delete(id);
+      this.voices = this.voices.filter((v) => !(v.snd && !v.snd.manager));
     }
   }
 
@@ -158,7 +191,8 @@ export class AudioMixer {
     }
     if (name.startsWith('enemy_windup_')) { const t = name.slice(13); return [t === 'hazard' ? (o.fire ? 'windup_hazard_fire' : 'windup_hazard_acid') : WINDUP[t]].filter(Boolean); }
     if (name.startsWith('kill:')) {
-      const fam = KILL_FAMILY[name.slice(5)];
+      const id = name.slice(5), er = this.spec && this.spec.event_routing, fams = er && er.kill && er.kill.family;
+      const fam = fams && id in fams ? fams[id] : KILL_FAMILY[id];
       const out = fam ? [`kill_${fam}`] : [];
       if (o.elite) out.push('elite_kill');
       return out;
@@ -184,6 +218,16 @@ export class AudioMixer {
     // min interval (drop, never queue)
     const li = this.lastFire.get(id) || -1e9;
     if (cue.min_interval_ms && now - li < cue.min_interval_ms) return null;
+    // rate group (cue-spec mixer.rate_groups, v2 defence_chip): a request is dropped if any member started
+    // < group_min_interval_ms ago, if group_voice_cap members sound, or if an sfx.critical voice started
+    // < critical_window_ms ago (block spam never masks the hurt transient)
+    const rg = this.rateOf.get(id);
+    if (rg) {
+      if (now - rg.last < rg.minMs) return null;
+      if (rg.critMs && now - this.lastCriticalStart < rg.critMs) return null;
+      let n = 0; for (const v of this.voices) if (rg.cues.has(v.cue)) n++;
+      if (n >= rg.cap) return null;
+    }
     // polyphony
     const mine = this.voices.filter((v) => v.cue === id);
     const poly = cue.polyphony || { max_simultaneous: 4, voice_steal: 'oldest' };
@@ -225,6 +269,8 @@ export class AudioMixer {
     snd.play();
     this.voices.push(v);
     this.lastFire.set(id, now);
+    if (rg) rg.last = now;
+    if (sub === 'sfx.critical') this.lastCriticalStart = now;
     this.stepFired.set(id, { t: now, count: 1, voice: v });
     this._duckFrom(id, cue);
     Log.track('audio_fire', id);
@@ -297,10 +343,10 @@ export class AudioMixer {
       const f = this.music.fades[i]; f.t += dtMs;
       const k = Math.min(1, f.t / f.ms);
       f.bed.fadeGain = f.dir > 0 ? Math.sin(k * Math.PI / 2) : Math.cos(k * Math.PI / 2);
-      if (k >= 1) { this.music.fades.splice(i, 1); if (f.dir < 0 && f.bed.snd) { if (f.stop) { f.bed.snd.stop(); } else f.bed.snd.pause(); } }
+      if (k >= 1) { this.music.fades.splice(i, 1); const bs = f.bed.snd; if (f.dir < 0 && bs && bs.manager) { if (f.stop) { bs.stop(); } else bs.pause(); } }
     }
-    for (const v of this.voices) if (v.snd) v.snd.setVolume(this._gain(v, v.boostDb || 0) * (v.bed ? v.bed.fadeGain ?? 1 : 1));
-    for (const bed of this.music.beds.values()) if (bed.snd && bed.snd.isPlaying) bed.snd.setVolume(this._gain(bed.v) * (bed.fadeGain ?? 1));
+    for (const v of this.voices) if (v.snd && v.snd.manager) v.snd.setVolume(this._gain(v, v.boostDb || 0) * (v.bed ? v.bed.fadeGain ?? 1 : 1));
+    for (const bed of this.music.beds.values()) if (bed.snd && bed.snd.manager && bed.snd.isPlaying) bed.snd.setVolume(this._gain(bed.v) * (bed.fadeGain ?? 1));
   }
 
   // ------------------------------------------------------------------ music state machine
@@ -332,27 +378,75 @@ export class AudioMixer {
     this.music.fades = this.music.fades.filter((f) => f.bed !== bed);
     this.music.fades.push({ bed, t: 0, ms, dir: -1, stop });
   }
-  _fadeOutAll(ms, except) { for (const id of this.music.beds.keys()) if (id !== except) this._fadeOut(id, ms); }
+  /** Fade every MUSIC bed except `except` (ambience beds are managed by _ambience / the world switch). */
+  _fadeOutAll(ms, except) { for (const [id, bed] of this.music.beds) if (id !== except && !(bed.v && bed.v.bus === 'ambience')) this._fadeOut(id, ms); }
+
+  // ------------------------------------------------------------------ worlds (cue-spec world_audio)
+  /** The world audio record for a floor: floors[].world.music ('music.wN') → world_audio.keys; W1 defaults if absent. */
+  _worldFor(floor) {
+    const run = this.game.registry.get('run');
+    const fd = run && run.cat && run.cat.floors && run.cat.floors[`f${floor}`];
+    const wd = fd && fd.world;
+    const WA = (this.spec && this.spec.world_audio) || null;
+    if (!WA) return floor <= 1 ? W1_DEFAULT : { ...W1_DEFAULT, key: `w${floor}` };
+    const mk = (wd && wd.music) || `music.w${floor}`;
+    const n = mk.replace(/^music\./, '');
+    const keys = WA.keys || {}, ww = (WA.worlds || {})[n] || {}, m = keys[mk] || {};
+    return {
+      key: n, explore: m.explore || ww.explore || W1_DEFAULT.explore, combat: m.combat || ww.combat || W1_DEFAULT.combat,
+      boss: m.boss || ww.boss || W1_DEFAULT.boss, ambience: keys[(wd && wd.ambience) || `amb.${n}`] || ww.ambience || W1_DEFAULT.ambience,
+      stinger: keys[`stg.${n}`] || null, group: ww.load_group || `world_${n}`,
+    };
+  }
+  _groupOf(cueId) { const c = this.cues.get(cueId); return (c && c.load_group) || null; }
+  /** FLOOR_ENTER: switch the world's beds (see header). Fires the world stinger with the world card. */
+  _enterWorld(floor) {
+    const next = this._worldFor(floor), prev = this.world;
+    if (prev && prev.key === next.key && this.loadedGroups.has(next.group)) return;
+    this.world = next;
+    const token = this._worldToken = (this._worldToken || 0) + 1;
+    if (prev && prev.key !== next.key) { this._fadeOutAll(1500); this._fadeOut(prev.ambience, 1500, true); }
+    const stg = next.stinger && next.stinger !== 'run_start' && this.cues.has(next.stinger) ? next.stinger : null;
+    if (stg) this.fire(stg);
+    const stgMs = stg ? (this.cues.get(stg).duration_ms || 0) : 0;
+    const t0 = performance.now();
+    this.ensureGroups(this.game.scene.getScene('system'), [next.group], () => {
+      if (token !== this._worldToken) return;
+      this.unloadGroup('title');
+      setTimeout(() => {
+        if (token !== this._worldToken || this.states.dead) return;
+        const st = this.music.state;
+        if (st === 'COMBAT') this._fadeIn(next.combat, 1200);
+        else if (st !== 'BOSS' && st !== 'BOSS_WAIT' && st !== 'BOSS_DOWN') this.setMusic('EXPLORE', { fadeInMs: 2000 });
+        this._ambience(true);
+        if (prev && prev.group !== next.group) setTimeout(() => { if (token === this._worldToken) this.unloadGroup(prev.group); }, 2200);
+      }, Math.max(0, stgMs - (performance.now() - t0)));
+    });
+  }
 
   /** High-level music states (cue-spec music_state_machine). */
   setMusic(state, o = {}) {
     const prev = this.music.state;
     this.music.state = state;
-    const combatBed = this.floor >= 3 ? 'mus_combat_b' : 'mus_combat_a';
+    const W = this.world || W1_DEFAULT;
+    const explore = W.explore, combatBed = W.combat;
     switch (state) {
-      case 'TITLE': this._fadeOutAll(1000, 'mus_title'); this._fadeIn('mus_title', 1500, true); break;
-      case 'EXPLORE':
-        if (prev === 'TITLE') { this._fadeOut('mus_title', 1000, true); this._fadeIn('mus_explore', 2000); }
-        else if (prev === 'COMBAT') { this._fadeOut(combatBed, 1200); this._fadeIn('mus_explore', 1200); }
-        else { this._fadeOutAll(o.fadeOutMs ?? 600, 'mus_explore'); this._fadeIn('mus_explore', o.fadeInMs ?? 2000); }
+      case 'TITLE':                                           // the title group is unloaded at run start: reload it on return
+        this._fadeOutAll(1000, 'mus_title'); this._ambience(false);
+        this.ensureGroups(this.game.scene.getScene('system'), ['title'], () => { if (this.music.state === 'TITLE') this._fadeIn('mus_title', 1500, true); });
         break;
-      case 'COMBAT': this._fadeOut('mus_explore', 1200); this._fadeIn(combatBed, 1200); break;
+      case 'EXPLORE':
+        if (prev === 'TITLE') { this._fadeOut('mus_title', 1000, true); this._fadeIn(explore, 2000); }
+        else if (prev === 'COMBAT') { this._fadeOut(combatBed, 1200); this._fadeIn(explore, 1200); }
+        else { this._fadeOutAll(o.fadeOutMs ?? 600, explore); this._fadeIn(explore, o.fadeInMs ?? 2000); }
+        break;
+      case 'COMBAT': this._fadeOut(explore, 1200); this._fadeIn(combatBed, 1200); break;
       case 'RELEASE':
         this._fadeOut(combatBed, 600);
-        setTimeout(() => { if (this.music.state === 'RELEASE') { this.music.state = 'EXPLORE'; this._fadeIn('mus_explore', 2500); } }, 400);
+        setTimeout(() => { if (this.music.state === 'RELEASE') { this.music.state = 'EXPLORE'; this._fadeIn(explore, 2500); } }, 400);
         break;
       case 'BOSS': {
-        const beds = o.final ? ['mus_boss_final_p1', 'mus_boss_final_p2', 'mus_boss_final_p3'] : ['mus_boss_a_p1', 'mus_boss_a_p2'];
+        const beds = W.boss && W.boss.length ? W.boss : (o.final ? ['mus_boss_final_p1', 'mus_boss_final_p2', 'mus_boss_final_p3'] : ['mus_boss_a_p1', 'mus_boss_a_p2']);
         const bed = beds[Math.min(beds.length - 1, o.phase || 0)];
         this._fadeOutAll(o.phase ? 300 : 900, bed);
         setTimeout(() => this._fadeIn(bed, 100, true), o.phase ? 900 : 1200);
@@ -370,33 +464,59 @@ export class AudioMixer {
     this.flow = flow;
     bus.on(EV.RUN_START, (run) => {
       this.states.dead = false; this.floor = 1;
-      this.ensureGroups(this.game.scene.getScene('system'), ['run'], () => { this.unloadGroup('title'); this.setMusic('EXPLORE'); this._ambience(true); });
+      // a previous run's world group stays resident only if the new run starts in the same world (_enterWorld checks)
+      if (this.world) { const old = this.world; this.world = null; this._fadeOut(old.ambience, 600, true); this._worldPrevGroup = old.group; }
       this.fire('run_start');
     });
+    // world switch (FLOOR_ENTER follows RUN_START at run start, and floor_descend on every later floor)
     bus.on(EV.FLOOR_ENTER, ({ floor }) => {
       this.floor = floor;
-      if (floor >= 3) this.ensureGroups(this.game.scene.getScene('system'), ['floor3'], () => this.unloadGroup('boss_a'));
+      const stale = this._worldPrevGroup; this._worldPrevGroup = null;
+      this._enterWorld(floor);
+      if (stale && stale !== (this.world && this.world.group)) this.unloadGroup(stale);
     });
     bus.on(EV.ROOM_ENTER, ({ kind }) => {
-      if (kind === 'combat' || kind === 'elite') { this.fire('door_close'); setTimeout(() => { if (this.music.state !== 'BOSS') this.setMusic('COMBAT'); }, 500); }
+      // v2: minis keep the combat bed (cue-spec boss_activate); puzzle rooms are combat rooms
+      if (kind === 'combat' || kind === 'elite' || kind === 'miniboss' || kind === 'puzzle') { this.fire('door_close'); setTimeout(() => { if (this.music.state !== 'BOSS') this.setMusic('COMBAT'); }, 500); }
       else if (kind === 'boss') {
-        const final = this.floor >= 3;
-        this.ensureGroups(this.game.scene.getScene('system'), [final ? 'boss_final' : 'boss_a'], () => {});
+        const final = this.floor >= 3, W = this.world || W1_DEFAULT;
+        this.ensureGroups(this.game.scene.getScene('system'), [this._groupOf(W.boss[0]) || (final ? 'boss_final' : 'boss_a')], () => {});
         this._fadeOutAll(900);
         this.music.state = 'BOSS_WAIT';
       } else if (this.music.state !== 'EXPLORE') this.setMusic('EXPLORE');
     });
     bus.on(EV.ROOM_CLEARED, ({ kind }) => { if (kind !== 'boss') this.setMusic('RELEASE'); });
-    bus.on(EV.BOSS_START, ({ id }) => { this.bossKey = BOSS_KEY[id]; this.fire(`boss_roar_${this.bossKey}`); this.fire('stg_boss_intro'); this.setMusic('BOSS', { final: this.floor >= 3, phase: 0 }); });
-    bus.on(EV.BOSS_PHASE, (p) => { this.fire(`boss_roar_${this.bossKey}`); this.fire('stg_boss_phase'); this.setMusic('BOSS', { final: this.floor >= 3, phase: p }); });
-    bus.on(EV.BOSS_DEAD, () => {
+    bus.on(EV.BOSS_START, ({ id, tier, defence }) => {
+      this.bossTier = tier || 'boss'; this.bossDefence = defence || null;
+      if (this.bossTier === 'mini') { this.bossKey = null; this.miniRoar = MINI_ROAR[id]; if (this.miniRoar) this.fire(this.miniRoar); this.fire('stg_miniboss_intro'); return; }
+      this.bossKey = BOSS_KEY[id]; this.fire(`boss_roar_${this.bossKey}`); this.fire('stg_boss_intro'); this.setMusic('BOSS', { final: this.floor >= 3, phase: 0 });
+    });
+    bus.on(EV.BOSS_PHASE, (p) => {
+      if (this.bossTier === 'mini') { if (this.miniRoar) this.fire(this.miniRoar); if (this.bossDefence === 'ward') this.fire('ward_raise'); return; }   // no stinger, no bed change
+      this.fire(`boss_roar_${this.bossKey}`); this.fire('stg_boss_phase'); this.setMusic('BOSS', { final: this.floor >= 3, phase: p });
+    });
+    // adapt line on the intro card (event-markers §5.3: 450 ms boss / 300 ms mini after the intro starts); mercy −6 dB
+    bus.on(EV.BOSS_ADAPT, (d) => {
+      const mini = d && d.tier === 'mini';
+      setTimeout(() => this.fire('stg_boss_adapt', { gainDb: d && d.mercy ? -6 : 0 }), mini ? 300 : 450);
+    });
+    // v2 defences (cue-spec event_routing.defence; rate group defence_chip throttles block/chip/pop)
+    bus.on(EV.DEFENCE, (d) => {
+      if (!d || d.dot) return;
+      const m = DEFENCE_CUE[d.defence]; if (!m) return;
+      const id = d.defence === 'armour' && d.result === 'reduced' && d.keyword === 'blast' ? 'armour_clang_blast' : m[d.result];
+      if (id) this.fire(id, { x: d.x });
+    });
+    bus.on(EV.BOSS_DEAD, (d) => {
+      if (d && d.tier === 'mini') { this.bossTier = null; return; }   // no floor end: no bed change (the director's room clear plays room_clear)
       this.setMusic('BOSS_DOWN');
       const final = this.floor >= 3;
       setTimeout(() => this.fire(final ? 'stg_victory' : 'stg_boss_clear'), 600);
-      if (!final) setTimeout(() => { this.unloadGroup('boss_a'); this.setMusic('EXPLORE', { fadeInMs: 3000 }); }, 2600);
+      const bg = this._groupOf(((this.world || W1_DEFAULT).boss || [])[0]) || 'boss_a';
+      if (!final) setTimeout(() => { this.unloadGroup(bg); this.setMusic('EXPLORE', { fadeInMs: 3000 }); }, 2600);
     });
     // boss_death fires on the kill frame (event-markers), the music/stinger timeline on BOSS_DEAD
-    bus.on(EV.ENEMY_KILLED, (e) => { if (e.boss) this.fire('boss_death'); else this.fire(`kill:${e.id}`, { elite: e.elite, x: e.x }); });
+    bus.on(EV.ENEMY_KILLED, (e) => { if (e.boss) this.fire(e.tier === 'mini' ? 'miniboss_death' : 'boss_death'); else this.fire(`kill:${e.id}`, { elite: e.elite, x: e.x }); });
     bus.on(EV.LOW_HP, (on) => { this.states.lowHp = on; });
     bus.on(EV.PLAYER_HP, (hp) => { if (hp > 2) this.states.lowHp = false; });
     bus.on(EV.RUN_END, (outcome) => {
@@ -406,13 +526,25 @@ export class AudioMixer {
       this.states.lowHp = false;
     });
     bus.on(EV.REACTION, ({ name, x }) => this.fire(`reaction_${name}`, { x }));
-    bus.on(EV.RELIC_GAINED, () => this.fire('relic_gain'));
+    // duo / corrupted relics have their own cues (C's ask: no generic relic_gain for them; DUO_OFFERED is silent)
+    bus.on(EV.RELIC_GAINED, (id) => {
+      const r = this.game.registry.get('run'), rec = r && r.cat && r.cat.relics[id];
+      if (rec && (rec.duo || rec.rarity === 'corrupted')) return;
+      this.fire('relic_gain');
+    });
     bus.on(EV.REWARD_PICKED, (id, kind) => { if (kind === 'wand') this.fire('wand_pickup'); else if (kind === 'spell' || kind === 'modifier') this.fire('pickup_card'); });
     bus.on(EV.PLAYER_HP, (hp, max) => { if (this._lastHp != null && hp > this._lastHp) this.fire('heal'); this._lastHp = hp; });
   }
+  /** The current world's ambience bed (amb.wN): fade in 1500 ms (no-op if it already plays) / out 1200 ms (all ambience). */
   _ambience(on) {
-    if (on) { const b = this._bed('amb_cave'); if (b) { b.v = { bus: 'ambience', sub: 'ambience', baseDb: this.cues.get('amb_cave').default_gain_db || 0 }; this._fadeIn('amb_cave', 2000); } }
-    else this._fadeOut('amb_cave', 1200, true);
+    if (on) {
+      const id = (this.world || W1_DEFAULT).ambience, b = this._bed(id);
+      if (!b) return;
+      b.v = { bus: 'ambience', sub: 'ambience', baseDb: this.cues.get(id).default_gain_db || 0 };
+      const cur = this.music.current;
+      if (!b.snd.isPlaying || this.music.fades.some((f) => f.bed === b && f.dir < 0)) this._fadeIn(id, 1500);
+      this.music.current = cur;                              // `current` names the music bed, not the ambience
+    } else for (const [id, bed] of this.music.beds) if (bed.v && bed.v.bus === 'ambience') this._fadeOut(id, 1200, true);
   }
 
   /** Called each frame by SystemScene: D6 state = any overlay open over a run (not Title). */

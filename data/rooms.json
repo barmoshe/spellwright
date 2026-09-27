@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "$comment": "tileSize 16. Legend in legend field. Rows top->bottom.",
+  "version": 2,
+  "$comment": "tileSize 16. puzzle:true rooms always use fixedWaves.",
   "tileSize": 16,
   "legend": {
     "#": "wall",
@@ -42,7 +42,8 @@
         "####################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "tut_first_blood",
@@ -96,7 +97,8 @@
           "damage_up",
           "homing"
         ]
-      }
+      },
+      "puzzle": false
     },
     {
       "id": "tut_gauntlet",
@@ -154,7 +156,8 @@
           "ice_shard",
           "venom_dart"
         ]
-      }
+      },
+      "puzzle": false
     },
     {
       "id": "landing",
@@ -181,7 +184,8 @@
         "##################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "crypt_small_a",
@@ -212,7 +216,8 @@
         "########################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "crypt_small_b",
@@ -243,7 +248,8 @@
         "########################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "hall_pillars",
@@ -278,7 +284,8 @@
         "################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "pit_cross",
@@ -313,7 +320,8 @@
         "################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "twin_pools",
@@ -348,7 +356,8 @@
         "################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "great_hall",
@@ -386,7 +395,8 @@
         "########################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "ring_pit",
@@ -424,7 +434,8 @@
         "########################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "ruins",
@@ -462,7 +473,8 @@
         "########################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "long_gallery",
@@ -498,7 +510,8 @@
         "################################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "catacombs",
@@ -539,7 +552,8 @@
         "############################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "elite_arena",
@@ -574,7 +588,8 @@
         "##############################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "vault",
@@ -602,7 +617,8 @@
         "################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "shop",
@@ -632,7 +648,8 @@
         "######################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "arena_ossuary",
@@ -667,7 +684,8 @@
         "##################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "arena_mire",
@@ -704,7 +722,8 @@
         "####################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
     },
     {
       "id": "arena_lich",
@@ -741,7 +760,217 @@
         "####################################"
       ],
       "fixedWaves": null,
-      "tutorialReward": null
+      "tutorialReward": null,
+      "puzzle": false
+    },
+    {
+      "id": "crypt_arena",
+      "kind": "miniboss",
+      "floors": [
+        1,
+        2,
+        3
+      ],
+      "name": "Gate Hall",
+      "designIdea": "Mini-boss arena: four pillars to bait a charge or break line of sight; room to read one boss.",
+      "width": 30,
+      "height": 18,
+      "grid": [
+        "#######DD#####dd#####DD#######",
+        "#............................#",
+        "#............................#",
+        "#..............x.............#",
+        "#............................#",
+        "#......o..............o......#",
+        "#..............B.............#",
+        "#............................#",
+        "#...x....................x...#",
+        "#............................#",
+        "#............................#",
+        "#............................#",
+        "#......o..............o......#",
+        "#............................#",
+        "#............................#",
+        "#..............P.............#",
+        "#............................#",
+        "##############################"
+      ],
+      "fixedWaves": null,
+      "tutorialReward": null,
+      "puzzle": false
+    },
+    {
+      "id": "sentinel_gate",
+      "kind": "combat",
+      "floors": [
+        1
+      ],
+      "name": "Sentinel Gate",
+      "designIdea": "PUZZLE (pierce): a line of shield-bearers advances. Answer 1: pierce through the shields. Answer 2: flank them past the pillars.",
+      "width": 30,
+      "height": 17,
+      "grid": [
+        "##############dd##############",
+        "#............................#",
+        "#............................#",
+        "#........x....xx....x........#",
+        "#............................#",
+        "#............................#",
+        "#...x....................x...#",
+        "#............................#",
+        "#.....o.....o....o.....o.....#",
+        "#............................#",
+        "#............................#",
+        "#######................#######",
+        "#............................#",
+        "#............................#",
+        "#..............P.............#",
+        "#............................#",
+        "##############################"
+      ],
+      "fixedWaves": [
+        [
+          {
+            "enemy": "tomb_sentinel",
+            "count": 2
+          },
+          {
+            "enemy": "skeleton",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "enemy": "tomb_sentinel",
+            "count": 2
+          },
+          {
+            "enemy": "bat",
+            "count": 3
+          }
+        ]
+      ],
+      "tutorialReward": null,
+      "puzzle": true,
+      "testKeyword": "pierce"
+    },
+    {
+      "id": "choir_of_wards",
+      "kind": "combat",
+      "floors": [
+        2
+      ],
+      "name": "Choir of Wards",
+      "designIdea": "PUZZLE (shock): acolytes keep re-warding wraiths across a pit. Answer 1: shock strips the wards. Answer 2: burst the acolytes first.",
+      "width": 32,
+      "height": 18,
+      "grid": [
+        "###############dd###############",
+        "#..............................#",
+        "#...x......................x...#",
+        "#..............x...............#",
+        "#....o....................o....#",
+        "#..............................#",
+        "#............~~~~~~............#",
+        "#............~~~~~~............#",
+        "#..x.........~~~~~~.........x..#",
+        "#............~~~~~~............#",
+        "#..............................#",
+        "#...............x..............#",
+        "#....o....................o....#",
+        "#..............................#",
+        "#..............................#",
+        "#...............P..............#",
+        "#..............................#",
+        "################################"
+      ],
+      "fixedWaves": [
+        [
+          {
+            "enemy": "lantern_acolyte",
+            "count": 2
+          },
+          {
+            "enemy": "wraith",
+            "count": 2
+          }
+        ],
+        [
+          {
+            "enemy": "lantern_acolyte",
+            "count": 1
+          },
+          {
+            "enemy": "drowned_thrall",
+            "count": 3
+          },
+          {
+            "enemy": "mire_leech",
+            "count": 3
+          }
+        ]
+      ],
+      "tutorialReward": null,
+      "puzzle": true,
+      "testKeyword": "shock"
+    },
+    {
+      "id": "iron_hall",
+      "kind": "combat",
+      "floors": [
+        3
+      ],
+      "name": "Iron Hall",
+      "designIdea": "PUZZLE (blast): armoured golems in an open hall. Answer 1: blast tears the armour off. Answer 2: kite and grind while clearing the fodder.",
+      "width": 34,
+      "height": 20,
+      "grid": [
+        "################dd################",
+        "#................................#",
+        "#...x........................x...#",
+        "#...............xx...............#",
+        "#................................#",
+        "#.....oo..................oo.....#",
+        "#.....oo..................oo.....#",
+        "#................................#",
+        "#................................#",
+        "#................................#",
+        "#...x........................x...#",
+        "#................................#",
+        "#................................#",
+        "#.....oo..................oo.....#",
+        "#.....oo..................oo.....#",
+        "#................................#",
+        "#................................#",
+        "#................P...............#",
+        "#................................#",
+        "##################################"
+      ],
+      "fixedWaves": [
+        [
+          {
+            "enemy": "stone_golem",
+            "count": 2
+          },
+          {
+            "enemy": "ink_imp",
+            "count": 3
+          }
+        ],
+        [
+          {
+            "enemy": "animated_armor",
+            "count": 2
+          },
+          {
+            "enemy": "bound_tome",
+            "count": 1
+          }
+        ]
+      ],
+      "tutorialReward": null,
+      "puzzle": true,
+      "testKeyword": "blast"
     }
   ]
 }

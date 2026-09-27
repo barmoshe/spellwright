@@ -245,3 +245,128 @@ The Technical Artist measured 9 `sfx_critical` cues losing more than 6 dB throug
 | `boss_roar_knight` | 7.8 | −8 dB | 5.1 |
 
 The Technical Artist re-renders these 9 cues only, running steps 1–8 again. Their `version` is now 1.1, and `revision_log` is updated.
+
+## 8. Revision 1.2 (2026-09-27): Spellwright v2 (Wave A2)
+
+**Inputs:** `design-v2.md` §4–§11, `content-inventory.md` §0, `mobile-touch-spec.md` §8/§11 and `screen-graph.md` §9. 31 new one-shot cues bring the totals to **155 cues and 196 files**. All new sources are CC0 (Kenney, rubberduck), so `credits.md` is unchanged. Every new cue is in load group `boot`. The Technical Artist renders only the `version: "1.2"` cues (`revision_log`).
+
+**Defence throttle (block spam never masks hurt).**
+- `shield_block`, `armour_clang_chip` and `ward_pop` share the **`defence_chip` rate group** (`mixer.rate_groups`):
+  - at most one start per 100 ms across all three;
+  - at most 2 group voices sounding at once;
+  - no start within **150 ms** of any `sfx.critical` voice starting.
+- The chip voices sit at −28/−29 LUFS in the mix, so 2 overlapping voices sum to about −25. `player_hurt` is −15, and D2 ducks `sfx.impact` by a further −4 dB, which leaves ≥ 14 dB of separation at 10 blocks/s.
+- The *answers* are loud and never stolen, like a reaction (priority 80, D4):
+  - `shield_shatter` (pierce breaks the shield);
+  - `armour_clang_blast` (blast hits armour; priority 64);
+  - `armour_break` (the armour bar runs out);
+  - `ward_break` (shock strips the ward).
+- The wrong-tool chips are thin and dull. The player hears the counter system: a *dull chip* means the wrong tool, a *big crack* means the right one.
+
+**Id note.** The requested enemy `shield_break` is **`shield_shatter`**, because `shield_break` is already the player's warding-sigil shield (v1 id, used by `event-markers` §1 and mix D2). The requested armour clang is split into `armour_clang_chip` / `armour_clang_blast`. `reward_reroll` routes to the existing `ui_reroll`, since it is the same verb as the shop reroll.
+
+**Mini-bosses.**
+- The combat bed keeps playing; there is no boss bed for a mini-boss.
+- On activation: `stg_miniboss_intro` + `miniboss_roar_<id>`.
+- On death: `miniboss_death`, then the normal `room_clear` release.
+- Boss adapt: `stg_boss_adapt` (the Toll reversed into a hit, meaning "it read you"). Mercy adapts use the same stinger at −6 dB.
+
+**Phone and `audioSession: ambient`.**
+- The game plays under the player's own music and obeys the silent switch, so no cue may depend on sub-bass.
+- Every new cue was rendered in scratch and measured with the Technical Artist's method (max M delta through `highpass=f=250` twice). The worst case is 5.8 dB (limit 6).
+- 4 cues needed the harmonic chain: `windup_ward` 12.6 → 5.3, `windup_mirror` 9.3 → 5.2, `miniboss_roar_warden` 12.3 → 4.0, `miniboss_death` 8.5 → 5.2.
+- `touch_ui_tap` is 44 ms, on the UI bus, with an 80 ms minimum interval.
+
+**New enemies.**
+- `tomb_sentinel`: its spear thrust reuses `windup_swipe` / `release_swipe`. Its death is the `construct` kill.
+- `lantern_acolyte`: `windup_ward` → `ward_raise`. Its death is the `caster` kill.
+- The new attack types `ward_allies`, `guard` and `mirror`, and the Heat hazard `bone_rain`, have their own windup and release cues. The other Heat attacks reuse existing ring and spiral cues.
+
+| Cue | Sub-bus | Source [in+len ms] | Out ms | Gain dB | Poly / min ms | Prio | Scratch HPF loss dB | Trigger |
+|---|---|---|---|---|---|---|---|---|
+| `shield_block` | sfx.impact | impactMetal_light_000.ogg [0+110] -4st (v1 of 3) | 139 | -14 | 2 / 100 | 40 | 0.6 | defence{type:shield, outcome:block} (front hit absorbed) |
+| `shield_wear` | sfx.impact | impactPlate_heavy_001.ogg [0+330] -3st + wood_04.ogg [45+200] -2st -4dB @40 | 392 | -9 | 1 / 200 | 72 | 1.1 | defence{type:shield, outcome:wear} (7th block without pierce: shield cracks and drops) |
+| `shield_shatter` | sfx.impact | impactPlate_heavy_000.ogg [0+400] + impactMetal_heavy_001.ogg [0+250] +3st -3dB + stones_04.ogg [20+200] -5dB @50 | 400 | -5 | 2 / 150 | 80 | 0.6 | defence{type:shield, outcome:break} (pierce shatters it) — the enemy shield; the PLAYER shield keeps `shield_break` |
+| `armour_clang_chip` | sfx.impact | impactMetal_medium_001.ogg [0+100] -2st (v1 of 3) | 119 | -15 | 2 / 100 | 40 | 0.1 | defence{type:armour, outcome:hit, keyword:none} (direct/DoT chip at x0.4 / x0.25) |
+| `armour_clang_blast` | sfx.impact | impactPlate_heavy_002.ogg [0+300] -4st + impactMining_001.ogg [0+200] -2st -4dB (v1 of 2) | 400 | -9 | 2 / 70 | 64 | 3.4 | defence{type:armour, outcome:hit, keyword:blast} (x2.5) |
+| `armour_break` | sfx.impact | metalPot1.ogg [90+700] -5st + stones_03.ogg [5+400] -2st -3dB | 934 | -5 | 2 / 150 | 80 | 0.8 | defence{type:armour, outcome:break} (bar depleted) |
+| `ward_pop` | sfx.impact | impactGlass_light_003.ogg [0+90] +5st (v1 of 2) | 71 | -15 | 2 / 100 | 40 | 0.0 | defence{type:ward, outcome:block} (a charge swallows a hit) |
+| `ward_break` | sfx.impact | impactGlass_medium_001.ogg [0+350] +2st + forceField_003.ogg [0+250] +5st -5dB | 312 | -6 | 2 / 150 | 80 | 0.2 | defence{type:ward, outcome:break} (shock strips it, or the last charge spent) |
+| `windup_ward` | sfx.danger | forceField_004.ogg [0+450] -6st · harmonics -6 dB | 636 | -7 | 2 / 80 | 86 | 5.3 | enemy_windup{type:ward_allies} (kindle_ward, kindle_choir, veil) |
+| `ward_raise` | sfx.danger | impactBell_heavy_004.ogg [0+300] +2st + impactGlass_light_000.ogg [0+150] -3st -6dB @40 | 267 | -11 | 1 / 300 | 60 | 1.2 | enemy_release{type:ward_allies} (wards land on allies / self) |
+| `windup_guard` | sfx.danger | drawKnife1.ogg [65+250] -6st + impactPlate_heavy_001.ogg [0+250] -4st -4dB @120 | 435 | -7 | 2 / 80 | 86 | 3.2 | enemy_windup{type:guard} (knight shield_wall) |
+| `guard_raise` | sfx.danger | impactPlate_heavy_003.ogg [0+350] -5st + stones_01.ogg [20+150] -3st -5dB | 467 | -9 | 1 / 300 | 60 | 2.4 | enemy_release{type:guard} (shield wall planted) |
+| `windup_mirror` | sfx.danger | forceField_002.ogg [0+600] -5st (areverse) · harmonics -8 dB | 801 | -7 | 2 / 80 | 86 | 5.2 | enemy_windup{type:mirror} (archlich mirror_volley) |
+| `windup_hazard_bone` | sfx.danger | stones_02.ogg [120+400] -3st | 476 | -7 | 2 / 80 | 86 | 0.1 | enemy_windup{type:hazard, attackId:bone_rain} (heat 4+) |
+| `hazard_on_bone` | sfx.danger | stones_04.ogg [20+250] -2st + wood_01.ogg [0+150] -4dB @60 | 281 | -11 | 1 / 300 | 55 | 0.0 | hazard_on{attackId:bone_rain} |
+| `miniboss_roar_warden` | sfx.danger | roar_02.ogg [45+500] -5st + impactPlate_heavy_000.ogg [0+350] -5st -5dB · harmonics -6 dB | 667 | 0 | 1 / 1000 | 95 | 4.0 | boss_activate / boss_phase {boss:grave_warden} |
+| `miniboss_roar_matron` | sfx.danger | howl.ogg [25+550] -4st (aecho) | 693 | 0 | 1 / 1000 | 95 | 1.6 | boss_activate / boss_phase {boss:lantern_matron} |
+| `miniboss_roar_colossus` | sfx.danger | metalPot1.ogg [90+800] -8st + monster_07.ogg [255+600] -6st -4dB | 1270 | 0 | 1 / 1000 | 95 | 2.0 | boss_activate / boss_phase {boss:iron_colossus} |
+| `miniboss_death` | sfx.danger | lowFrequency_explosion_000.ogg [35+800] -2st + explosionCrunch_001.ogg [0+600] -3st -3dB + impactBell_heavy_002.ogg [0+690] -3st -5dB · harmonics -6 dB | 898 | -2 | 1 / 2000 | 95 | 5.2 | boss_death{tier:mini} |
+| `stg_miniboss_intro` | music.stinger | jingles_HIT11.ogg [15+940] -2st + impactBell_heavy_002.ogg [0+690] -5st -4dB | 1055 | -1 | 1 / 500 | 95 | 3.9 | boss_activate{tier:mini} (after miniBossActivateDelayMs; with miniboss_roar_*) |
+| `stg_boss_adapt` | music.stinger | impactBell_heavy_001.ogg [0+900] -7st (areverse) + jingles_HIT13.ogg [20+270] -3st -2dB @1130 | 1451 | -2 | 1 / 500 | 95 | 5.0 | boss_adapt (adapt banner shows: shield_wall / veil / mirror / resist / mercy) |
+| `door_threat` | sfx.world | impactBell_heavy_003.ogg [0+450] -9st + drawKnife2.ogg [0+250] -6st -8dB @60 | 757 | -11 | 1 / 400 | 55 | 5.2 | door_threat_shown (a threat or risk door label reveals; once per door per room) |
+| `duo_unlock` | sfx.world | impactBell_heavy_003.ogg [0+450] +5st + impactBell_heavy_003.ogg [0+450] +12st -2dB @130 + item_gem_04.ogg [215+300] -5dB @200 | 500 | -6 | 1 / 500 | 80 | 0.4 | duo_formed (a duo relic is taken: both parents owned) |
+| `corrupted_take` | sfx.world | impactBell_heavy_001.ogg [0+1000] -8st + creature_monster_03.ogg [110+600] -7st -4dB + burble_02.ogg [45+400] -6st -8dB @150 | 1587 | -6 | 1 / 500 | 80 | 5.8 | corrupted_take (a corrupted relic is taken from the risk-door draft) |
+| `daily_start` | sfx.world | impactBell_heavy_001.ogg [0+1300] -5st + impactBell_heavy_001.ogg [0+1300] -3st -3dB @450 | 1996 | -4 | 1 / 2000 | 90 | 5.3 | run_start{mode:daily} (replaces run_start) |
+| `stg_goal` | music.stinger | jingles_PIZZI05.ogg [10+520] + impactBell_heavy_004.ogg [0+290] +5st -6dB @300 | 520 | -3 | 1 / 500 | 95 | 3.8 | goal_earned (a goal pays: at run end, or immediately for later goals) |
+| `forge_merge` | ui | impactMetal_medium_000.ogg [0+250] -3st + impactMetal_medium_003.ogg [0+200] -1st -2dB @110 + item_gem_04.ogg [215+300] +3st -5dB @200 | 452 | -10 | 2 / 300 | 40 | 0.1 | forge_merge (Merge confirmed in the Forge tab) |
+| `forge_evolve` | ui | impactMetal_heavy_001.ogg [0+300] -3st + impactBell_heavy_000.ogg [0+900] +2st -3dB @80 + item_gem_04.ogg [215+350] +7st -4dB @300 | 882 | -8 | 2 / 500 | 40 | 0.6 | forge_evolve (Evolve confirmed) |
+| `forge_slot` | ui | metalLatch.ogg [35+120] -2st + wood_03.ogg [0+150] -3dB @60 | 210 | -12 | 2 / 300 | 40 | 0.1 | forge_slot (+1 Slot bought) |
+| `reward_skip` | ui | bookClose.ogg [55+150] -2st + handleCoins2.ogg [20+250] -3dB @70 | 320 | -13 | 2 / 300 | 40 | 1.7 | reward_skip (Skip +gold) |
+| `touch_ui_tap` | ui | bookPlace3.ogg [10+55] +4st | 44 | -20 | 2 / 80 | 40 | 0.1 | touch_ui_tap (touch-down on any touch control or menu item; menus keep ui_confirm/ui_back on release) |
+
+**Animator seam.** When this was written, `event-markers.md` had no v2 markers yet. The routing is keyed to design events (`defence{type,outcome,keyword}`, `boss_activate{tier}`, `boss_adapt`, `door_threat_shown`, `duo_formed`, `corrupted_take`, `forge_*`, `reward_skip`, `goal_earned`, `touch_ui_tap`). A marker id the Animator proposes later maps onto these as an alias in `event_routing`; no sound needs to change.
+
+## 9. Revision 1.3 (2026-09-27): Worlds
+
+**Inputs:** `v2-overhaul-plan.md` Addendum — Worlds and `specs/design/worlds.md`. Each world has its own explore/combat bed pair, ambience, entry stinger, native kill voices and twist cues. The keys match `floors.json` `world{music: "music.wN", ambience: "amb.wN"}`, and `world_audio.keys` resolves them. The orchestrator's long form, `music.world.<id>.explore|combat`, is an alias. Totals: **169 cues and 213 files.** The new sources are CC0, plus new regions of MacLeod tracks that are already credited, so `credits.md` is unchanged.
+
+| World | `music.wN` explore | `music.wN` combat | Boss beds | `amb.wN` | `stg.wN` | Identity |
+|---|---|---|---|---|---|---|
+| **W1 The Sunken Crypt** | `mus_explore` (Ossuary 6, 141–227.5 s) | `mus_combat_a` (Unholy Knight) | Five Armies p1/p2 | `amb_cave` | `run_start` (Toll −5 st, dry) | stone and bone, the crypt's room tone |
+| **W2 The Drowned Halls** | **`mus_explore_w2`** (Dark Fog breakdown, 138.32–198.32 s, 18 bars, low-pass 2.4 kHz) | `mus_combat_b` (Volatile Reaction; **moved from F3**) | Five Armies p1/p2 | **`amb_drowned`** (pressure drone + 13 drips and bubbles, 42 s) | **`stg_world_w2`** (low-passed Toll + bubble + drip) | under water: bells at a distance |
+| **W3 The Last Library** | **`mus_explore_w3`** (Ossuary 6's sparse movement, 60–130 s, dry with air) | **`mus_combat_c`** (Aggressor, 127.585–175.585 s, 30 bars between the final-boss regions) | Aggressor p1–p3 | **`amb_library`** (hall hum + page turns, candle crackle, shelf creaks, 42 s) | **`stg_world_w3`** (Toll dry + page + candle + book shut) | dry paper and candle; combat is the Archlich theme before its climax |
+
+**Scratch checks** (the Technical Artist's methods):
+- `mus_explore_w2`: seam clean · TP after norm -1.5 · HPF loss 3.7
+- `mus_explore_w3`: seam clean · TP after norm -4.6 · HPF loss 2.4
+- `mus_combat_c`: seam clean · TP after norm -7.0 · HPF loss 4.0
+- `amb_drowned`: seam clean · TP after norm -4.1 · HPF loss 3.6
+- `amb_library`: seam clean · TP after norm -1.6 · HPF loss 5.6. It targets −18.8 LUFS (gain −13.2) so it meets −1.5 dBTP without a limiter.
+
+**Ambience construction:** a pitched, filtered drone is cut into a seamless 6 s cell, looped ×7, and the identity events are baked on top. Every event ends at least 1.5 s before the wrap, so the seam stays clean. The drone runs 5–6 dB under the events, because on a phone the drips and pages carry the world while the drone only fills the room.
+
+**Transitions:**
+- At `floor_descend`, the current world's explore bed and ambience fade out over 1500 ms.
+- When the world card shows, `stg.wN` plays (D3). Then `music.wN.explore` fades in over 2000 ms and `amb.wN` over 1500 ms.
+- The v1 floor-2 `amb_cave` detune rule is retired.
+
+**Loading:** per-world load groups `world_w1..w3`. The next world loads at descend start, and the previous world unloads once the next explore bed is audible. The W2 → W3 peak is about 96 MB, within the 128 MB budget.
+
+**Natives and twists** (`world_audio.worlds.*.natives_kill`, `event_routing`):
+- `bone_archer` → bone kill.
+- `drowned_thrall` and `mire_leech` → `kill_drowned`.
+- `animated_armor` → construct kill.
+- `bound_tome` → `kill_paper`.
+- `ink_imp` → `explode_ink`.
+- The native attacks reuse the windup and release cues for their attack types.
+- The Flooded twist gets `water_splash` (250 ms, 2 voices; the player's own splash +4 dB) and `shock_arc_water`.
+- The Bookshelves twist gets `shelf_ignite` and `shelf_collapse`.
+
+| Cue | Source [in+len ms] | Out ms | Gain dB | Poly / min ms | HPF loss dB | Trigger |
+|---|---|---|---|---|---|---|
+| `stg_world_w2` | impactBell_heavy_001.ogg [0+1500] -5st + burble_01.ogg [60+600] -5st @250 + drop_004.ogg [0+280] -8st @700 | 2002 | -2 | 1 / 500 | 5.1 | world_enter{world:w2} (world title card shows, after floor_descend) |
+| `stg_world_w3` | impactBell_heavy_001.ogg [0+1500] -3st + bookFlip1.ogg [540+220] -2st @200 + spell_fire_06.ogg [45+500] -3st @350 + bookClose.ogg [55+150] -4st @900 | 1784 | -2 | 1 / 500 | 3.4 | world_enter{world:w3} (world title card shows, after floor_descend) |
+| `kill_drowned` | creature_slime_02.ogg [160+220] -3st + drop_003.ogg [0+180] -6st @60 | 355 | -9 | 3 / 35 | 2.6 | kill{family:drowned} (W2 natives) |
+| `kill_paper` | bookFlip2.ogg [0+200] -2st + bookClose.ogg [55+150] -4st @90 | 279 | -9 | 3 / 35 | 1.8 | kill{family:paper} (W3 natives: animated books, ink, candles) |
+| `explode_ink` | explosionCrunch_000.ogg [0+300] -4st + creature_slime_02.ogg [160+250] -3st | 378 | -9 | 2 / 50 | 2.6 | explode{source:ink_imp} (ink_fuse self-destruct or killed mid-fuse) |
+| `water_splash` | burble_02.ogg [45+200] +3st + drop_004.ogg [0+200] -4st @30 | 282 | -17 | 2 / 250 | 0.1 | water_enter (player or a ground enemy steps into a water tile; W2) |
+| `shock_arc_water` | forceField_001.ogg [0+200] +5st + drop_001.ogg [0+130] +3st @20 | 150 | -13 | 2 / 80 | 0.3 | shock_arc (flooded twist: a shock hit arcs through water to other enemies) |
+| `shelf_ignite` | spell_fire_04.ogg [245+450] + bookFlip1.ogg [540+220] +3st @60 | 450 | -11 | 2 / 150 | 0.0 | bookshelf_ignite (fire hit on a bookshelf; W3) |
+| `shelf_collapse` | impactPlank_medium_001.ogg [0+350] -3st + bookPlace1.ogg [25+200] -3st @80 + bookPlace2.ogg [30+200] -5st @160 + wood_04.ogg [45+200] -3st @40 | 427 | -9 | 2 / 120 | 3.0 | bookshelf_collapse (burn ends, or a blast destroys it; W3) |
+
+**Deviations from the designer's hints** (`worlds.md` §4):
+- W1 "low choir" comes from the Ossuary bed plus the cave's drips; there is no choir source in the packs.
+- W3 "ticking" isn't there, because a steady tick in a loop would fight the cast rhythm (pillar 1). The "low brass" is Aggressor.
+- W1/W2 boss beds stay shared (Five Armies). A dedicated W2 boss bed would need a 7th track, and none is on disk.

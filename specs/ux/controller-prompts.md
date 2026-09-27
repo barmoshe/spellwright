@@ -108,7 +108,7 @@ The KB variants stay as they are. Once the pad variants are tokenized, the `*Pad
 | G1 | In-world interact / shop / hint prompts (`WorldHud` 299–338) | `[interact]` and others | tokenized ✔ (becomes family-aware) |
 | G2 | FTUE verb prompts P1–P10 (`WorldHud` 421, `Ftue.verbText`) | `[cast] [dash] [wandNext] [inventory] [aim] [move]` | tokenized ✔ |
 | G3 | Toasts (`Toasts.refreshGlyphs`) | `[inventory]` and others | tokenized ✔ |
-| G4 | HUD H8 wand-badge keys (`HudScene` ~500) | "◂Y" / "RB▸" become "◂△" / "R1▸" at the existing **8 px** micro size: shoulders as T-small text, face symbols as the 5×5 procedural symbol (§5). No atlas art. | literal ✘ |
+| G4 | HUD H8 wand-badge keys (`HudScene` ~500) | "◂Y" / "RB▸" become "◂△" / "R1▸" at the existing **8 px** micro size: shoulders as T1 text (v2: T-small removed), face symbols as the 5×5 procedural symbol (§5). No atlas art. | literal ✘ |
 | G5 | Pause tab-bar keycaps (`PauseScene` 58, 270) | LB/RB become L1/R1 (`[tabPrev]`/`[tabNext]`) | literal ✘ |
 | G6 | Wand editor footer (`WandEditor` ~579) | §3 strings | literal ✘ |
 | G7 | Shop footer (`ShopScene` 144, 253) | `shop.editHintPad` | literal ✘ |
@@ -132,7 +132,7 @@ Cross      Circle     Square     Triangle
 #...#      .###.      #####      #####
 ```
 
-Shoulders, triggers and system buttons use the existing **pill** with a T-small legend: `L1 R1 L2 R2 Create Options Touch`. "Touch" keeps the pill ≤ 30 px wide. The Xbox fallback is today's glyph, unchanged.
+Shoulders, triggers and system buttons use the existing **pill** with a T1 legend (v2: T-small removed; the pill width is `max(12, textW + 6)`): `L1 R1 L2 R2 Create Options Touch`. "Touch" keeps the pill ≤ 30 px wide. The Xbox fallback is today's glyph, unchanged.
 
 **Text-only contexts** (the Settings table, the description bar, any `txt()` without glyphs) use the **PS text** column of §3: "Cross", "Circle", "Square", "Triangle", "L1" … "Touchpad". **Never write "X" or "O"** for Cross or Circle: "X" means the *left* button to an Xbox player, and "O" reads as zero or the letter O.
 
@@ -190,3 +190,47 @@ PAD_UI.back            = [1, 8, 9, 17];
 ```
 
 `bindings.pad` overrides are keyed by index, so they stay valid for both families.
+
+---
+
+## §9 v2: the `touch` prompt family
+
+**Status:** v2 Wave A1. It extends §1 to §5. The touch controls themselves are in `mobile-touch-spec.md`.
+
+### 9.1 Resolution (added to §1)
+
+- **Step 0, before §1's rule 1:** if `router.device === 'touch'` (the last meaningful input was a touch pointer; `mobile-touch-spec.md` §5.1), the family is **`touch`**. `promptStyle` never overrides touch, just as it never overrides the keyboard: a player using their thumbs sees thumbs.
+- The family change emits `EV.INPUT_DEVICE (device, family)` as in §1 rule 4. Every §4 site (G1–G11) re-renders the same frame.
+- **Compatibility mouse events** synthesized from a touch must not flip the family back to `kbm` (`mobile-touch-spec.md` §5.1).
+
+### 9.2 Glyph table (touch)
+
+All glyphs are **12×12**, monochrome (`#fdf7ed` on `#4b5468`, 1 px `#222222` outline), and share the §4 size contract. Each one **pictures the on-screen control it names**, so the prompt and the button match.
+
+| Token(s) | Touch atlas id | Picture | Text fallback (text-only contexts) |
+|---|---|---|---|
+| `[move]` | `touch_stick_l` | a thumb circle on the left half of a phone outline | "Left side" |
+| `[aim]` | `touch_stick_r` | a thumb circle on the right half | "Right side" |
+| `[cast]` (`touchFire: auto`) | `touch_auto` | a crosshair with a small "A" | "Auto" |
+| `[cast]` (`touchFire: stick`) | `touch_stick_r` | as `[aim]` | "Right side" |
+| `[dash]` | `touch_dash` | ››› (the DASH button icon at 12 px) | "DASH" |
+| `[wandNext]` `[wandPrev]` | `touch_swap` | two arrows in a circle | "SWAP" |
+| `[interact]` | `touch_use` | a hand | "USE" |
+| `[inventory]` | `touch_edit` | a wand with "+" | "EDIT" |
+| `[pause]` | `touch_pause` | II | "PAUSE" |
+| `[confirm]` | `touch_tap` | a fingertip with one ring | "Tap" |
+| `[back]` | `touch_back` | ‹ | "Back" |
+| `[dpad]` (menus: move, scroll) | `touch_drag` | a fingertip with an arrow | "Drag" |
+| `[tabPrev]` `[tabNext]` | `touch_tap` | as `[confirm]` | "Tap a tab" |
+| `[quickMove]` `[salvage]` | — | these are buttons in the editor's pane C on touch (`wand-editor-ux.md` §10.1); the hint names the button | "To bag" / "Salvage" |
+| `[editorWandPrev]` `[editorWandNext]` | `touch_tap` | as `[confirm]` | "Tap a wand" |
+
+**Fallback when an atlas id is missing:** the §5 **pill** with the text-fallback word in T1 (`max(12, textW + 6)` wide). The build never blocks on art.
+
+### 9.3 Strings whose *verb* changes on touch
+
+A glyph swap isn't enough when the action itself differs (hold vs auto, click vs tap). Those i18n keys get a `.touch` variant, which `t()` picks when the family is `touch`: `ftue.p1`, `ftue.p2`, `ftue.p2.stick`, `ftue.p3b`, `ftue.p4`, `ftue.p8`, `ftue.p10`, `editor.hint*`, `shop.editHint*`, `title.hint*`, `settings.hint*`, `credits.hint*`, `reward.hint*`. The texts are in `ftue-flow.md` §5.3. The footer hints on touch name only gestures and on-screen buttons, e.g. `editor.hint.touch` = "Tap a card to inspect · drag or tap-tap to move · Back to close".
+
+### 9.4 No vibration crossover
+
+The touch family uses `navigator.vibrate` haptics (`mobile-touch-spec.md` §8.2), never the pad's rumble table. The pad table (§6) fires only while `device === 'pad'`.

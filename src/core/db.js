@@ -13,14 +13,22 @@ const deepFreeze = (o) => {
 
 /** Minimal per-table required fields. Extended in Wave 4 once specs/design + data land. */
 export const REQUIRED = {
-  spells: ['id', 'type', 'mana', 'stats', 'behavior'],
-  modifiers: ['id', 'type', 'mana'],
-  wands: ['id'],
-  relics: ['id'],
+  spells: ['id', 'type', 'mana', 'stats', 'behavior', 'rarity', 'keywords', 'tags'],
+  modifiers: ['id', 'type', 'mana', 'rarity', 'keywords', 'tags'],
+  wands: ['id', 'capacity', 'manaMax', 'manaRegen'],
+  relics: ['id', 'rarity', 'category', 'tags', 'effects'],
   enemies: ['id'],
   bosses: ['id'],
   rooms: ['id'],
+  // v2 tables (design-v2; Wave D)
+  forge: ['id', 'type'],
+  modes: ['id'],
+  affixes: ['id'],
+  economy: ['id'],
 };
+
+/** Per-type required fields of a forge.json record (merge / evolve / slot). */
+const FORGE_FIELDS = { merge: ['from', 'count', 'to', 'cost'], evolve: ['base', 'catalyst', 'to', 'cost'], slot: ['costBase', 'costStep', 'maxCapacity', 'maxBuysPerRun'] };
 
 class Catalogue {
   constructor() {
@@ -57,7 +65,26 @@ class Catalogue {
     this.tables[table] = deepFreeze({ list, byId, version: json.version ?? null, meta });
   }
 
-  finish() { this.loaded = true; deepFreeze(this.tables); }
+  finish() { this._crossCheck(); this.loaded = true; deepFreeze(this.tables); }
+
+  /** v2 cross-table references (forge recipes, duo parents, evolution catalysts) resolve to real ids. */
+  _crossCheck() {
+    const card = (id) => (this.tables.spells && this.tables.spells.byId[id]) || (this.tables.modifiers && this.tables.modifiers.byId[id]);
+    const relic = (id) => this.tables.relics && this.tables.relics.byId[id];
+    const forge = this.tables.forge;
+    if (forge) forge.list.forEach((r, i) => {
+      const need = FORGE_FIELDS[r.type];
+      if (!need) { this.errors.push(`data: forge[${i}] unknown type "${r.type}"`); return; }
+      for (const f of need) if (r[f] === undefined) this.errors.push(`data: forge[${i}] (${r.type}) missing "${f}"`);
+      for (const f of ['from', 'to', 'base']) if (r[f] !== undefined && !card(r[f])) this.errors.push(`data: forge.${r.id}.${f} "${r[f]}" is not a card`);
+      if (r.catalyst && r.catalyst.kind === 'relic' && !relic(r.catalyst.id)) this.errors.push(`data: forge.${r.id} catalyst relic "${r.catalyst.id}" missing`);
+    });
+    const relics = this.tables.relics;
+    if (relics) for (const r of relics.list) {
+      if (r.duo) for (const p of r.duo.parents || []) if (!relic(p)) this.errors.push(`data: relics.${r.id} duo parent "${p}" missing`);
+      for (const e of r.effects || []) if (e.type === 'on_event' && e.action && e.action.type === 'spawn_spell' && !card(e.action.spellId)) this.errors.push(`data: relics.${r.id} spawn_spell "${e.action.spellId}" missing`);
+    }
+  }
 
   get(table) { return this.tables[table] || { list: [], byId: Object.create(null) }; }
   byId(table, id) { const t = this.tables[table]; return t ? t.byId[id] : undefined; }

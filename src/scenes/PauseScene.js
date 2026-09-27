@@ -20,6 +20,7 @@ import { cat } from '../data/catalog.js';
 import { Art } from '../core/art.js';
 import { t } from '../core/i18n.js';
 import { rarityWord } from '../ui/fmt.js';
+import { EV, listen } from '../core/events.js';
 import { glyph as padGlyph, glyphSpecs } from '../ui/HudKit.js';
 
 const TABS = ['wands', 'relics', 'map', 'codex', 'menu'];
@@ -37,6 +38,12 @@ export class PauseScene extends Phaser.Scene {
   create() {
     this.m = modalChrome(this, { swap: !!this.args._swap });
     Object.assign(this, { router: this.m.router, flow: this.m.flow, bus: this.m.bus, run: this.m.run, mixer: this.m.mixer });
+    this.touchUi = !!(this.router && this.router.touchProfile);
+    // mobile-touch-spec §7.3 welcome-back: the reveal re-arms the open-guard and shows the reorientation header
+    listen(this, this.bus, EV.WELCOME_BACK, () => {
+      if (this.nav) this.nav.rearmGuard();
+      if (this.tab === 'menu' && !this.closing) this.showTab('menu');
+    });
     this.__dialog = null;
     this.closing = false;
     this.snap = this.run ? this.run.snapshot() : null;
@@ -54,16 +61,18 @@ export class PauseScene extends Phaser.Scene {
   // ------------------------------------------------------------------------------------ tab bar
   buildTabBar() {
     const p = this.m.panel;
-    p.add(box(this, 0, 0, VIEW_W, 20, 'dark'));
+    // wand-editor-ux §10.4: the tab bar is 24 px tall in the touch profile (≥ 24 px targets); 20 on desktop
+    const TB = this.touchUi ? 24 : 20;
+    p.add(box(this, 0, 0, VIEW_W, TB, 'dark'));
     this.buildTabKeys();
     this.tabTexts = TABS.map((k, i) => {
       const x = TAB_X0 + i * TAB_W;
-      const tx = txt(this, x + TAB_W / 2, 3, t(`pause.tab.${k}`), 'T1', { origin: [0.5, 0], color: C.dim });
+      const tx = txt(this, x + TAB_W / 2, TB === 24 ? 5 : 3, t(`pause.tab.${k}`), 'T1', { origin: [0.5, 0], color: C.dim });
       p.add(tx);
-      this.nav.add({ id: `tab:${k}`, x, y: 2, w: TAB_W, h: 16, clickOnly: true, onClick: () => this.switchTab(k) });
+      this.nav.add({ id: `tab:${k}`, x, y: TB === 24 ? 0 : 2, w: TAB_W, h: TB === 24 ? 24 : 16, clickOnly: true, onClick: () => this.switchTab(k) });
       return tx;
     });
-    this.underline = this.add.rectangle(TAB_X0, 17, TAB_W - 16, 2, C.gold).setOrigin(0);
+    this.underline = this.add.rectangle(TAB_X0, TB - 3, TAB_W - 16, 2, C.gold).setOrigin(0);
     p.add(this.underline);
   }
 
@@ -176,7 +185,7 @@ export class PauseScene extends Phaser.Scene {
           const rk = { spell: 'spells', modifier: 'modifiers' }[v.reward];
           const a = Art.getQuiet(`reward_kind.${v.reward}.icon16`) || Art.getQuiet(`icon16.reward_kind.${v.reward}`);
           if (a) c.add(this.add.image(x + 5, y + 24, a.key, a.frame));
-          else c.add(txt(this, x + 5, y + 16, t(`reward.kind.${v.reward}`).slice(0, 3), 'Tsmall', { origin: [0.5, 0], color: C.dim }));
+          // (no 3-letter fallback, §2.3 #26: the 16 px reward-kind icon carries it)
         }
       }
     });
@@ -211,17 +220,26 @@ export class PauseScene extends Phaser.Scene {
     const c = this.content;
     c.add(box(this, VIEW_W / 2 - 110, 70, 220, 190, 'ornate'));
     c.add(txt(this, VIEW_W / 2, 82, t('pause.title'), 'T2', { origin: [0.5, 0] }));
+    // welcome-back header (§7.3): T2 + a T1 reorientation line, only after a hold (focus loss / rotation)
+    if (this.registry.get('welcomeBack') && this.run) {
+      const r = this.run;
+      c.add(txt(this, VIEW_W / 2, 30, t('welcome.title'), 'T2', { origin: [0.5, 0] }));
+      c.add(txt(this, VIEW_W / 2, 48, t('welcome.line', { floor: r.floor, room: (r.step || 0) + 1, hp: r.hp, max: r.maxHp, wand: r.activeWand + 1 }), 'T1', { origin: [0.5, 0], color: C.dim }));
+    }
     const items = [
       { id: 'm:resume', label: t('pause.resume'), kind: 'primary', act: () => this.requestClose() },
       { id: 'm:settings', label: t('pause.settings'), act: () => this.flow.open('settings', { from: 'pause' }) },
       { id: 'm:controls', label: t('pause.controls'), act: () => this.flow.open('settings', { from: 'pause', group: 'controls' }) },
       { id: 'm:abandon', label: t('pause.abandon'), kind: 'danger', act: () => this.askAbandon() },
     ];
+    // touch profile: the primary (Resume) is ≥ 37 px tall (mobile-touch-spec §5.2), rows ≥ 24
     items.forEach((it, i) => {
-      const x = VIEW_W / 2 - 80, y = 108 + i * 34;
-      const b = button(this, x, y, 160, 24, it.label, { kind: it.kind });
+      const x = VIEW_W / 2 - 80;
+      const h = this.touchUi && i === 0 ? 37 : 24;
+      const y = this.touchUi ? (i === 0 ? 102 : 148 + (i - 1) * 32) : 108 + i * 34;
+      const b = button(this, x, y, 160, h, it.label, { kind: it.kind });
       c.add(b);
-      this.nav.add({ id: it.id, x, y, w: 160, h: 24, onFocus: () => b.setFocused(true), onBlur: () => b.setFocused(false),
+      this.nav.add({ id: it.id, x, y, w: 160, h, onFocus: () => b.setFocused(true), onBlur: () => b.setFocused(false),
         onConfirm: () => { b.press(); this.mixer.fire('ui_confirm'); it.act(); } });
     });
     this.nav.linkList(items.map((i) => i.id), 'v', true);
@@ -247,6 +265,7 @@ export class PauseScene extends Phaser.Scene {
   // ------------------------------------------------------------------------------------ close
   requestClose() {
     if (this.closing) return;
+    this.registry.set('welcomeBack', false);
     if (this.editor && this.editor.held && !this.editor.tryRelease()) return;   // D3 (never a trap)
     if (this.editor && this.editor.held) return;
     this.closing = true;
@@ -262,7 +281,9 @@ export class PauseScene extends Phaser.Scene {
   buildTabKeys() {
     if (this.kPrev) { this.kPrev.destroy(); this.kNext.destroy(); }
     const fam = this._fam = this.router.promptFamily;
-    if (fam === 'kbm') {
+    if (fam === 'touch') {                     // touch: tabs are tapped; the modal Back button owns the top-left
+      this.kPrev = this.add.container(0, 0); this.kNext = this.add.container(0, 0);
+    } else if (fam === 'kbm') {
       this.kPrev = keycap(this, 10, 4, 'Q');
       this.kNext = keycap(this, VIEW_W - 24, 4, 'E');
     } else {

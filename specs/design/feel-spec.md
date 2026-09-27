@@ -1,6 +1,6 @@
 # Spellwright — `feel-spec`
 
-**Owner:** Game Designer · **Status:** Wave 1, v1 · **Consumers:** Game Developer (`src/core/tunables.js` parses every `feel-tunables` block below **verbatim**; `architecture.md` §7.2), Animator (motion timing co-spec, polish rows), Audio Director (cue impact-frames), UX Designer (per-modality affordances, the screen-shake setting multiplies every `*ShakePx`).
+**Owner:** Game Designer · **Status:** Wave 1, v1 · **Consumers:** Game Developer (`src/core/tunables.js` parses every `feel-tunables` block below **verbatim**; `architecture.md` §7.2), Animator (motion timing co-spec, polish rows), Audio Director (cue impact-frames), UX Designer (per-modality affordances, the screen-shake setting multiplies the trauma shake offset).
 **Mechanic-spec source:** `mechanic-spec.md` (§1 verbs, §2 player, §4 casting).
 
 ---
@@ -9,11 +9,11 @@
 
 - **Slot:** top-down pixel-art roguelite action with twin-stick casting. Desktop, landscape 16:9, 640×360 logical view (tile 16 px), integer-scaled. Sessions: runs of 25–35 min (win) or 8–20 min (typical death).
 - **Target framerate:** 60 Hz fixed simulation step (`SIM_HZ` 60). Time values here are in **ms**, and the engine converts them with `round(ms·60/1000)` steps. "Frames" in prose = 60 Hz steps (16.7 ms).
-- **Input-modality matrix:** keyboard + mouse (primary) · gamepad twin-stick (secondary) · touch **deferred**.
+- **Input-modality matrix:** keyboard + mouse (primary) · gamepad twin-stick · **touch (v2: floating twin sticks + auto-fire, §verb-2b)**.
 - **Reference titles (anchors):** Nuclear Throne (movement snap, hit flash, screenshake; Vlambeer, "The Art of Screenshake", Jan Willem Nijman, 2013) · Enter the Gungeon (dodge-roll i-frames, small player hitbox, RMB dodge, cursor camera lead) · Hades (dash distance and cadence, hurt freeze) · The Binding of Isaac (damage i-frames and flicker) · Noita / Magicraft (wand cast and swap cadence) · Celeste (input buffering) · Halo (aim-assist magnetism) · Josh Sutphin, "Doing Thumbstick Dead Zones Right" (radial deadzone) · Mick West, "Scroll back: the theory and practice of cameras in side-scrollers" (camera lerp) · Steve Swink, *Game Feel* (input → response → context → polish).
 - **Honesty note on anchors:** values tagged `(obs.)` in prose are approximations from public talks or observation of the reference title, not frame-data dumps. The anchor tells a reviewer *which* feel we are matching, and the number is our committed value.
 - **Deviation from the template (documented):** input-to-effect **latency budgets** (§audit-latency) are verification targets measured at Wave 5 by frame-stepping. No code reads them, so they are **not** in any `feel-tunables` block (the orchestrator rule is that every block value must be read by code). Every other number in this spec appears in exactly one block row.
-- **Screen-shake scaling:** every `*ShakePx` value is multiplied at runtime by Settings → Screen shake (0–100%, UX) and zeroed by reduced-motion. The sum of concurrent shakes is clamped to `shakeMaxPx`.
+- **Screen-shake scaling:** shake is the trauma model (§verb-5): offset = `shakeMaxPx` × trauma², multiplied at runtime by Settings → Screen shake (0–100%, UX) and zeroed by reduced-motion.
 
 ---
 
@@ -42,7 +42,7 @@ feel-tunables:
 ## §verb-2 — `aim`
 
 1. **Identity.** Aim direction for every cast. *Metaphor:* "the wand points where you look."
-2. **Input.** Mouse: vector from the player centre to the cursor's world point. It is always valid, and no assist is ever applied to mouse aim. Right stick: radial deadzone `aimStickDeadzone`. Inside the deadzone, keep the last aim (no snapping back to facing).
+2. **Input.** Mouse: vector from the player centre to the cursor's world point. **v2: a tiny mouse assist** (`mouseAimAssistConeDeg` 5 ≈ 0.087 rad, `mouseAimAssistStrength` 0.35, same range and Settings slider). It acts only when the cursor is *already* within 5° of an enemy. Reason: at 640×360, a 4 px bat moving 72 px/s under 3–5° of wand spread is missed by a correct click. The nudge rescues near-hits and never steals aim (5° is smaller than every wand's spread plus the cone at typical range). This is smaller than the playtest-derived ~0.12 rad because our mouse aim also drives the camera less (velocity lead, §verb-7). Right stick: radial deadzone `aimStickDeadzone`. Inside the deadzone, keep the last aim (no snapping back to facing).
 3. **Simulation, pad-only aim assist (Halo-style magnetism, scaled down for bullets).** If a living, non-spawning enemy lies within `aimAssistConeDeg` of the stick direction and within `aimAssistRangePx`, rotate the aim toward the closest such enemy by `aimAssistStrength` × the angular difference, each step. Assist never overrides the stick by more than the cone half-angle.
 4. **Polish.** Reticle (UX/2D Artist). The wand sprite rotates to the aim every step, with no smoothing.
 5. **Forgiveness.** Aim assist (pad) is the forgiveness. Mouse needs none.
@@ -56,6 +56,43 @@ feel-tunables:
     - { param: aimAssistConeDeg, value: 8, unit: deg, source_ref: Halo-aim-magnetism, range: [0, 15], frozen: false }
     - { param: aimAssistRangePx, value: 180, unit: px, source_ref: Halo-aim-magnetism, range: [120, 260], frozen: false }
     - { param: aimAssistStrength, value: 0.5, unit: ratio, source_ref: Halo-aim-magnetism, range: [0, 1], frozen: false }
+    - { param: mouseAimAssistConeDeg, value: 5, unit: deg, source_ref: Wandcraft-v3-mouse-assist, range: [0, 8], frozen: false }
+    - { param: mouseAimAssistStrength, value: 0.35, unit: ratio, source_ref: Wandcraft-v3-mouse-assist, range: [0, 0.6], frozen: false }
+```
+
+---
+
+## §verb-2b — `touch-aim` (phones; v2)
+
+1. **Identity.** design-v2 §8. *Metaphor:* "your wand finds the nearest threat; your right thumb overrides it." Behaviour follows UX `specs/ux/mobile-touch-spec.md` §3 (zones, drawing, pointer ownership). **Param names are UX's; the values are the designer's.**
+2. **Input.** Floating twin sticks: left half = move, right half = aim (mirrored with `touchStickSide: swapped`). Stick vector = (finger − base) / `touchStickRadiusPx` (= the drawn ring radius, so the visual and the math agree), clamped to 1. The move stick has a radial deadzone of `touchMoveDeadzone`; its base follows the thumb on overshoot. The aim stick's deflection ≥ `touchAimOverride` takes over aim **and** cast. Releasing it returns to auto-fire on the next step. Setting `touchFire: stick` disables auto-fire (classic twin-stick).
+3. **Simulation, auto-fire (`touchFire: auto`, the default).** The equipped wand holds cast whenever there is an auto-target, and aims at it.
+   - **Candidates:** living, non-spawning enemies that are on screen, within `autoFireRangePx` of the player, and in line of sight (`World.hasLos`, from the wand tip).
+   - **No crate targeting (user decision):** auto-fire only ever targets enemies. Crates, including the Sanctum crate wall, are broken with the right aim stick, which makes the Sanctum the touch player's first lesson in the aim-stick override.
+   - **Choice:** the nearest candidate. Tie-break: prefer a target whose **shield front arc is not facing the player**, since shooting a shield's face wastes the wand.
+   - **Stickiness:** keep the current target until it dies or leaves the candidate set, or until another candidate is closer than `touchRetargetRatio` × the current distance.
+   - **Lead:** aim at `target.pos + clampLen(target.vel × (dist / shotSpeed) × autoFireLeadFactor, autoAimLeadCapPx)`. shotSpeed = the **mean composed speed of the wand's bolt/boomerang shots** over its preview cycle (orbit and mine excluded). **Never lead a teleport:** a target in a `blink` windup or that moved > 1 tile in one step is aimed at its current position, and its velocity sample is ignored for `autoAimTeleportIgnoreMs`.
+   - **No candidate:** no cast, and no mana spent on empty rooms.
+   - **Override aim assist:** the pad rule (§verb-2) with the touch values `touchAimAssistConeDeg` and `touchAimAssistStrength`. They are wider than the pad's (8° / 0.5) because a thumb is less precise than a stick, and a mis-aimed override costs mana.
+4. **Polish.** Target marker (UX §3.3: corner ticks, shape not colour). No shake.
+5. **Forgiveness.** Auto-fire plus lead, and wider assist on override.
+6. **Modality variants.** Touch only. KB+M and pad are unchanged (§verb-2). The wand-editor drag threshold `touchDragThresholdPx` also lives here (UX `wand-editor-ux.md` §10) because it is a touch timing and space tolerance.
+
+```yaml
+feel-tunables:
+  verb: touch-aim
+  params:
+    - { param: autoFireRangePx, value: 200, unit: px, source_ref: Magicraft-mobile-autofire, range: [140, 280], frozen: false }
+    - { param: autoFireLeadFactor, value: 0.6, unit: ratio, source_ref: Magicraft-mobile-autofire, range: [0, 1], frozen: false }
+    - { param: autoAimLeadCapPx, value: 36, unit: px, source_ref: Wandcraft-v3-autoaim-lead, range: [16, 64], frozen: false }
+    - { param: autoAimTeleportIgnoreMs, value: 200, unit: ms, source_ref: Wandcraft-v3-autoaim-lead, range: [100, 400], frozen: false }
+    - { param: touchRetargetRatio, value: 0.7, unit: ratio, source_ref: Magicraft-mobile-autofire, range: [0.5, 0.9], frozen: false }
+    - { param: touchStickRadiusPx, value: 28, unit: px, source_ref: Brotato-floating-stick, range: [22, 40], frozen: false }
+    - { param: touchMoveDeadzone, value: 0.15, unit: ratio, source_ref: Sutphin-radial-deadzone, range: [0.05, 0.3], frozen: false }
+    - { param: touchAimOverride, value: 0.3, unit: ratio, source_ref: Brotato-floating-stick, range: [0.15, 0.6], frozen: false }
+    - { param: touchAimAssistConeDeg, value: 14, unit: deg, source_ref: Halo-aim-magnetism, range: [0, 25], frozen: false }
+    - { param: touchAimAssistStrength, value: 0.6, unit: ratio, source_ref: Halo-aim-magnetism, range: [0, 1], frozen: false }
+    - { param: touchDragThresholdPx, value: 6, unit: px, source_ref: iOS-drag-slop, range: [3, 12], frozen: false }
 ```
 
 ---
@@ -76,6 +113,7 @@ feel-tunables:
 | Sputter (mana skip or empty group) | grey puff at tip `sputterFlashMs` 90, `sputter` cue, at most once per `sputterMinIntervalMs` 250 | 0 | Noita "no mana" puff (obs.) |
 | Wand swap | wand sprite swap plus 1-frame flash, `wand_swap` cue | 0 | — |
 
+   **Echoed payloads** (relic `echoing_payload`): each echo fires `echoPayloadFanDeg` 8° off the original's heading, alternating sides, so the echo reads as a second shot rather than an overlap.
 5. **Forgiveness.** Cast buffer (taps). Swap lock is deliberately *un*-forgiving (it is the cost that bounds D6).
 6. **Modality variants.** Pad buffers +33 ms (2 frames): pad triggers have more travel before actuation.
    **Analog triggers (every pad, including PS5 DualSense; standard-mapping button indices 6/7):** a trigger counts as *pressed* when its value is ≥ `padTriggerPress` 0.20 and as *released* only when it drops below `padTriggerRelease` 0.10. The hysteresis stops a trigger held near the threshold from chattering cast on and off. The press value is set below the UX proposal of 0.30: the DualSense has long trigger travel, and 30% travel adds actuation delay against the 2-frame pad cast budget (§audit-latency). The anchor is XInput's standard trigger threshold (30/255 ≈ 0.12); we sit a little above it to survive worn or noisy triggers. The runtime must keep `padTriggerRelease` < `padTriggerPress` (the ranges are allowed to overlap, but a tuning-panel value that inverts them is clamped to release = press − 0.05).
@@ -93,6 +131,7 @@ feel-tunables:
     - { param: sputterFlashMs, value: 90, unit: ms, source_ref: Noita-no-mana-puff, range: [50, 150], frozen: false }
     - { param: sputterMinIntervalMs, value: 250, unit: ms, source_ref: Noita-no-mana-puff, range: [150, 500], frozen: false }
     - { param: wandSwapMs, value: 120, unit: ms, source_ref: Noita-wand-swap, range: [80, 200], frozen: false }
+    - { param: echoPayloadFanDeg, value: 8, unit: deg, source_ref: Hades-duo-echo, range: [0, 20], frozen: false }
     - { param: padTriggerPress, value: 0.2, unit: ratio, source_ref: XInput-trigger-threshold, range: [0.1, 0.4], frozen: false }
     - { param: padTriggerRelease, value: 0.1, unit: ratio, source_ref: XInput-trigger-threshold, range: [0.05, 0.3], frozen: false }
 ```
@@ -150,10 +189,19 @@ feel-tunables:
 | Death puff | `deathPuffParticles` 8, then the corpse fades over `corpseFadeMs` 300 | after hit-stop | — |
 | Elite-kill hit-stop | `eliteKillHitstopMs` 90 | kill step | Super Smash Bros. medium hitlag (obs.) |
 | Boss phase hit-stop | `bossPhaseHitstopMs` 160 | phase change | — |
-| Explosion shake | `explosionShakePx` 2 for `explosionShakeMs` 120; radius ≥ `bigExplosionRadiusPx` 40 → `bigExplosionShakePx` 3 / `bigExplosionShakeMs` 180 | detonation | Vlambeer screenshake |
-| Heavy-impact shake (golem stomp, boss slam or charge-into-wall) | `heavyImpactShakePx` 5 / `heavyImpactShakeMs` 300 | impact | Vlambeer screenshake |
+| Explosion shake | trauma + `traumaExplosion`; radius ≥ `bigExplosionRadiusPx` 40 → + `traumaBigExplosion` | detonation | Eiserloh trauma shake |
+| Heavy-impact shake (golem stomp, boss slam or charge-into-wall) | trauma + `traumaHeavyImpact` | impact | Eiserloh trauma shake |
 
-Shake uses decaying random offsets (fx stream), with amplitude easing out linearly over its duration.
+Shake is the trauma model below (fx stream noise).
+
+**v2: crit hit-stop and trauma shake.**
+- **Crit hit-stop:** a crit that lands stops the sim for `critHitstopMs` 35 (2 frames), at most once per `critHitstopMinIntervalMs` 300, so crit-heavy stream wands don't stutter. Kill hit-stop takes precedence on the same step.
+- **Trauma model (Eiserloh, GDC 2016 "Juicing Your Cameras With Math"):** replaces the per-event px/ms shakes.
+  - Each event adds its `trauma*` value to a single trauma level. The level is clamped to 1 and decays linearly from 1 to 0 over `traumaDecayMs`.
+  - Camera offset = `shakeMaxPx` (§verb-7) × trauma² × a noise sample at `traumaNoiseHz` (fx stream). The Settings screen-shake slider and reduced-motion multiply the offset.
+  - The trauma values are chosen so a single event peaks at today's px value under `shakeMaxPx` 6: explosion 6 × 0.58² ≈ 2 px, big explosion ≈ 3, heavy impact ≈ 5, hurt ≈ 4. Overlapping events now **escalate** smoothly instead of summing.
+- **Boss kill:** the kill hit-stop is the Animator's `bossDeathHitstopMs` (`specs/motion/state-graph-spec.md`), the single source for that moment. The v2 target is 300 ms (design-v2 §10), so this spec does not declare a second key. `traumaBossKill` fires on the same step.
+- **Migration done (v2 follow-up):** the eight per-event px/ms shake rows are deleted. Trauma is the only shake source.
 
 5. **Forgiveness.** Not applicable (feedback verb).
 6. **Modality variants.** Identical. Pad rumble is deferred (not in the Phaser 4 gamepad path we verified).
@@ -175,13 +223,17 @@ feel-tunables:
     - { param: bossPhaseHitstopMs, value: 160, unit: ms, source_ref: SmashBros-hitlag-heavy, range: [100, 250], frozen: false }
     - { param: deathPuffParticles, value: 8, unit: count, source_ref: Vlambeer-impact, range: [4, 12], frozen: false }
     - { param: corpseFadeMs, value: 300, unit: ms, source_ref: NuclearThrone-corpse, range: [150, 600], frozen: false }
-    - { param: explosionShakePx, value: 2, unit: px, source_ref: Vlambeer-screenshake, range: [0, 3], frozen: false }
-    - { param: explosionShakeMs, value: 120, unit: ms, source_ref: Vlambeer-screenshake, range: [80, 200], frozen: false }
     - { param: bigExplosionRadiusPx, value: 40, unit: px, source_ref: Vlambeer-screenshake, range: [32, 56], frozen: false }
-    - { param: bigExplosionShakePx, value: 3, unit: px, source_ref: Vlambeer-screenshake, range: [2, 4], frozen: false }
-    - { param: bigExplosionShakeMs, value: 180, unit: ms, source_ref: Vlambeer-screenshake, range: [120, 260], frozen: false }
-    - { param: heavyImpactShakePx, value: 5, unit: px, source_ref: Vlambeer-screenshake, range: [3, 6], frozen: false }
-    - { param: heavyImpactShakeMs, value: 300, unit: ms, source_ref: Vlambeer-screenshake, range: [200, 400], frozen: false }
+    - { param: critHitstopMs, value: 35, unit: ms, source_ref: Sakurai-hitstop-scaling, range: [0, 50], frozen: false }
+    - { param: critHitstopMinIntervalMs, value: 300, unit: ms, source_ref: Sakurai-hitstop-scaling, range: [150, 600], frozen: false }
+    - { param: traumaExplosion, value: 0.58, unit: ratio, source_ref: Eiserloh-trauma-shake, range: [0.3, 0.8], frozen: false }
+    - { param: traumaBigExplosion, value: 0.71, unit: ratio, source_ref: Eiserloh-trauma-shake, range: [0.4, 0.9], frozen: false }
+    - { param: traumaHeavyImpact, value: 0.9, unit: ratio, source_ref: Eiserloh-trauma-shake, range: [0.6, 1.0], frozen: false }
+    - { param: traumaHurt, value: 0.82, unit: ratio, source_ref: Eiserloh-trauma-shake, range: [0.5, 1.0], frozen: false }
+    - { param: traumaBossPhase, value: 1.0, unit: ratio, source_ref: Eiserloh-trauma-shake, range: [0.7, 1.0], frozen: false }
+    - { param: traumaBossKill, value: 1.0, unit: ratio, source_ref: Eiserloh-trauma-shake, range: [0.7, 1.0], frozen: false }
+    - { param: traumaDecayMs, value: 450, unit: ms, source_ref: Eiserloh-trauma-shake, range: [250, 800], frozen: false }
+    - { param: traumaNoiseHz, value: 24, unit: hz, source_ref: Eiserloh-trauma-shake, range: [12, 40], frozen: false }
 ```
 
 ---
@@ -190,14 +242,14 @@ feel-tunables:
 
 1. **Identity.** mechanic-spec §2 hurt resolution. *Metaphor:* "a sharp, unmistakable sting, then a generous second to recover."
 2. **Input.** None (event).
-3. **Simulation.** On a damage instance that lands: hit-stop `hurtHitstopMs`, knockback impulse `hurtKnockback` away from the source, i-frames `hurtIframesMs` (Binding of Isaac's ≈ 1 s post-hit invulnerability, obs.). Hurtbox radius `playerHurtboxRadius` 4 px vs body `playerBodyRadius` 6 px: bullets must reach the core of the sprite (the Enter the Gungeon small-hitbox convention). A shield break uses `shieldBreakHitstopMs` and grants the same i-frames.
+3. **Simulation.** On a damage instance that lands: hit-stop `hurtHitstopMs`, knockback impulse `hurtKnockback` away from the source, i-frames `hurtIframesMs` (Binding of Isaac's ≈ 1 s post-hit invulnerability, obs.). **Hurt zone = a short vertical capsule** (v2; mechanic-spec §2): the segment from `playerHurtCapsuleBottomPx` 6 (waist) to `playerHurtCapsuleTopPx` 12 (head) above the feet, with radius `playerHurtboxRadius` 3. It covers the torso and head the player *reads* as their character, and excludes the legs and shadow, where a circle at the core produced 'that missed my feet' deaths. Body (walls/enemies) stays the `playerBodyRadius` 6 circle. Enemy bullets test circle-vs-capsule (segment distance ≤ r_bullet + r_capsule). A shield break uses `shieldBreakHitstopMs` and grants the same i-frames.
 4. **Polish.**
 
 | Component | Number | Frame | Anchor |
 |---|---|---|---|
 | Hit-stop | `hurtHitstopMs` 90 | 0 | Hades hurt freeze (obs.) |
 | Red screen-edge flash | `hurtFlashMs` 120 | 0 | — |
-| Screen shake | `hurtShakePx` 4 / `hurtShakeMs` 220 | after hit-stop | Vlambeer screenshake |
+| Screen shake | trauma + `traumaHurt` (≈ 4 px peak) | after hit-stop | Eiserloh trauma shake |
 | Sprite flicker during i-frames | toggle visibility every `hurtFlickerPeriodMs` 66 | i-frame span | Isaac flicker |
 | `player_hurt` cue (or `shield_break`) | 1 | 0 | — |
 
@@ -211,11 +263,11 @@ feel-tunables:
     - { param: hurtIframesMs, value: 1000, unit: ms, source_ref: Isaac-damage-iframes, range: [800, 1500], frozen: false }
     - { param: hurtFlickerPeriodMs, value: 66, unit: ms, source_ref: Isaac-damage-iframes, range: [50, 100], frozen: false }
     - { param: hurtHitstopMs, value: 90, unit: ms, source_ref: Hades-hurt-freeze, range: [60, 120], frozen: false }
-    - { param: hurtShakePx, value: 4, unit: px, source_ref: Vlambeer-screenshake, range: [2, 6], frozen: false }
-    - { param: hurtShakeMs, value: 220, unit: ms, source_ref: Vlambeer-screenshake, range: [150, 300], frozen: false }
     - { param: hurtKnockback, value: 170, unit: px/s, source_ref: NuclearThrone-knockback, range: [100, 240], frozen: false }
     - { param: hurtFlashMs, value: 120, unit: ms, source_ref: Hades-hurt-freeze, range: [80, 200], frozen: false }
-    - { param: playerHurtboxRadius, value: 4, unit: px, source_ref: EtG-small-hitbox, range: [3, 6], frozen: false }
+    - { param: playerHurtboxRadius, value: 3, unit: px, source_ref: EtG-small-hitbox, range: [2, 5], frozen: false }
+    - { param: playerHurtCapsuleBottomPx, value: 6, unit: px, source_ref: Wandcraft-v3-hurt-capsule, range: [3, 8], frozen: false }
+    - { param: playerHurtCapsuleTopPx, value: 12, unit: px, source_ref: Wandcraft-v3-hurt-capsule, range: [9, 15], frozen: false }
     - { param: playerBodyRadius, value: 6, unit: px, source_ref: EtG-small-hitbox, range: [5, 7], frozen: true }
     - { param: shieldBreakHitstopMs, value: 60, unit: ms, source_ref: Hades-hurt-freeze, range: [30, 90], frozen: false }
 ```
@@ -226,21 +278,24 @@ feel-tunables:
 
 1. **Identity.** *Metaphor:* "the room is the frame; in big rooms the camera leans toward where you're aiming."
 2. **Input.** Player position plus aim.
-3. **Simulation.** Rooms ≤ 640×360 (≤ 40×22 tiles; all rooms except `long_gallery` and `catacombs`) → camera locked centred (`architecture.md` §9), and look-ahead is off. Larger rooms → the camera target = player + aimVector × min(|cursorOffset| × `lookAheadFrac`, `lookAheadMaxPx`) (pad: aim unit vector × `lookAheadMaxPx` × stick magnitude). Position eases toward the target with `lerp = 1 − (1 − cameraLerp)^(dt·60)` (frame-rate-independent Mick West-style smoothing), bounded to the room rect. Room change = fade out/in `roomFadeMs` each way. Boss rooms: pan from the player to the boss spawn and back over `bossIntroPanMs` during boss activation (mechanic-spec §10).
+3. **Simulation.** Rooms ≤ 640×360 (≤ 40×22 tiles; all rooms except `long_gallery` and `catacombs`) → camera locked centred (`architecture.md` §9), and look-ahead is off. **v2: in larger rooms the lead follows the player's movement velocity, not the aim.** Auto-aim target flips and fast mouse flicks made an aim-led camera swing. Target lead = `clampLen(playerVel × lookAheadLeadMs/1000, lookAheadMaxPx)`, the same for every device. The current lead eases toward it with the time constant `lookAheadEaseMs` (`lead += (target − lead) × (1 − e^(−dt/lookAheadEaseMs))`). Camera position = player + lead, eased with `lerp = 1 − (1 − cameraLerp)^(dt·60)` (frame-rate independent, Mick West-style), bounded to the room rect. At full walk (110 px/s) the lead reaches 27.5 px, just under the 28 cap; a dash briefly saturates it. (`lookAheadFrac` is deleted; nothing reads it.) Room change = fade out/in `roomFadeMs` each way. Boss rooms: pan from the player to the boss spawn and back over `bossIntroPanMs` during boss activation (mechanic-spec §10).
+   **Dark rooms** (twist `dark`, and W1 candlelight at its milder ambient): the darkness overlay's opacity outside light pools is `darkTwistAlpha` 0.9. Telegraphs and enemy outlines always draw above it.
 4. **Polish.** Shake composition per §0 (sum clamped to `shakeMaxPx`).
 5. **Forgiveness.** Look-ahead reveals threats in the aim direction.
-6. **Modality variants.** Pad look-ahead uses stick magnitude (above).
+6. **Modality variants.** None in v2: velocity lead is device-independent, so no device swings the camera.
 
 ```yaml
 feel-tunables:
   verb: camera
   params:
     - { param: cameraLerp, value: 0.14, unit: ratio, source_ref: MickWest-camera-lerp, range: [0.08, 0.25], frozen: false }
-    - { param: lookAheadFrac, value: 0.22, unit: ratio, source_ref: EtG-cursor-camera-lead, range: [0, 0.35], frozen: false }
-    - { param: lookAheadMaxPx, value: 36, unit: px, source_ref: EtG-cursor-camera-lead, range: [0, 64], frozen: false }
+    - { param: lookAheadMaxPx, value: 28, unit: px, source_ref: Wandcraft-v3-velocity-lead, range: [0, 48], frozen: false }
+    - { param: lookAheadLeadMs, value: 250, unit: ms, source_ref: Wandcraft-v3-velocity-lead, range: [100, 400], frozen: false }
+    - { param: lookAheadEaseMs, value: 300, unit: ms, source_ref: Wandcraft-v3-velocity-lead, range: [120, 600], frozen: false }
     - { param: shakeMaxPx, value: 6, unit: px, source_ref: Vlambeer-screenshake, range: [3, 8], frozen: false }
     - { param: roomFadeMs, value: 220, unit: ms, source_ref: Isaac-room-transition, range: [120, 400], frozen: false }
     - { param: bossIntroPanMs, value: 900, unit: ms, source_ref: EtG-boss-intro, range: [600, 1400], frozen: false }
+    - { param: darkTwistAlpha, value: 0.9, unit: ratio, source_ref: Wandcraft-v3-dark-room, range: [0.6, 0.95], frozen: false }
 ```
 
 ---
@@ -269,6 +324,58 @@ feel-tunables:
 
 ---
 
+## §verb-8b — `ui` (menus and the wand editor; v2)
+
+Timing and space tolerances for menu and editor input. The behaviour is UX's (`mobile-touch-spec.md` §6, `wand-editor-ux.md` §3, §10–§11); the numbers are designer-owned and adopt UX's proposals.
+- **Open-guard:** for `uiOpenGuardMs` 180 after any screen or modal opens, pointer-downs are ignored. The tap that opened it, or a thumb still on a stick, can't hit a button.
+- **Mouse drag:** a press becomes a drag after `mouseDragThresholdPx` 4.
+- **Touch drag** (editor): the pick hotspot sits `touchHotspotOffsetPx` 16 above the finger. The 2× ghost is drawn `touchGhostOffsetPx` 56 above the finger, and flips below it when the finger is within `touchGhostFlipYPx` 72 of the top. The drag threshold `touchDragThresholdPx` lives in `touch-aim`.
+- **Editor mana bar** tweens to a new value over `editorManaBarTweenMs` 120.
+- **Mini-boss intro card** holds `miniIntroCardMs` 2200. A boss **adapt banner** (mechanic-spec §10.2) holds `adaptBannerMs` 2500: long enough to read one short line; neither blocks input. The **world card** (worlds.md §4) holds `worldCardMs` 2200, also non-blocking.
+
+```yaml
+feel-tunables:
+  verb: ui
+  params:
+    - { param: uiOpenGuardMs, value: 180, unit: ms, source_ref: iOS-touch-ghost-tap, range: [100, 300], frozen: false }
+    - { param: mouseDragThresholdPx, value: 4, unit: px, source_ref: OS-drag-slop, range: [2, 8], frozen: false }
+    - { param: touchHotspotOffsetPx, value: 16, unit: px, source_ref: iOS-drag-slop, range: [8, 28], frozen: false }
+    - { param: touchGhostOffsetPx, value: 56, unit: px, source_ref: iOS-drag-slop, range: [40, 72], frozen: false }
+    - { param: touchGhostFlipYPx, value: 72, unit: px, source_ref: iOS-drag-slop, range: [56, 96], frozen: false }
+    - { param: editorManaBarTweenMs, value: 120, unit: ms, source_ref: Balatro-score-tween, range: [60, 250], frozen: false }
+    - { param: miniIntroCardMs, value: 2200, unit: ms, source_ref: Hades-miniboss-card, range: [1500, 3000], frozen: false }
+    - { param: adaptBannerMs, value: 2500, unit: ms, source_ref: Hades-miniboss-card, range: [1800, 3500], frozen: false }
+    - { param: worldCardMs, value: 2200, unit: ms, source_ref: Hades-miniboss-card, range: [1500, 3000], frozen: false }
+```
+
+---
+
+## §verb-9 — `flow` (death → retry; v2)
+
+1. **Identity.** design-v2 §10. *Metaphor:* "a death is a beat, not a wait." The target is **≤ 3 s from lethal hit to having control in a fresh run.**
+2. **Input.** Run-end: confirm / tap "New run" (UX owns the screen).
+3. **Simulation.**
+   - On death: the sim runs at `deathTimeScale` for `deathSlowMoMs`, then the run-end screen appears `deathToRunEndMs` after the lethal hit.
+   - Inputs on the run-end screen are ignored for `runEndInputGuardMs`, so an in-flight tap can't skip the summary.
+   - "New run" gives control in the Sanctum after `retryToControlMs`, including the room fade.
+   - Worst case 1100 + 350 + 700 = **2150 ms** before the player's own reading time.
+4. **Polish.** Death slow-mo plus the player death state (Animator). The run-end screen's first focus is "New run".
+5. **Forgiveness.** The input guard.
+6. **Modality variants.** Identical; touch taps count as confirm.
+
+```yaml
+feel-tunables:
+  verb: flow
+  params:
+    - { param: deathTimeScale, value: 0.35, unit: ratio, source_ref: Hades-death-slowmo, range: [0.2, 1.0], frozen: false }
+    - { param: deathSlowMoMs, value: 500, unit: ms, source_ref: Hades-death-slowmo, range: [0, 900], frozen: false }
+    - { param: deathToRunEndMs, value: 1100, unit: ms, source_ref: Wandcraft-v2-retry-target, range: [700, 1800], frozen: false }
+    - { param: runEndInputGuardMs, value: 350, unit: ms, source_ref: Wandcraft-v2-retry-target, range: [200, 600], frozen: false }
+    - { param: retryToControlMs, value: 700, unit: ms, source_ref: Wandcraft-v2-retry-target, range: [400, 1200], frozen: false }
+```
+
+---
+
 ## §audit-latency — input-to-effect budgets (verification only; not tunables)
 
 | Verb | Modality | Target | Ceiling | Audit anchor |
@@ -279,6 +386,8 @@ feel-tunables:
 | cast | KB+M / pad | 2 frames from press to muzzle flash plus shot (when ready) | 4 frames | Nuclear Throne revolver |
 | dash | KB+M / pad | 2 frames to first displacement plus afterimage | 3 frames | Hades dash |
 | hurt | — | same step as collision → hit-stop | 1 frame | — |
+| move / aim | touch | 3 frames (50 ms) from finger move to displacement | 5 frames | Brotato-style floating stick (touch is ~2 frames worse than wired) |
+| auto-fire | touch | first shot ≤ 4 frames after a target becomes valid (wand ready) | 6 frames | Magicraft mobile auto-fire |
 
 Measured at Wave 5 by frame-stepping (`game-feel-specification/tools/frame-step-procedure.md`). The engine's edge latching (`architecture.md` §8) guarantees no tap is lost between steps.
 
@@ -289,7 +398,7 @@ Measured at Wave 5 by frame-stepping (`game-feel-specification/tools/frame-step-
 - **Game Developer:** blocks are parsed verbatim. Every row above is consumed by exactly the code path its prose names. The `?debug` unread-tunables check (`architecture.md` §7.2) should come back empty after one room plus one boss room is played. `frozen: true` rows (`dashChargesBase`, `playerBodyRadius`) are constants, not panel sliders.
 - **Animator:** co-own the timing of cast kick (60 ms), dash afterimages (3 over 150 ms), hurt flicker (66 ms), enemy flash (60 ms) and death puff. Telegraph durations come from `data/*.json` `windupMs` (mechanic-spec §14).
 - **Audio Director:** cue impact frames are frame 0 of each polish table. Hit-stop pauses the sim but **not** audio (cues still play on the hit frame).
-- **UX Designer:** screen-shake slider and reduced-motion (multiply or zero every `*ShakePx`), damage-number toggle, per-modality glyphs, dash direction rule (move, else aim).
+- **UX Designer:** screen-shake slider and reduced-motion (multiply or zero the trauma offset), damage-number toggle, per-modality glyphs, dash direction rule (move, else aim).
 
 ## §audit — six-check (game-feel-specification DOG)
 

@@ -9,6 +9,8 @@
 import { EV } from '../core/ev.js';
 import { track } from '../core/log.js';
 import { Save } from '../core/save.js';
+import { T } from '../core/tunables.js';
+import { Defences, BLOCKED } from './Defences.js';
 
 const ELEMENT_STATUS = { fire: 'burn', frost: 'chill', shock: 'shock', poison: 'poison' };
 
@@ -16,6 +18,7 @@ export class Combat {
   constructor(ctx) {
     this.ctx = ctx;
     this.lastKillStopMs = -1e9;
+    this.defences = new Defences(ctx);      // v2 §9.6 (EnemySystem / attacks / bosses reach it as ctx.combat.defences)
   }
   get run() { return this.ctx.run; }
   get S() { return this.ctx.run.statusTable.status; }
@@ -51,24 +54,40 @@ export class Combat {
   /**
    * One damage instance from the player's side.
    * o: { element, statusChance, isCrit, damageMult=1, knock:{dx,dy,speed}|null, source:'direct'|'explode'|'chain'|'zone'|'zap'|'relic'|'reaction'|'status'|'enemy',
-   *      canReact=true, canStatus=true, x, y }
-   * @returns {number} damage dealt (0 if not hittable)
+   *      canReact=true, canStatus=true, x, y,
+   *      v2 keywords (§9.7, derived at hit time): pierce (direct shot with composed pierce ≥ 1 / boomerang / orbit), blast (any explode),
+   *      fromX/fromY = the damage's source point (shield front-arc test; default the player's core) }
+   * @returns {number} damage dealt (0 if not hittable or swallowed by a defence)
    */
   hitEnemy(e, base, o = {}) {
     if (!e.alive || !e.hittable) { if (e.alive && !e.hittable && e.isBoss && e.view && e.view.clink) e.view.clink(); return 0; }
     const st = e.status;
     const rules = this.ctx.rules;
     const element = o.element || null;
+    if (e.affixes && e.affixes.length && !e.affixHitShown) this._affixFirstHit(e);
+    // v2 defences (§9.6): a shield / ward may swallow the whole instance before reactions and statuses
+    const kw = this.defences.keywords(o);
+    if (e.defence && this.defences.pre(e, o, kw) === BLOCKED) return 0;
     let dmg = base * (o.damageMult ?? 1);
     if (o.isCrit) dmg *= rules.crit.mult;
     if (st.vulnerableMs > 0) dmg *= this.S.shock.vulnerableMult;
+    if (element && e.resist && e.resist[element]) dmg *= e.resist[element];          // boss adapt `resist` (floored at adaptResistFloor)
     let reaction = null;
     if (element && o.canReact !== false && o.source !== 'reaction' && o.source !== 'status') reaction = this._reaction(e, element);
     // a reaction REPLACES the frozen multiplier (mechanic-spec §8.1)
     if (reaction) { if (reaction.mult) dmg *= reaction.mult; }
     else if (st.frozenMs > 0) dmg *= this.S.freeze.damageTakenMult;
+    // armour bar soaks first (blast ×2.5 · direct ×0.4 · other ×0.4); overflow lands at full value
+    if (e.defence && e.defence.type === 'armour') dmg = this.defences.armourSoak(e, dmg, o, kw);
 
     const dealt = this._applyDamage(e, dmg, { crit: !!o.isCrit, element, reaction: reaction && reaction.name, source: o.source, x: o.x, y: o.y });
+    // Worlds W2 flooded (worlds.md §3.2): a shock hit on an enemy standing in water arcs through the water
+    if (element === 'shock' && o.source !== 'arc') this._waterArc(e, base * (o.damageMult ?? 1));
+    // v2 crit hit-stop (feel-spec §impact): a landed crit on a survivor, rate-limited; a kill's stop takes precedence
+    if (o.isCrit && dealt > 0 && e.alive) {
+      const now = this.ctx.time.ms;
+      if (now - (this.lastCritStopMs ?? -1e9) >= T('critHitstopMinIntervalMs', 300)) { this.lastCritStopMs = now; this.ctx.fx.hitstop(T('critHitstopMs', 35)); }
+    }
     if (reaction) this._afterReaction(e, reaction, dmg, element);
     if (e.alive) {
       // E's own status (unless the reaction consumed it, e.g. Melt applies no burn)
@@ -81,9 +100,22 @@ export class Combat {
     return dealt;
   }
 
+  /** hud-layout §9.6 / telegraphs §3.8: the affix title shows again the first time the player hits an elite. */
+  _affixFirstHit(e) {
+    e.affixHitShown = true;
+    this.ctx.bus.emit(EV.AFFIX_SHOWN, { uid: e.uid, affixes: e.affixes.slice(), x: e.x, y: e.y, first: 'hit' });
+    if (e.view && e.view.affixHold) e.view.affixHold();
+  }
+
   /** Contract alias: enemy-sourced damage to enemies (self_destruct.enemyDamage). No crit/status/reaction. */
   damageEnemy(e, amount, opts = {}) {
     if (!e.alive || !e.hittable) return 0;
+    if (e.defence) {                      // a self-destruct is blast (§9.7); its centre is the source point
+      const o = { source: opts.source || 'enemy', blast: opts.blast !== false, fromX: opts.fromX, fromY: opts.fromY, x: e.x, y: e.y };
+      const kw = this.defences.keywords(o);
+      if (this.defences.pre(e, o, kw) === BLOCKED) return 0;
+      amount = this.defences.armourSoak(e, amount, o, kw);
+    }
     return this._applyDamage(e, amount, { crit: false, element: null, source: opts.source || 'enemy' });
   }
 
@@ -111,7 +143,7 @@ export class Combat {
     };
     switch (status) {
       case 'burn':
-        if (imm.has('burn')) return;
+        if (imm.has('burn') || this._quenched(e)) return;
         if (st.burnMs <= 0) st.burnTick = S.burn.tickMs;
         st.burnMs = S.burn.durationMs;
         first('burn');
@@ -186,7 +218,9 @@ export class Combat {
   }
   _tick(e, amount) {
     const mult = this.S.tickDamageScalesWithFloorHp ? this.hpMult : 1;
-    this._applyDamage(e, amount * mult, { crit: false, element: null, source: 'status', x: e.x, y: e.y });
+    let dmg = amount * mult;
+    if (e.defence) dmg = this.defences.dot(e, dmg);          // wards swallow ticks (no charge), armour × dotMult
+    if (dmg > 0) this._applyDamage(e, dmg, { crit: false, element: null, source: 'status', x: e.x, y: e.y });
   }
 
   // ------------------------------------------------------------------ reactions (mechanic-spec §8.3)
@@ -203,6 +237,7 @@ export class Combat {
   _afterReaction(e, r, instanceDamage, element) {
     const st = e.status, R = this.R;
     const rmul = R.damageMult;
+    const stacks0 = st.poisonStacks;               // blight consumes them; EV.REACTION reports the pre-reaction count (C's ask)
     switch (r.name) {
       case 'melt':
         st.chillStacks = 0; st.chillMs = 0;
@@ -218,7 +253,11 @@ export class Combat {
       case 'blight': {
         const stacks = st.poisonStacks;
         st.poisonStacks = 0; st.poisonMs = 0;
-        if (e.alive) this._applyDamage(e, stacks * R.blight.damagePerStack * this.hpMult * rmul, { crit: false, element: null, reaction: 'blight', source: 'reaction' });
+        if (e.alive) {
+          let bd = stacks * R.blight.damagePerStack * this.hpMult * rmul;
+          if (e.defence && e.defence.type === 'armour') bd = this.defences.armourSoak(e, bd, { source: 'reaction', x: e.x, y: e.y }, this.defences.keywords({ source: 'reaction' }));
+          this._applyDamage(e, bd, { crit: false, element: null, reaction: 'blight', source: 'reaction' });
+        }
         this.ctx.fx.flipbook('fx.poison_burst', e.x, e.y, {});
         break;
       }
@@ -235,8 +274,56 @@ export class Combat {
     }
     const first = this.run.recordReaction(r.name);
     Save.discover('reactions', r.name);
-    this.ctx.bus.emit(EV.REACTION, { name: r.name, first, x: e.x, y: e.y });
+    this.ctx.bus.emit(EV.REACTION, { name: r.name, first, x: e.x, y: e.y, uid: e.uid, damage: instanceDamage, stacks: stacks0 });
     track('reaction', r.name);
+  }
+
+  // ------------------------------------------------------------------ Worlds twists (worlds.md §3.2 / §3.3; numbers in floors[].world.twist)
+  /** An enemy standing in water (walkers only: flyers skim over it). */
+  _inWater(e) { const w = this.ctx.world; return !!(w && w.water && !(e.flying && w.flyersIgnoreWater) && w.inWater(e.x, e.y)); }
+  /** Water quenches: burn applications fail on an enemy standing in water (existing burns continue). */
+  _quenched(e) { const w = this.ctx.world; return !!(w && w.quench && this._inWater(e)); }
+  /**
+   * Shock conducts: from a shocked in-water enemy to every OTHER in-water enemy within arc.r at × arc.mult — elementless,
+   * no reaction, no status, no player damage (source 'arc' carries no keyword). One zap line + one throttled cue.
+   */
+  _waterArc(src, amount) {
+    const w = this.ctx.world;
+    if (!w || !w.arc || !this._inWater(src) || amount <= 0) return;
+    const hits = [];
+    this.ctx.enemies.queryCircle(src.x, src.y, w.arc.r, (o) => { if (o !== src && this._inWater(o)) hits.push(o); });
+    if (!hits.length) return;
+    const dmg = amount * w.arc.mult;
+    for (const o of hits) {
+      this.ctx.fx.bolt(src.x, src.y, o.x, o.y, { color: 0x72d6ce, ms: 120 });
+      this.hitEnemy(o, dmg, { element: null, canReact: false, canStatus: false, source: 'arc', x: o.x, y: o.y });
+    }
+    this.ctx.mixer.fire('shock_arc_water', { x: src.x });
+  }
+  /** A player shot meets a bookshelf cell: fire ignites it, anything else chips its HP (blast is handled by explodeAt). */
+  hitShelf(i, dmg, element) {
+    const w = this.ctx.world; if (!w || !w.shelves) return null;
+    const r = w.hitShelf(i, dmg, element === 'fire');
+    const c = w.cellCenter(i);
+    if (r === 'ignite') { this.ctx.fx.particles('ember', c.x, c.y - 8, 6, { color: 0xee8e2e, speed: 30 }); this.ctx.mixer.fire('shelf_ignite', { x: c.x }); }
+    else if (r === 'collapse') this.shelfCollapsed(c.x, c.y);
+    else if (r === 'chip') this.ctx.fx.particles('dust', c.x, c.y - 8, 2, { color: 0x8a5f31, speed: 30 });
+    return r;
+  }
+  /** Burning shelf aura: burn on ENEMIES within r (never the player; quench still applies). */
+  shelfAura(x, y, r) {
+    this.ctx.enemies.queryCircle(x, y, r, (e) => this.applyStatus(e, 'burn'));
+    this.ctx.fx.particles('ember', x, y - 10, 2, { color: 0xee8e2e, speed: 18 });
+  }
+  shelfCollapsed(x, y) {
+    this.ctx.fx.particles('dust', x, y, 8, { color: 0x6d4b27, speed: 45 });
+    this.ctx.mixer.fire('shelf_collapse', { x });
+  }
+  /** A blast destroys every shelf it reaches at once (shelfCfg.blast). */
+  blastShelves(x, y, r) {
+    const w = this.ctx.world;
+    if (!w || !w.shelves || !w.shelfCfg.blast) return;
+    for (const i of w.shelvesInRadius(x, y, r)) { const c = w.cellCenter(i); if (w.collapseShelf(i)) this.shelfCollapsed(c.x, c.y); }
   }
 
   // ------------------------------------------------------------------ area damage
@@ -248,12 +335,13 @@ export class Combat {
     this.ctx.enemies.queryCircle(x, y, radius, (e) => {
       const dx = e.x - x, dy = e.y - y, d = Math.hypot(dx, dy) || 1;
       this.hitEnemy(e, damage, { element: o.element, statusChance: o.statusChance ?? 0, isCrit: !!o.isCrit, source: o.source || 'explode',
-        canReact: o.canReact, canStatus: o.canStatus, knock: o.noKnock || !o.knockback ? null : { dx: dx / d, dy: dy / d, speed: o.knockback }, x: e.x, y: e.y });
+        canReact: o.canReact, canStatus: o.canStatus, knock: o.noKnock || !o.knockback ? null : { dx: dx / d, dy: dy / d, speed: o.knockback }, x: e.x, y: e.y,
+        blast: true, fromX: x, fromY: y });   // §9.7: every explosion (spell, modifier, relic, Overload) is blast
     });
     this.damageCratesInRadius(x, y, radius, damage);
+    this.blastShelves(x, y, radius);
     const T = this.ctx.T;
-    if (radius >= T('bigExplosionRadiusPx')) this.ctx.fx.shake(T('bigExplosionShakePx'), T('bigExplosionShakeMs'));
-    else this.ctx.fx.shake(T('explosionShakePx'), T('explosionShakeMs'));
+    this.ctx.fx.explosionTrauma(radius);
     this.ctx.fx.explosion(x, y, radius, { element: o.element });
     this.ctx.mixer.fire(radius >= T('bigExplosionRadiusPx') ? 'explode_big' : 'explode_small', { x });
   }
@@ -277,6 +365,7 @@ export class Combat {
       return true;
     }
     this.ctx.mixer.fire('crate_hit');
+    this.ctx.bus.emit(EV.FTUE, 'crate-hit');
     return false;
   }
 
@@ -309,7 +398,7 @@ export class Combat {
       else if (now - this.lastKillStopMs >= T('killHitstopMinIntervalMs')) { this.lastKillStopMs = now; this.ctx.fx.hitstop(T('killHitstopMs')); }
     }
     const statuses = this.statusesOf(e);
-    this.ctx.bus.emit(EV.ENEMY_KILLED, { id: e.id, elite: !!e.elite, boss: !!e.isBoss, x: e.x, y: e.y, statuses });
+    this.ctx.bus.emit(EV.ENEMY_KILLED, { id: e.id, elite: !!e.elite, boss: !!e.isBoss, tier: e.tier || null, x: e.x, y: e.y, statuses });
     this.ctx.relics.onEvent('kill', { enemy: e, x: e.x, y: e.y, statuses, elite: !!e.elite });
     track('kill', { enemy: e.id, elite: !!e.elite });
   }

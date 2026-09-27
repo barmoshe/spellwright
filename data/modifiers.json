@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "$comment": "Modifier / multicast / trigger cards. Semantics: specs/design/mechanic-spec.md §4-§6.",
+  "version": 2,
+  "$comment": "Modifier / multicast / trigger cards. Semantics: mechanic-spec §4-§6.",
   "modifiers": [
     {
       "id": "double_cast",
@@ -17,7 +17,15 @@
       "visual": {
         "element": "arcane",
         "shape": "multicast-2"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "multicast"
+      ],
+      "tags": [
+        "multicast"
+      ]
     },
     {
       "id": "triple_cast",
@@ -34,7 +42,15 @@
       "visual": {
         "element": "arcane",
         "shape": "multicast-3"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "multicast"
+      ],
+      "tags": [
+        "multicast"
+      ]
     },
     {
       "id": "quad_cast",
@@ -51,7 +67,15 @@
       "visual": {
         "element": "arcane",
         "shape": "multicast-4"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "multicast"
+      ],
+      "tags": [
+        "multicast"
+      ]
     },
     {
       "id": "trigger_hit",
@@ -67,7 +91,15 @@
       "visual": {
         "element": "arcane",
         "shape": "trigger-hit"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "trigger"
+      ],
+      "tags": [
+        "trigger"
+      ]
     },
     {
       "id": "trigger_expire",
@@ -83,7 +115,15 @@
       "visual": {
         "element": "arcane",
         "shape": "trigger-expire"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "trigger"
+      ],
+      "tags": [
+        "trigger"
+      ]
     },
     {
       "id": "trigger_timer",
@@ -100,7 +140,15 @@
       "visual": {
         "element": "arcane",
         "shape": "trigger-timer"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "trigger"
+      ],
+      "tags": [
+        "trigger"
+      ]
     },
     {
       "id": "damage_up",
@@ -122,7 +170,13 @@
       "visual": {
         "element": "arcane",
         "shape": "fist"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "burst"
+      ]
     },
     {
       "id": "speed_up",
@@ -144,7 +198,13 @@
       "visual": {
         "element": "arcane",
         "shape": "arrow"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "stream"
+      ]
     },
     {
       "id": "size_up",
@@ -176,7 +236,13 @@
       "visual": {
         "element": "arcane",
         "shape": "grow"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "burst"
+      ]
     },
     {
       "id": "accuracy",
@@ -198,7 +264,13 @@
       "visual": {
         "element": "arcane",
         "shape": "crosshair"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "crit"
+      ]
     },
     {
       "id": "range_up",
@@ -220,7 +292,13 @@
       "visual": {
         "element": "arcane",
         "shape": "hourglass"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "zone"
+      ]
     },
     {
       "id": "heavy",
@@ -252,7 +330,13 @@
       "visual": {
         "element": "arcane",
         "shape": "anvil"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "burst"
+      ]
     },
     {
       "id": "rapid_cast",
@@ -274,7 +358,13 @@
       "visual": {
         "element": "arcane",
         "shape": "feather"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "stream"
+      ]
     },
     {
       "id": "quickening",
@@ -290,7 +380,13 @@
       "visual": {
         "element": "arcane",
         "shape": "cog"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "stream"
+      ]
     },
     {
       "id": "homing",
@@ -317,7 +413,15 @@
       "visual": {
         "element": "arcane",
         "shape": "eye"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "homing"
+      ],
+      "tags": [
+        "stream"
+      ]
     },
     {
       "id": "pierce",
@@ -339,7 +443,15 @@
       "visual": {
         "element": "arcane",
         "shape": "needle"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "pierce"
+      ],
+      "tags": [
+        "arcane"
+      ]
     },
     {
       "id": "bounce",
@@ -366,7 +478,15 @@
       "visual": {
         "element": "arcane",
         "shape": "zigzag"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "bounce"
+      ],
+      "tags": [
+        "zone"
+      ]
     },
     {
       "id": "split",
@@ -393,7 +513,15 @@
       "visual": {
         "element": "arcane",
         "shape": "fork"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "split"
+      ],
+      "tags": [
+        "zone"
+      ]
     },
     {
       "id": "explosive",
@@ -419,7 +547,15 @@
       "visual": {
         "element": "arcane",
         "shape": "burst"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "blast"
+      ],
+      "tags": [
+        "burst"
+      ]
     },
     {
       "id": "chain",
@@ -446,7 +582,16 @@
       "visual": {
         "element": "arcane",
         "shape": "link"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "shock",
+        "chain"
+      ],
+      "tags": [
+        "shock"
+      ]
     },
     {
       "id": "crit_up",
@@ -468,7 +613,15 @@
       "visual": {
         "element": "arcane",
         "shape": "gem"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "crit"
+      ],
+      "tags": [
+        "crit"
+      ]
     },
     {
       "id": "infuse_fire",
@@ -495,7 +648,15 @@
       "visual": {
         "element": "fire",
         "shape": "drop-fire"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "burn"
+      ],
+      "tags": [
+        "fire"
+      ]
     },
     {
       "id": "infuse_frost",
@@ -522,7 +683,15 @@
       "visual": {
         "element": "frost",
         "shape": "drop-frost"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "chill"
+      ],
+      "tags": [
+        "frost"
+      ]
     },
     {
       "id": "infuse_shock",
@@ -549,7 +718,15 @@
       "visual": {
         "element": "shock",
         "shape": "drop-shock"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "shock"
+      ],
+      "tags": [
+        "shock"
+      ]
     },
     {
       "id": "infuse_poison",
@@ -576,7 +753,15 @@
       "visual": {
         "element": "poison",
         "shape": "drop-poison"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "poison"
+      ],
+      "tags": [
+        "poison"
+      ]
     }
   ]
 }

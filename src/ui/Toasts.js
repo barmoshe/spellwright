@@ -10,12 +10,16 @@
 import { C, icon } from './kit.js';
 import { drawDarkPanel, hudImage, reducedMotion, promptRow } from './HudKit.js';
 
-const COL_X = 434, COL_W = 200, BOTTOM = 354, GAP = 2, MAX_VISIBLE = 2, TEXT_W = COL_W - 26;
+const GAP = 2;
+// Geometry comes from ui/hudLayout.js `toast` (desktop: bottom-right column of 2; touch: top-centre, 1 visible, hud-layout §9.2).
 
 export class Toasts {
   /** @param {Phaser.Scene} scene HudScene */
-  constructor(scene, { flow, router, mixer }) {
+  constructor(scene, { flow, router, mixer, layout }) {
     this.scene = scene; this.flow = flow; this.router = router; this.mixer = mixer;
+    const L = layout || { mode: 'column', x: 434, w: 200, bottom: 354, max: 2 };
+    this.X = L.x; this.W = L.w; this.maxVisible = L.max; this.top = L.mode === 'top' ? L.top : null; this.bottom = L.bottom;
+    this.textW = this.W - 26;
     this.queue = [];
     this.visible = [];         // oldest first; the last is at the bottom
     this.depth = 50;
@@ -43,21 +47,21 @@ export class Toasts {
         v.hold -= dt;
         if (v.hold <= 0) this._exit(v);
       }
-      while (this.queue.length && this.visible.filter((v) => !v.exiting).length < MAX_VISIBLE) this._enter(this.queue.shift());
+      while (this.queue.length && this.visible.filter((v) => !v.exiting).length < this.maxVisible) this._enter(this.queue.shift());
     }
   }
 
   _build(t) {
     const s = this.scene;
-    const c = s.add.container(COL_X, BOTTOM).setDepth(this.depth);
+    const c = s.add.container(this.X, this.top ?? this.bottom).setDepth(this.depth);
     const g = s.add.graphics();
     c.add(g);
     // Plain text and glyph text share one word-wrapping layout (≤ 2 lines is the copy budget).
-    const body = promptRow(s, t.make ? t.make() : (t.text || ''), this.router, 'T1', TEXT_W);
+    const body = promptRow(s, t.make ? t.make() : (t.text || ''), this.router, 'T1', this.textW);
     c.add(body);
     const lines = body.lines;
     const h = Math.max(22, body._h + 10);
-    drawDarkPanel(g, 0, 0, COL_W, h);
+    drawDarkPanel(g, 0, 0, this.W, h);
     body.setPosition(22, Math.floor((h - body._h) / 2));
     // 16 px icon, vertically centred at x 3..19
     const iy = Math.floor(h / 2);
@@ -83,8 +87,8 @@ export class Toasts {
     if (rm) {
       this.scene.tweens.add({ targets: c, alpha: 1, duration: 120, ease: 'Linear' });
     } else {
-      c.x = COL_X + 16;
-      this.scene.tweens.add({ targets: c, x: COL_X, alpha: 1, duration: 180, ease: 'Cubic.easeOut', onUpdate: () => { c.x = Math.round(c.x); } });
+      c.x = this.X + 16;
+      this.scene.tweens.add({ targets: c, x: this.X, alpha: 1, duration: 180, ease: 'Cubic.easeOut', onUpdate: () => { c.x = Math.round(c.x); } });
     }
     if (this.mixer) this.mixer.fire('toast');
   }
@@ -99,17 +103,19 @@ export class Toasts {
       this._restack(null);
     };
     if (rm) this.scene.tweens.add({ targets: v.c, alpha: 0, duration: 100, ease: 'Linear', onComplete: done });
-    else this.scene.tweens.add({ targets: v.c, x: COL_X + 8, alpha: 0, duration: 150, ease: 'Quad.easeIn', onUpdate: () => { v.c.x = Math.round(v.c.x); }, onComplete: done });
+    else this.scene.tweens.add({ targets: v.c, x: this.X + 8, alpha: 0, duration: 150, ease: 'Quad.easeIn', onUpdate: () => { v.c.x = Math.round(v.c.x); }, onComplete: done });
   }
 
   /** Newest at the bottom; each older one sits above it with a 2 px gap. `fresh` snaps into place. */
   _restack(fresh) {
-    let y = BOTTOM;
+    const down = this.top != null;                 // touch: stack downward from the top (newest first)
+    let y = down ? this.top : this.bottom;
     const rm = reducedMotion();
     for (let i = this.visible.length - 1; i >= 0; i--) {
       const v = this.visible[i];
-      y -= v.c._h;
+      if (!down) y -= v.c._h;
       const ty = y;
+      if (down) y += v.c._h + GAP * 2;
       if (v === fresh || rm) v.c.y = ty;
       else if (v.c.y !== ty) this.scene.tweens.add({ targets: v.c, y: ty, duration: 120, ease: 'Cubic.easeInOut', onUpdate: () => { v.c.y = Math.round(v.c.y); } });
       y -= GAP;
@@ -121,7 +127,7 @@ export class Toasts {
     for (const v of this.visible) {
       if (!v.make || v.exiting) continue;
       const old = v.c.body;
-      const row = promptRow(this.scene, v.make(), this.router, 'T1', TEXT_W);
+      const row = promptRow(this.scene, v.make(), this.router, 'T1', this.textW);
       row.setPosition(old.x, old.y);
       v.c.add(row); v.c.body = row;
       old.destroy();

@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "$comment": "Prices, drafts, rarity weights. One record per section.",
+  "version": 2,
+  "$comment": "Prices, drafts, rarity, skip/reroll/sale/pity/tag lean/counter guarantee/ban.",
   "economy": [
     {
       "id": "rarity",
@@ -31,7 +31,8 @@
       "modifier": 3,
       "relic": 2,
       "bossRelic": 3,
-      "skipAllowed": true
+      "skipAllowed": true,
+      "duoOfferWeightMult": 3
     },
     {
       "id": "prices",
@@ -101,7 +102,69 @@
         {
           "slot": "heal"
         }
+      ],
+      "saleSlot": true
+    },
+    {
+      "id": "skip",
+      "coinsBase": 6,
+      "coinsPerFloor": 4
+    },
+    {
+      "id": "draftReroll",
+      "base": 8,
+      "step": 8,
+      "maxPerOffer": 2
+    },
+    {
+      "id": "sale",
+      "mult": 0.6,
+      "slots": 1,
+      "excludes": [
+        "heal"
       ]
+    },
+    {
+      "id": "pity",
+      "rareOffsetStart": -3,
+      "stepPerMiss": 2,
+      "cap": 20,
+      "resetOn": [
+        "rare",
+        "legendary"
+      ],
+      "appliesTo": [
+        "spell",
+        "modifier",
+        "card",
+        "relic"
+      ]
+    },
+    {
+      "id": "tagLean",
+      "perTagMult": 1.5,
+      "cap": 2.25,
+      "ownedThreshold": 2,
+      "note": "A tag counts as owned when >= ownedThreshold owned cards/relics carry it; candidate weight x perTagMult per owned tag it carries, capped."
+    },
+    {
+      "id": "counterGuarantee",
+      "keywords": [
+        "pierce",
+        "blast",
+        "shock"
+      ],
+      "draftKinds": [
+        "spell",
+        "modifier"
+      ],
+      "target": "next_test",
+      "note": "If the player owns no card carrying the keyword the next door threat / mini-boss / puzzle asks for, one draft slot is replaced by an eligible card carrying it."
+    },
+    {
+      "id": "ban",
+      "perShop": 1,
+      "cost": 0
     }
   ]
 }

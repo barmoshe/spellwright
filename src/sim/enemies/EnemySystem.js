@@ -29,12 +29,14 @@ import { EnemyViews } from './EnemyView.js';
 import { BossBrain } from './bosses.js';
 import './movement.js';
 import './attacks.js';
-import { ACTOR, ANCHOR, FLYER_HOVER_PX, HAZARD_LOOK, TAU, actorOf, clamp } from './tokens.js';
+import { ACTOR, ANCHOR, COL, FLYER_HOVER_PX, HAZARD_LOOK, TAU, actorOf, clamp } from './tokens.js';
 
 let UID = 1;
+const VOLATILE_PROJ = Object.freeze({ radius: 4, element: 'fire', lifetimeMs: 3000 });
 // release cues fired by the generic machine (ring/spiral/blink/slam/hazard fire theirs inside the type)
 const FIRE_OPT = Object.freeze({ fire: true }), ACID_OPT = Object.freeze({ fire: false });
-const RELEASE_CUE_GENERIC = Object.freeze({ melee_swipe: 'release_swipe', shoot: 'release_shoot', charge: 'enemy_charge_go', summon: 'enemy_summon_rise' });
+const RELEASE_CUE_GENERIC = Object.freeze({ melee_swipe: 'release_swipe', shoot: 'release_shoot', charge: 'enemy_charge_go', summon: 'enemy_summon_rise',
+  ward_allies: 'ward_raise', guard: 'guard_raise', mirror: 'release_shoot' });                // v2 (cue-spec event_routing.enemy_release)
 
 function newAi() {
   return {
@@ -51,11 +53,15 @@ function newAi() {
 
 function newEnemy() {
   return {
-    uid: 0, id: '', def: null, x: 0, y: 0, r: 4, feetY: 0, feetOff: 0, flying: false, alive: false, hittable: false,
+    uid: 0, id: '', def: null, x: 0, y: 0, r: 4, feetY: 0, feetOff: 0, flying: false, alive: false, hittable: false, inWater: false,
     hp: 0, maxHp: 0, elite: false, isBoss: false, kbResist: 0, immune: new Set(), status: null, kbVx: 0, kbVy: 0,
     coins: [0, 0], threat: 0, ai: newAi(), view: null, body: null, speed: 0, contactDamage: 1, summoner: null,
     noCoins: false, immovable: false, invuln: false, headOffset: 12, spawnMs: 0, summon: false, killCause: null,
     deathMs: 0, deathDelayMs: 0, actor: null, anchor: null, stationary: false,
+    // v2 (Wave D): defences (sim/Defences.js), elite affixes, boss tier/adapt. B/HUD read e.defence.type + e.affixes only.
+    defence: null, defenceBase: null, defenceStash: null, defenceRegrowMs: 0, guardBroken: false,
+    affixes: [], affixHitShown: false, cooldownMult: 1, volatile: null,
+    tier: null, resist: null, patterns: null, activateMs: 0,
   };
 }
 
@@ -93,9 +99,13 @@ export class EnemySystem {
     this.blinkOpt = { flyer: false, from: null, minDist: 0, maxDist: 0, wallClear: 0 };
     this.hazOpt = { flyer: false, from: null, minDist: 0, maxDist: 0, wallClear: 0 };
     this.playerPt = { x: 0, y: 0 };
-    this._bo = { x: 0, y: 0, angleDeg: 0, speed: 0, radius: 3, element: 'arcane', lifetimeMs: 3000, damage: 1, ownerUid: 0 };
+    this._bo = { x: 0, y: 0, angleDeg: 0, speed: 0, radius: 3, element: 'arcane', lifetimeMs: 3000, damage: 1, ownerUid: 0, boss: false };
     this._waveCueStep = -1;
     this._decalTraceStep = -1;
+    this.rings = [];                 // pending volatile death rings (telegraphs §2.16: spokes at 0, ring at delayMs)
+    this.darkOutline = false;        // Dark twist: every enemy drawn with its ring1 outline (style-guide §E, rules.twists.dark)
+    this._onTwist = (d) => { if (d && d.kind === 'dark' && this.rules.twists && this.rules.twists.dark && this.rules.twists.dark.enemyOutline) this.darkOutline = true; };
+    ctx.bus.on(EV.TWIST, this._onTwist);
     this.stats = { spawned: 0, killed: 0, windups: 0, interrupts: 0 };
     if (typeof window !== 'undefined') { window.__SW__ = window.__SW__ || {}; window.__SW__.enemies = this; }
   }
@@ -160,11 +170,12 @@ export class EnemySystem {
     return this._spawn(def, x, y, opts, false);
   }
 
-  spawnBoss(bossId, x, y) {
+  /** opts.tier ('mini' | 'boss') overrides the data's `tier` (the director passes it; default: bosses[].tier). */
+  spawnBoss(bossId, x, y, opts = {}) {
     const def = this.ctx.cat.bosses[bossId];
     if (!def) { warnOnce(`boss-unknown:${bossId}`, `spawnBoss: no boss "${bossId}" in data/bosses.json`); return null; }
     const e = this._spawn(def, x, y, { portal: false, noCoins: true }, true);
-    if (e) this.boss.init(e, def);
+    if (e) this.boss.init(e, def, opts.tier);
     return e;
   }
 
@@ -198,6 +209,10 @@ export class EnemySystem {
     e.contactDamage = def.contactDamage ?? 1;
     e.summoner = opts.summoner || null; e.summon = !!opts.summon;
     e.noCoins = !!opts.noCoins;
+    e.portalMs = opts.portalMs ?? this.rules.enemies.spawnPortalMs;   // per-spawn portal (ambush twist, B's objection)
+    // v2 defences (§9.6): the enemy's own defence (armour points × floor hpMult); bosses/minis: BossBrain.init
+    if (!isBoss && def.defence) ctx.combat.defences.set(e, def.defence, { hpMult: ctx.floor.hpMult }, 'spawn');
+    if (elite) this._rollAffixes(e, def);
     e.immovable = false; e.invuln = false; e.killCause = null; e.deathDelayMs = 0; e.introMs = 0; e.soulTo = 0;
     e.alive = true;
     e.spawnMs = ctx.time.ms;
@@ -225,6 +240,29 @@ export class EnemySystem {
     if (portal && !opts.summon && this._waveCueStep !== ctx.time.step) { this._waveCueStep = ctx.time.step; this.fire('wave_spawn'); }
     track('enemy_spawn', { id: def.id, elite, boss: isBoss });
     return e;
+  }
+
+  /**
+   * mechanic-spec §9.4 v2: every elite rolls ONE affix from affixes.json (ai stream). Affixes that grant a
+   * defence (excludesDefence) are skipped when the base enemy already has one. hasted: move × moveSpeedMult,
+   * cooldowns × cooldownMult, windups unchanged. volatile: a telegraphed death ring. (Heat's second affix: Wave E.)
+   */
+  _rollAffixes(e, def) {
+    const list = this.ctx.cat.affixList || [];
+    const pool = [];
+    for (let i = 0; i < list.length; i++) { const a = list[i]; if (!(a.excludesDefence && (def.defence || e.defence))) pool.push(a); }
+    if (!pool.length) return;
+    const a = this.rng.pick(pool);
+    e.affixes.push(a.id);
+    const P = a.params || {};
+    if (a.grantsDefence) {
+      const g = a.grantsDefence;
+      const regrowMs = g.type === 'ward' ? (g.regrowMs ?? this.rules.defences.ward.eliteRegrowMs) : 0;
+      this.ctx.combat.defences.set(e, g, { hpMult: this.ctx.floor.hpMult, maxHp: e.maxHp, regrowMs }, 'spawn');
+    }
+    if (P.moveSpeedMult) e.speed *= P.moveSpeedMult;
+    if (P.cooldownMult) e.cooldownMult *= P.cooldownMult;
+    if (P.deathRing) e.volatile = P.deathRing;
   }
 
   _attachBody(e) {
@@ -262,6 +300,7 @@ export class EnemySystem {
     if (ai.impl && (ai.state === 'windup' || ai.state === 'act' || ai.state === 'airborne')) this._cancelAttack(e, !ai.exploded);
     e.alive = false; e.hittable = false;
     e.killCause = cause; e.deathMs = ctx.time.ms;
+    if (e.volatile && cause !== 'cleanup' && cause !== 'summoner') this._armVolatile(e);
     this._detachBody(e);
     this.stats.killed++;
     ctx.combat.onEnemyKilled(e, cause);
@@ -282,6 +321,29 @@ export class EnemySystem {
     if (this.rules.enemies.summonsDieWithSummoner && !e.isBoss) this._killSummons(e);
     if (e.isBoss) this.boss.onKilled(e);
     e.view && e.view.die(cause);
+  }
+
+  /** telegraphs §2.16: the 8 spoke directions show at once (spatial read from step 0), the ring fires at delayMs. */
+  _armVolatile(e) {
+    const v = e.volatile, n = v.count || 8;
+    const d = this.tl.add('spokes', 0, true);
+    if (d) { d.x = e.x; d.y = e.y; d.count = n; d.r0 = e.r + 3; d.r1 = e.r + 9; d.a0 = 0; d.astep = TAU / n; d.locked = true; d.color = COL.rim; }
+    this.rings.push({ x: e.x, y: e.y, t: 0, delay: v.delayMs || 450, count: n, speed: v.speed || 80, damage: v.damage ?? 1, decal: d });
+    e.deathDelayMs = Math.max(e.deathDelayMs || 0, v.delayMs || 450);   // the corpse holds (does not collapse) until the ring fires
+    this.fire('volatile_arm');           // proposed cue (event-markers §5.2): silent until the Audio Director routes it
+  }
+  _stepRings(dt) {
+    for (let i = this.rings.length - 1; i >= 0; i--) {
+      const r = this.rings[i];
+      r.t += dt;
+      if (r.t < r.delay) continue;
+      if (r.decal) this.tl.remove(r.decal);
+      for (let k = 0; k < r.count; k++) this.bullet(null, r.x, r.y, (360 * k) / r.count, r.speed, VOLATILE_PROJ, r.damage);
+      this.ctx.fx.explosion(r.x, r.y, 16, { hostile: true, element: 'fire' });
+      this.ctx.fx.addTrauma(this.T('traumaExplosion', 0.58));
+      this.fire('explode_small');         // cue-spec event_routing.affix_volatile_death_ring
+      this.rings[i] = this.rings[this.rings.length - 1]; this.rings.pop();
+    }
   }
 
   _killSummons(owner) {
@@ -340,6 +402,7 @@ export class EnemySystem {
       e.summoner = null;
     }
     this._live.length = 0;
+    this.rings.length = 0; this.darkOutline = false;
     this.views.clear();
     for (const h of this.hazards) this.hazFree.push(h);
     this.hazards.length = 0;
@@ -351,6 +414,7 @@ export class EnemySystem {
   }
 
   destroy() {
+    this.ctx.bus.off(EV.TWIST, this._onTwist);
     this.clear();
     for (const b of this.allBodies) b.destroy();
     this.allBodies.length = 0; this.bodyFree.length = 0;
@@ -377,6 +441,7 @@ export class EnemySystem {
     this._applyVelocities(dt);
     this._contact();
     this._stepHazards(dt);
+    if (this.rings.length) this._stepRings(dt);
     this.boss.stepDeaths(dt);
     this.views.step(dt);
   }
@@ -410,11 +475,16 @@ export class EnemySystem {
     this._syncPos(e);
     ai.t += dt;
     if (ai.blinkInAt >= 0 && ctx.time.step >= ai.blinkInAt) { ai.blinkInAt = -1; this.fire('enemy_blink_in'); }
+    if (e.defence || e.defenceRegrowMs > 0) ctx.combat.defences.stepEnemy(e, dt);
     if (e.isBoss && this.boss.step(e, dt)) return;
 
     if (ai.state === 'spawning') {
       ai.mvx = 0; ai.mvy = 0;
-      if (ai.t >= this.rules.enemies.spawnPortalMs) { ai.state = 'move'; ai.t = 0; e.hittable = true; }
+      if (ai.t >= (e.portalMs ?? this.rules.enemies.spawnPortalMs)) {
+        ai.state = 'move'; ai.t = 0; e.hittable = true;
+        // hud-layout §9.6: the affix title shows on spawn (emerge end; event-markers §5.3 affix-reveal)
+        if (e.affixes.length) ctx.bus.emit(EV.AFFIX_SHOWN, { uid: e.uid, affixes: e.affixes.slice(), x: e.x, y: e.y, first: 'spawn' });
+      }
       return;
     }
     // status-driven: frozen / shock-stunned → no move, no attack, no contact
@@ -592,7 +662,7 @@ export class EnemySystem {
     const done = ai.seq || ai.atk;
     ai.seq = null;
     if (e.isBoss) { this.boss.onAttackDone(e); return; }
-    ai.cool = (done && done.cooldownMs) || 0;
+    ai.cool = ((done && done.cooldownMs) || 0) * e.cooldownMult;          // hasted: attacks come faster, windups unchanged
     ai.idx++;
   }
 
@@ -686,8 +756,7 @@ export class EnemySystem {
       if (st === 'spawning' || st === 'frozen' || st === 'airborne' || st === 'intro' || st === 'dead') continue;
       if (st === 'stunned' && e.ai.stunKind === 'shock') continue;
       if (st === 'act' && e.ai.atk && e.ai.atk.type === 'charge') continue;     // the charge applies its own hit
-      const dx = p.coreX - e.x, dy = p.coreY - e.y, rr = e.r + p.hurtR;
-      if (dx * dx + dy * dy > rr * rr) continue;
+      if (!p.hurtOverlap(e.x, e.y, e.r)) continue;          // v2 body circle vs hurt capsule
       if (!p.canBeHit()) continue;
       if (this.hurtPlayer(e, e.contactDamage, 'contact') && e.def.movement && e.def.movement.type === 'swarm') {
         e.ai.retreatMs = e.def.movement.retreatMs || 0;                         // swarm: flee after contact
@@ -733,7 +802,16 @@ export class EnemySystem {
   }
 
   // ================================================================== services used by attacks / bosses / views
-  slow(e) { return this.ctx.combat.slowFactor(e); }
+  slow(e) { return this.ctx.combat.slowFactor(e) * this._water(e); }
+  /** Worlds W2 flooded (worlds.md §3.2): walkers in shallow water move × twist.moveMult (flyers skim); splash on entry. */
+  _water(e) {
+    const w = this.ctx.world;
+    if (!w || !w.water || (e.flying && w.flyersIgnoreWater)) return 1;
+    const wet = w.inWater(e.x, e.y);
+    if (wet && !e.inWater) this.fire('water_splash', { x: e.x });
+    e.inWater = wet;
+    return wet ? w.waterMoveMult : 1;
+  }
   fire(cue, opts) { const m = this.ctx.mixer; if (m && cue) m.fire(cue, opts); }
 
   hurtPlayer(e, dmg, kind) { return this._hurtRaw(e ? e.id : null, dmg, kind); }
@@ -749,6 +827,7 @@ export class EnemySystem {
     o.x = x; o.y = y; o.angleDeg = angleDeg; o.speed = speed * (this.ctx.floor.enemyProjSpeedMult || 1);
     o.radius = (proj && proj.radius) || 3; o.element = (proj && proj.element) || 'arcane'; o.lifetimeMs = (proj && proj.lifetimeMs) || 3000;
     o.damage = damage ?? 1; o.ownerUid = e ? e.uid : 0;
+    o.boss = !!(e && e.isBoss);                          // bosses (and minis) are exempt from enemyShotCap
     return this.ctx.shots.enemyBullet(o);
   }
 

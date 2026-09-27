@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "$comment": "Base (floor-1) stats; hp x floor.hpMult. Attack vocabulary: mechanic-spec §9.",
+  "version": 2,
+  "$comment": "Base (floor-1) stats; hp and armour points x floor.hpMult. role + defence: mechanic-spec §9.5.",
   "enemies": [
     {
       "id": "bat",
@@ -31,7 +31,9 @@
       "summonOnly": false,
       "visual": {
         "shape": "bat"
-      }
+      },
+      "role": "pressure",
+      "defence": null
     },
     {
       "id": "skeleton",
@@ -71,7 +73,9 @@
       "summonOnly": false,
       "visual": {
         "shape": "skeleton"
-      }
+      },
+      "role": "pressure",
+      "defence": null
     },
     {
       "id": "cultist",
@@ -119,7 +123,9 @@
       "summonOnly": false,
       "visual": {
         "shape": "robed"
-      }
+      },
+      "role": "pressure",
+      "defence": null
     },
     {
       "id": "frost_mage",
@@ -170,7 +176,9 @@
       "summonOnly": false,
       "visual": {
         "shape": "robed-frost"
-      }
+      },
+      "role": "anchor",
+      "defence": null
     },
     {
       "id": "brute",
@@ -211,6 +219,11 @@
       "summonOnly": false,
       "visual": {
         "shape": "brute"
+      },
+      "role": "anchor",
+      "defence": {
+        "type": "armour",
+        "points": 24
       }
     },
     {
@@ -242,7 +255,9 @@
       "summonOnly": false,
       "visual": {
         "shape": "slime"
-      }
+      },
+      "role": "pressure",
+      "defence": null
     },
     {
       "id": "slimelet",
@@ -269,7 +284,9 @@
       "summonOnly": true,
       "visual": {
         "shape": "slime-small"
-      }
+      },
+      "role": "summon",
+      "defence": null
     },
     {
       "id": "fire_imp",
@@ -312,7 +329,9 @@
       "summonOnly": false,
       "visual": {
         "shape": "imp"
-      }
+      },
+      "role": "pressure",
+      "defence": null
     },
     {
       "id": "eye_turret",
@@ -379,7 +398,9 @@
       "summonOnly": false,
       "visual": {
         "shape": "eye"
-      }
+      },
+      "role": "anchor",
+      "defence": null
     },
     {
       "id": "wraith",
@@ -439,6 +460,11 @@
       "summonOnly": false,
       "visual": {
         "shape": "ghost"
+      },
+      "role": "anchor",
+      "defence": {
+        "type": "ward",
+        "hits": 3
       }
     },
     {
@@ -482,7 +508,9 @@
       "summonOnly": false,
       "visual": {
         "shape": "robed-dark"
-      }
+      },
+      "role": "anchor",
+      "defence": null
     },
     {
       "id": "skull",
@@ -509,7 +537,9 @@
       "summonOnly": true,
       "visual": {
         "shape": "skull"
-      }
+      },
+      "role": "summon",
+      "defence": null
     },
     {
       "id": "stone_golem",
@@ -561,7 +591,401 @@
       "summonOnly": false,
       "visual": {
         "shape": "golem"
+      },
+      "role": "anchor",
+      "defence": {
+        "type": "armour",
+        "points": 70
       }
+    },
+    {
+      "id": "tomb_sentinel",
+      "name": "Tomb Sentinel",
+      "desc": "Advances behind a tower shield that blocks hits from the front. Pierce breaks it.",
+      "archetype": "shield",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 26,
+      "speed": 30,
+      "radius": 7,
+      "kbResist": 0.5,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 4,
+      "coins": [
+        2,
+        2
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "spear_thrust",
+          "type": "melee_swipe",
+          "windupMs": 600,
+          "recoverMs": 500,
+          "cooldownMs": 1600,
+          "triggerRange": 34,
+          "needsLos": false,
+          "damage": 1,
+          "range": 32,
+          "arcDeg": 40
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "shielded"
+      },
+      "role": "anchor",
+      "defence": {
+        "type": "shield"
+      }
+    },
+    {
+      "id": "lantern_acolyte",
+      "name": "Lantern Acolyte",
+      "desc": "Keeps back and wraps nearby allies in a ward that swallows hits. Shock strips wards.",
+      "archetype": "support",
+      "movement": {
+        "type": "kiter",
+        "minRange": 110,
+        "maxRange": 170
+      },
+      "hp": 20,
+      "speed": 36,
+      "radius": 6,
+      "kbResist": 0.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 4,
+      "coins": [
+        2,
+        3
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "kindle_ward",
+          "type": "ward_allies",
+          "windupMs": 800,
+          "recoverMs": 400,
+          "cooldownMs": 5500,
+          "triggerRange": 320,
+          "needsLos": false,
+          "damage": 0,
+          "count": 3,
+          "hits": 3,
+          "radius": 150,
+          "self": false
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "robed-lantern"
+      },
+      "role": "support",
+      "defence": {
+        "type": "ward",
+        "hits": 2
+      }
+    },
+    {
+      "id": "bone_archer",
+      "name": "Bone Archer",
+      "desc": "A skeleton with a bow. Keeps its distance and looses single bone arrows.",
+      "archetype": "ranged_shooter",
+      "movement": {
+        "type": "kiter",
+        "minRange": 100,
+        "maxRange": 160
+      },
+      "hp": 14,
+      "speed": 42,
+      "radius": 6,
+      "kbResist": 0.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 3,
+      "coins": [
+        1,
+        2
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "bone_arrow",
+          "type": "shoot",
+          "windupMs": 600,
+          "recoverMs": 300,
+          "cooldownMs": 2000,
+          "triggerRange": 240,
+          "needsLos": true,
+          "damage": 1,
+          "count": 1,
+          "spreadDeg": 0,
+          "speed": 125,
+          "projectile": {
+            "radius": 3,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "skeleton-bow"
+      },
+      "role": "pressure",
+      "defence": null
+    },
+    {
+      "id": "drowned_thrall",
+      "name": "Drowned Thrall",
+      "desc": "A waterlogged corpse wrapped in a thin ward. Slow, stubborn, easily stripped by shock.",
+      "archetype": "chaser",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 22,
+      "speed": 34,
+      "radius": 7,
+      "kbResist": 0.3,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 3,
+      "coins": [
+        1,
+        2
+      ],
+      "immune": [
+        "chill"
+      ],
+      "attacks": [
+        {
+          "id": "grasp",
+          "type": "melee_swipe",
+          "windupMs": 500,
+          "recoverMs": 450,
+          "cooldownMs": 1500,
+          "triggerRange": 24,
+          "needsLos": false,
+          "damage": 1,
+          "range": 22,
+          "arcDeg": 90
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "drowned"
+      },
+      "role": "pressure",
+      "defence": {
+        "type": "ward",
+        "hits": 2
+      }
+    },
+    {
+      "id": "mire_leech",
+      "name": "Mire Leech",
+      "desc": "Skims over the water in hungry packs.",
+      "archetype": "swarm",
+      "movement": {
+        "type": "swarm",
+        "wobbleAmpPx": 12,
+        "wobblePeriodMs": 700,
+        "retreatMs": 500,
+        "retreatSpeedMult": 0.8
+      },
+      "hp": 7,
+      "speed": 70,
+      "radius": 4,
+      "kbResist": 0.0,
+      "flying": true,
+      "contactDamage": 1,
+      "threat": 1,
+      "coins": [
+        0,
+        1
+      ],
+      "immune": [
+        "poison"
+      ],
+      "attacks": [],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "leech"
+      },
+      "role": "pressure",
+      "defence": null
+    },
+    {
+      "id": "animated_armor",
+      "name": "Animated Armour",
+      "desc": "An empty suit of plate that swings a halberd. Blast tears it open.",
+      "archetype": "tank",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 20,
+      "speed": 36,
+      "radius": 7,
+      "kbResist": 0.7,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 4,
+      "coins": [
+        2,
+        3
+      ],
+      "immune": [
+        "poison"
+      ],
+      "attacks": [
+        {
+          "id": "halberd",
+          "type": "melee_swipe",
+          "windupMs": 550,
+          "recoverMs": 500,
+          "cooldownMs": 1600,
+          "triggerRange": 32,
+          "needsLos": false,
+          "damage": 1,
+          "range": 30,
+          "arcDeg": 120
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "armor"
+      },
+      "role": "anchor",
+      "defence": {
+        "type": "armour",
+        "points": 36
+      }
+    },
+    {
+      "id": "bound_tome",
+      "name": "Bound Tome",
+      "desc": "A chained spellbook, rooted to its lectern. Alternates a page ring and an ink volley.",
+      "archetype": "turret",
+      "movement": {
+        "type": "stationary"
+      },
+      "hp": 24,
+      "speed": 0,
+      "radius": 6,
+      "kbResist": 1.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 4,
+      "coins": [
+        2,
+        2
+      ],
+      "immune": [],
+      "attacks": [
+        {
+          "id": "page_storm",
+          "type": "ring",
+          "windupMs": 650,
+          "recoverMs": 300,
+          "cooldownMs": 2600,
+          "triggerRange": 260,
+          "needsLos": false,
+          "damage": 1,
+          "count": 10,
+          "speed": 85,
+          "offsetDeg": 0,
+          "volleys": 1,
+          "volleyIntervalMs": 0,
+          "volleyOffsetDeg": 0,
+          "projectile": {
+            "radius": 3,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "ink_bolt",
+          "type": "shoot",
+          "windupMs": 550,
+          "recoverMs": 300,
+          "cooldownMs": 2600,
+          "triggerRange": 260,
+          "needsLos": true,
+          "damage": 1,
+          "count": 3,
+          "spreadDeg": 24,
+          "speed": 115,
+          "projectile": {
+            "radius": 3,
+            "element": "poison",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "tome"
+      },
+      "role": "anchor",
+      "defence": {
+        "type": "armour",
+        "points": 20
+      }
+    },
+    {
+      "id": "ink_imp",
+      "name": "Ink Imp",
+      "desc": "A blot of living ink that rushes you and bursts. Kill it mid-fuse near its friends.",
+      "archetype": "bomber",
+      "movement": {
+        "type": "chaser"
+      },
+      "hp": 12,
+      "speed": 64,
+      "radius": 5,
+      "kbResist": 0.0,
+      "flying": false,
+      "contactDamage": 1,
+      "threat": 3,
+      "coins": [
+        1,
+        1
+      ],
+      "immune": [
+        "poison"
+      ],
+      "attacks": [
+        {
+          "id": "ink_fuse",
+          "type": "self_destruct",
+          "windupMs": 600,
+          "recoverMs": 0,
+          "cooldownMs": 0,
+          "triggerRange": 26,
+          "needsLos": false,
+          "damage": 1,
+          "radius": 34,
+          "enemyDamage": 10,
+          "explodeIfKilledDuringWindup": true
+        }
+      ],
+      "onDeath": null,
+      "summonOnly": false,
+      "visual": {
+        "shape": "ink-imp"
+      },
+      "role": "pressure",
+      "defence": null
     }
   ]
 }

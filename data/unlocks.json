@@ -1,9 +1,90 @@
 {
-  "version": 1,
-  "$comment": "Meta milestones. Anything named in any unlocks[] is LOCKED until its milestone fires.",
+  "version": 2,
+  "$comment": "~15 ordered goals (design-v2 §9). Payout rule: rules.goals. Anything named in unlocks[] is LOCKED until its goal pays.",
   "unlocks": [
     {
-      "id": "reach_floor_2",
+      "id": "g_first_run",
+      "order": 1,
+      "name": "First Pages",
+      "desc": "Finish a run (win or lose).",
+      "condition": {
+        "type": "runs_finished",
+        "value": 1
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [],
+        "relics": [],
+        "loadouts": [],
+        "features": [
+          "daily"
+        ],
+        "stats": []
+      }
+    },
+    {
+      "id": "g_reach_mini",
+      "order": 2,
+      "name": "At the Gate",
+      "desc": "Reach the Grave Warden.",
+      "condition": {
+        "type": "reach_miniboss",
+        "value": "grave_warden"
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [],
+        "relics": [],
+        "loadouts": [],
+        "features": [
+          "forge"
+        ],
+        "stats": []
+      }
+    },
+    {
+      "id": "g_persistence",
+      "order": 3,
+      "name": "Persistence",
+      "desc": "Fall 3 times. The crypt remembers you.",
+      "condition": {
+        "type": "lifetime_deaths",
+        "value": 3
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [],
+        "relics": [
+          "warding_sigil"
+        ],
+        "loadouts": [],
+        "features": [],
+        "stats": []
+      }
+    },
+    {
+      "id": "g_kill_mini1",
+      "order": 4,
+      "name": "Gatebreaker",
+      "desc": "Defeat the Grave Warden.",
+      "condition": {
+        "type": "kill_boss",
+        "value": "grave_warden"
+      },
+      "unlocks": {
+        "cards": [
+          "comet"
+        ],
+        "wands": [],
+        "relics": [],
+        "loadouts": [],
+        "features": [],
+        "stats": []
+      }
+    },
+    {
+      "id": "g_reach_f2",
+      "order": 5,
       "name": "Into the Deep",
       "desc": "Reach Floor 2.",
       "condition": {
@@ -18,11 +99,13 @@
         "wands": [],
         "relics": [],
         "loadouts": [],
-        "features": []
+        "features": [],
+        "stats": []
       }
     },
     {
-      "id": "kill_ossuary_knight",
+      "id": "g_kill_boss1",
+      "order": 6,
       "name": "Knightfall",
       "desc": "Defeat the Ossuary Knight.",
       "condition": {
@@ -30,9 +113,7 @@
         "value": "ossuary_knight"
       },
       "unlocks": {
-        "cards": [
-          "comet"
-        ],
+        "cards": [],
         "wands": [],
         "relics": [
           "kindling"
@@ -40,11 +121,55 @@
         "loadouts": [
           "pyromancer"
         ],
-        "features": []
+        "features": [],
+        "stats": []
       }
     },
     {
-      "id": "reach_floor_3",
+      "id": "g_breaker",
+      "order": 7,
+      "name": "Breaker",
+      "desc": "Break 25 shields, armours or wards (lifetime).",
+      "condition": {
+        "type": "break_defence_n",
+        "value": 25
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [],
+        "relics": [],
+        "loadouts": [],
+        "features": [
+          "duos"
+        ],
+        "stats": []
+      }
+    },
+    {
+      "id": "g_first_payload",
+      "order": 8,
+      "name": "Chain of Command",
+      "desc": "Release a trigger payload.",
+      "condition": {
+        "type": "payload_released",
+        "value": 1
+      },
+      "unlocks": {
+        "cards": [
+          "quickening"
+        ],
+        "wands": [],
+        "relics": [
+          "prism_shard"
+        ],
+        "loadouts": [],
+        "features": [],
+        "stats": []
+      }
+    },
+    {
+      "id": "g_reach_f3",
+      "order": 9,
       "name": "The Last Stair",
       "desc": "Reach Floor 3.",
       "condition": {
@@ -60,11 +185,13 @@
         ],
         "relics": [],
         "loadouts": [],
-        "features": []
+        "features": [],
+        "stats": []
       }
     },
     {
-      "id": "kill_mire_queen",
+      "id": "g_kill_boss2",
+      "order": 10,
       "name": "Dethroned",
       "desc": "Defeat the Mire Queen.",
       "condition": {
@@ -81,11 +208,53 @@
         "loadouts": [
           "stormcaller"
         ],
-        "features": []
+        "features": [],
+        "stats": []
       }
     },
     {
-      "id": "win_run",
+      "id": "g_forgewright",
+      "order": 11,
+      "name": "Forgewright",
+      "desc": "Evolve a card at the forge.",
+      "condition": {
+        "type": "evolve_card",
+        "value": 1
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [
+          "echo_wand"
+        ],
+        "relics": [],
+        "loadouts": [],
+        "features": [],
+        "stats": []
+      }
+    },
+    {
+      "id": "g_kindred",
+      "order": 12,
+      "name": "Kindred",
+      "desc": "Form a duo relic.",
+      "condition": {
+        "type": "duo_formed",
+        "value": 1
+      },
+      "unlocks": {
+        "cards": [],
+        "wands": [],
+        "relics": [],
+        "loadouts": [],
+        "features": [
+          "corrupted"
+        ],
+        "stats": []
+      }
+    },
+    {
+      "id": "g_win",
+      "order": 13,
       "name": "Spellwright",
       "desc": "Defeat Vorn, the Archlich.",
       "condition": {
@@ -104,89 +273,54 @@
           "hexer"
         ],
         "features": [
-          "curses"
-        ]
+          "heat"
+        ],
+        "stats": []
       }
     },
     {
-      "id": "all_reactions",
-      "name": "Alchemist",
-      "desc": "Trigger Melt, Overload, Blight and Superconduct (across any runs).",
+      "id": "g_daily",
+      "order": 14,
+      "name": "Daily Practice",
+      "desc": "Complete a daily run (win or lose after Floor 1).",
       "condition": {
-        "type": "reactions_seen",
-        "value": [
-          "melt",
-          "overload",
-          "blight",
-          "superconduct"
-        ]
+        "type": "daily_complete",
+        "value": 1
       },
       "unlocks": {
         "cards": [],
         "wands": [],
-        "relics": [
-          "alchemist_stone"
-        ],
+        "relics": [],
         "loadouts": [],
-        "features": []
+        "features": [],
+        "stats": [
+          {
+            "stat": "startCapacity",
+            "add": 1
+          }
+        ]
       }
     },
     {
-      "id": "slayer_300",
-      "name": "Slayer",
-      "desc": "Defeat 300 enemies (lifetime).",
+      "id": "g_heat3",
+      "order": 15,
+      "name": "White Heat",
+      "desc": "Win at Heat 3 or higher.",
       "condition": {
-        "type": "lifetime_kills",
-        "value": 300
+        "type": "win_heat",
+        "value": 3
       },
       "unlocks": {
         "cards": [
           "crit_up"
         ],
-        "wands": [
-          "echo_wand"
-        ],
-        "relics": [],
-        "loadouts": [],
-        "features": []
-      }
-    },
-    {
-      "id": "first_payload",
-      "name": "Chain of Command",
-      "desc": "Release a trigger payload.",
-      "condition": {
-        "type": "payload_released",
-        "value": 1
-      },
-      "unlocks": {
-        "cards": [
-          "quickening"
-        ],
         "wands": [],
         "relics": [
-          "prism_shard"
+          "alchemist_stone"
         ],
         "loadouts": [],
-        "features": []
-      }
-    },
-    {
-      "id": "three_deaths",
-      "name": "Persistence",
-      "desc": "Fall 3 times. The crypt remembers you.",
-      "condition": {
-        "type": "lifetime_deaths",
-        "value": 3
-      },
-      "unlocks": {
-        "cards": [],
-        "wands": [],
-        "relics": [
-          "warding_sigil"
-        ],
-        "loadouts": [],
-        "features": []
+        "features": [],
+        "stats": []
       }
     }
   ]

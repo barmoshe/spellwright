@@ -20,6 +20,7 @@ import { ShotSystem } from '../sim/Shots.js';
 import { ZoneSystem } from '../sim/Effects.js';
 import { Player } from '../sim/Player.js';
 import { Caster, applyAimAssist } from '../sim/Caster.js';
+import { AutoAim } from '../sim/AutoAim.js';
 import { Pickups } from '../sim/Pickups.js';
 import { RelicSystem } from '../sim/Relics.js';
 import { RoomDirector } from '../sim/RoomDirector.js';
@@ -84,6 +85,7 @@ export class RunScene extends Phaser.Scene {
     this.usingEnemyStub = Enemies === EnemyStub;
     ctx.player = new Player(ctx, 100, 100);
     this.caster = new Caster(ctx);
+    this.autoAim = new AutoAim(ctx);
     ctx.director = new RoomDirector(ctx);
     const WorldHud = mods.WorldHud;
     this.worldHud = WorldHud ? new WorldHud(this) : null;
@@ -110,10 +112,16 @@ export class RunScene extends Phaser.Scene {
     this.input.setDefaultCursor('none');
     if (DEBUG) this._debugKeys();
 
+    // dev harness (?harness=floor:N:step:M, ui/devHarness.js): start on floor N, then jump straight into step M
+    const H = d.harness || null;
+    if (H && !H.tpl && typeof location !== 'undefined') { const v = new URLSearchParams(location.search).get('tpl'); if (v) H.tpl = v.replace(/[^\w-]/g, ''); }
+    if (H) { run.floor = Math.max(1, Math.min(3, H.floor | 0)); run.stats.maxFloor = Math.max(run.stats.maxFloor, run.floor); this._setFloor(run.floor); }
     this.scene.launch('hud');
     this.bus.emit(EV.RUN_START, run);
     this.bus.emit(EV.FLOOR_ENTER, { floor: run.floor, name: this._floorDef().name });
-    ctx.director.enterRoom({ room: 'start', reward: null });
+    if (H) ctx.director.jumpTo(run.floor, H.step, H);
+    else ctx.director.enterRoom({ room: 'start', reward: null });
+    if (DEBUG || H) this._roomApi();
     ctx.cam.snap();
     this.cameras.main.fadeIn(T('roomFadeMs'));
     track('run_start', { seed: run.seed, loadout: loadoutId, curse: curseLevel });
@@ -150,6 +158,13 @@ export class RunScene extends Phaser.Scene {
   // ================================================================== the fixed step
   simStep() {
     const t0 = performance.now();
+    // feel-spec §flow (v2): death slow-mo — the sim runs at deathTimeScale for deathSlowMoMs after the lethal hit
+    // (fixed step kept: whole steps are skipped, so determinism per step is unchanged)
+    if (this.ctx.deathAt && t0 - this.ctx.deathAt < T('deathSlowMoMs', 500)) {
+      this._slowAcc = (this._slowAcc || 0) + T('deathTimeScale', 0.35);
+      if (this._slowAcc < 1) return;
+      this._slowAcc -= 1;
+    }
     const ctx = this.ctx, run = this.run;
     ctx.time.ms += DT_MS; ctx.time.step++;
     run.stats.timeFrames++;
@@ -157,6 +172,10 @@ export class RunScene extends Phaser.Scene {
     const it = this.router.sample(p.coreX - cam.view.x, p.coreY - cam.view.y);
     it.aimWorldX = it.aimScreenX + cam.view.x; it.aimWorldY = it.aimScreenY + cam.view.y;
     ctx.intent = it;
+    // touch (mobile-touch-spec §3.3): 'auto' → AutoAim picks target, aim and cast; otherwise the marker clears
+    if (it.aimSource === 'auto') this.autoAim.apply(it, DT_MS);
+    else if (this.autoAim.target) this.autoAim.clear();
+    ctx.autoTarget = this.autoAim.target;
     applyAimAssist(ctx, it);
 
     // cast press/release tracking (FTUE P2b tap detection)
@@ -192,11 +211,14 @@ export class RunScene extends Phaser.Scene {
   update(time, delta) {
     const ctx = this.ctx;
     if (!ctx || !ctx.player) return;
+    // feel-spec §flow: the run-end screen appears deathToRunEndMs after the lethal hit (the 250 ms fade is inside it)
+    if (ctx.deathAt && !this.run.ended && performance.now() - ctx.deathAt >= T('deathToRunEndMs', 1100) - 250) this.endRun('death');
     ctx.player.syncView(delta);
     if (ctx.world) {
       if (ctx.enemies.render) ctx.enemies.render(delta);
       ctx.zones.render();
       ctx.pickups.render(delta);
+      ctx.director.render();
     }
     ctx.fx.render(delta);
     if (this.worldHud) this.worldHud.update(delta);
@@ -283,12 +305,17 @@ export class RunScene extends Phaser.Scene {
       near.elites = []; near.offscreen = [];
       const alive = ctx.enemies.aliveCount();
       const v = ctx.cam.view;
+      // defence types present on living enemies (contract §1; HUD counter pips, hud-layout §9.3): 1 shield · 2 armour · 4 ward
+      let defMask = 0;
       ctx.enemies.forEachAlive((e) => {
+        const dt = e.defence && e.defence.type;
+        if (dt) defMask |= dt === 'shield' ? 1 : dt === 'armour' ? 2 : dt === 'ward' ? 4 : 0;
         const spr = e.view && e.view.sprite;
         const top = spr ? spr.y - spr.displayHeight * spr.originY : e.y - (e.r + 8);
         if (e.elite && !e.isBoss) near.elites.push({ x: e.x, y: top, hpFrac: Math.max(0, e.hp / e.maxHp), damaged: e.hp < e.maxHp });
         if (alive <= 2 && !ctx.cam.inView(e.x, e.y, 0)) near.offscreen.push({ x: e.x, y: e.y });
       });
+      near.defences = defMask;
       // HUD occlusion (hud-layout §3.2): bit set when the player, an enemy or an enemy bullet sits under a corner cluster
       const boxes = [[1, 0, 0, 160, 44], [2, 170, 0, 300, 30], [4, 480, 0, 160, 40], [8, 0, 314, 272, 46]];
       let mask = 0;
@@ -306,7 +333,7 @@ export class RunScene extends Phaser.Scene {
       wand: w ? { index: run.activeWand, recharging: w.state.rechargeTimerMs > 0, rechargeFrac: w.state.rechargeTimerMs > 0 ? w.state.rechargeTimerMs / Math.max(1, this._lastRechargeTotal(w)) : 0,
         castReady: w.state.castTimerMs <= 0 && w.state.rechargeTimerMs <= 0, holdMs: this._holdMs || 0 } : null,
       camera: { scrollX: ctx.cam.view.x, scrollY: ctx.cam.view.y },
-      room: { kind: d.room && d.room.kind, templateId: d.room && d.room.templateId, cleared: d.cleared, inCombat: d.combatActive && ctx.enemies.aliveCount() > 0,
+      room: { kind: d.room && d.room.kind, templateId: d.room && d.room.templateId, cleared: d.cleared, twist: d.room && d.room.twist, puzzle: !!(d.room && d.room.puzzle), inCombat: d.combatActive && ctx.enemies.aliveCount() > 0,
         enemiesAlive: ctx.enemies.aliveCount(), controllable: p.alive && p.controllable && !this.transitioning && !ctx.flags.victory && !(d.boss && d.boss.introMs > 0) },
       near,
       hudOcclusion: this._occl || 0,
@@ -323,7 +350,7 @@ export class RunScene extends Phaser.Scene {
     const kb = this.input.keyboard, ctx = this.ctx, run = this.run;
     kb.on('keydown-F4', () => { this.god = !this.god; ctx.player.iframesMs = this.god ? 1e12 : 0; this.bus.emit(EV.TOAST, { text: `God mode ${this.god ? 'on' : 'off'}`, kind: 'info' }); });
     kb.on('keydown-F6', () => ctx.enemies.killAll('damage'));
-    kb.on('keydown-F7', () => this._debugJump(9));
+    kb.on('keydown-F7', () => this._debugJump(99));
     kb.on('keydown-F8', () => { this._transition(() => ctx.director.nextFloor()); });
     kb.on('keydown-F9', () => {
       run.addCoins(200);
@@ -335,12 +362,68 @@ export class RunScene extends Phaser.Scene {
     kb.on('keydown-K', () => { ctx.player.iframesMs = 0; ctx.player.dashIframesMs = 0; this.run.setShield(0); ctx.player.hurt(99, { kind: 'debug' }); });
     kb.on('keydown-J', () => this._debugJump(ctx.director.room ? ctx.run.step + 1 : 1));
   }
-  /** Jump to step `n` of the current floor (9 = boss). */
-  _debugJump(n) {
-    const ctx = this.ctx, fd = this._floorDef();
-    const stepDef = fd.steps[Math.min(9, n)];
-    const opt = stepDef.fixed ? { room: stepDef.fixed.room, reward: stepDef.fixed.reward } : { room: stepDef.from[0].room, reward: stepDef.from[0].reward };
-    this._transition(() => { this.run.step = Math.min(9, n); ctx.director.enterRoom(opt); });
+  /** Jump to step `n` of the current floor (clamped: ≥ the last step = boss). */
+  _debugJump(n, force = {}) {
+    const ctx = this.ctx, last = this._floorDef().steps.length - 1;
+    this._transition(() => ctx.director.jumpTo(this.run.floor, Math.min(last, n), force));
+  }
+
+  /**
+   * Room-flow verification API (?debug or a floor harness): window.__SW__.room
+   *   jump(floor, step, {room, threat, twist, risk, doorThreat, riskDoor, tpl}) · doors({threat, risk}) (forces the NEXT door roll)
+   *   clear() (kills every enemy) · state() (room, waves, threat, twist, upcomingKeyword, world)
+   * Worlds (worlds.md §3): twist may be a WORLD twist — 'candlelight' | 'flooded' | 'bookshelves' — forced into this room
+   * in any world (URL: ?debug&harness=floor:N:step:M&twist=flooded[&tpl=<rooms.json id>]). Probes:
+   *   wade() puts the player on the first water cell · zap(dmg) lands a shock hit on an in-water enemy (arc check)
+   *   ignite() / chip(dmg) / blast() act on the first bookshelf · world() = the twist summary (also in state().world)
+   */
+  _roomApi() {
+    const scene = this;
+    const api = {
+      jump: (floor, step, force = {}) => scene._transition(() => scene.ctx.director.jumpTo(floor, step, force)),
+      doors: ({ threat = null, risk = false } = {}) => { const f = scene.ctx.director.force; f.doorThreat = threat; f.riskDoor = !!risk; return f; },
+      clear: () => scene.ctx.enemies.killAll('damage'),
+      state: () => {
+        const d = scene.ctx.director, r = d.room || {};
+        return { floor: scene.run.floor, step: scene.run.step, kind: r.kind, template: r.templateId, puzzle: r.puzzle, risk: r.risk,
+          threat: r.threat ? r.threat.id : null, twist: r.twist, waves: d.waves.map((w) => w.map((u) => (u.elite ? '*' : '') + u.id)),
+          waveIndex: d.waveIndex, pending: d.pending.length, killedFrac: d._killedFrac(), upcomingKeyword: scene.run.upcomingKeyword ?? null,
+          doors: d.doorsOpen.map((x) => ({ ...x.option })), world: api.world() };
+      },
+      world: () => {
+        const c = scene.ctx, w = c.world, r = c.director.room || {};
+        if (!w) return null;
+        let wet = 0; c.enemies.forEachAlive((e) => { if (c.combat._inWater(e)) wet++; });
+        return { id: w.worldId, tileset: w.texKey, twist: r.worldTwist || null, water: w.waterCount, enemiesInWater: wet,
+          shelves: w.shelves ? w.shelves.size : 0, burning: w.shelves ? [...w.shelves.values()].filter((x) => x.burnMs > 0).length : 0,
+          candles: w.lights.length, darkness: !!c.director.dark, darkAlpha: c.director.dark ? c.director.dark.alpha : 0 };
+      },
+      wade: () => {
+        const c = scene.ctx, w = c.world; if (!w || !w.water) return false;
+        const i = w.water.indexOf(1); const p = w.cellCenter(i);
+        c.player.setPosition(p.x, p.y); c.player.body.setVelocity(0, 0);
+        return p;
+      },
+      zap: (dmg = 6) => {
+        const c = scene.ctx; let target = null;
+        c.enemies.forEachAlive((e) => { if (!target && c.combat._inWater(e)) target = e; });
+        if (!target) return null;
+        const before = new Map(); c.enemies.forEachAlive((e) => before.set(e.uid, e.hp));
+        c.combat.hitEnemy(target, dmg, { element: 'shock', source: 'direct', statusChance: 0, x: target.x, y: target.y });
+        const arced = []; c.enemies.forEachAlive((e) => { if (e !== target && before.has(e.uid) && e.hp < before.get(e.uid)) arced.push(e.id); });
+        return { target: target.id, arced };
+      },
+      ignite: () => { const w = scene.ctx.world; const i = w && w.shelves ? w.shelves.keys().next().value : undefined; return i == null ? null : scene.ctx.combat.hitShelf(i, 1, 'fire'); },
+      chip: (dmg = 4) => { const w = scene.ctx.world; const i = w && w.shelves ? w.shelves.keys().next().value : undefined; return i == null ? null : scene.ctx.combat.hitShelf(i, dmg, 'arcane'); },
+      blast: () => {
+        const w = scene.ctx.world; const i = w && w.shelves ? w.shelves.keys().next().value : undefined;
+        if (i == null) return null;
+        const p = w.cellCenter(i); scene.ctx.combat.explodeAt(p.x, p.y, 12, 0, { source: 'explode' });
+        return { shelvesLeft: w.shelves.size };
+      },
+    };
+    window.__SW__ = window.__SW__ || {};
+    window.__SW__.room = api;
   }
 
   onShutdown() {

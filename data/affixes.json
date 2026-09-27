@@ -1,0 +1,66 @@
+{
+  "version": 2,
+  "$comment": "Elite affixes: one per elite (two from Heat 2). Never colour-only: outline + title + glyph.",
+  "affixes": [
+    {
+      "id": "armoured",
+      "titleKey": "affix.armoured",
+      "outlineKey": "outline.steel",
+      "glyph": "shield-plate",
+      "grantsDefence": {
+        "type": "armour",
+        "pointsFracOfHp": 0.4
+      },
+      "excludesDefence": true
+    },
+    {
+      "id": "warded",
+      "titleKey": "affix.warded",
+      "outlineKey": "outline.cyan",
+      "glyph": "ward-rune",
+      "grantsDefence": {
+        "type": "ward",
+        "hits": 3,
+        "regrowMs": 7000
+      },
+      "excludesDefence": true
+    },
+    {
+      "id": "shielded",
+      "titleKey": "affix.shielded",
+      "outlineKey": "outline.bone",
+      "glyph": "tower-shield",
+      "grantsDefence": {
+        "type": "shield"
+      },
+      "excludesDefence": true
+    },
+    {
+      "id": "hasted",
+      "titleKey": "affix.hasted",
+      "outlineKey": "outline.gold",
+      "glyph": "wing",
+      "params": {
+        "moveSpeedMult": 1.35,
+        "cooldownMult": 0.75,
+        "windupMult": 1.0
+      },
+      "excludesDefence": false
+    },
+    {
+      "id": "volatile",
+      "titleKey": "affix.volatile",
+      "outlineKey": "outline.ember",
+      "glyph": "burst",
+      "params": {
+        "deathRing": {
+          "count": 8,
+          "speed": 80,
+          "damage": 1,
+          "delayMs": 450
+        }
+      },
+      "excludesDefence": false
+    }
+  ]
+}

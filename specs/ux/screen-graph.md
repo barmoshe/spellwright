@@ -2,7 +2,8 @@
 
 **Owner:** UX Designer · **Status:** Wave 2, v1 · **Consumers:** Game Developer (`sceneflow.js`, every scene's input focus, `ui/Menu.js`), 2D Artist (screen-set scope for `ui-artwork`), Animator (screen-transition `motion-spec`), Audio Director (UI cue moments).
 **Built on:** `specs/engine/scene-flow.md` (scene inventory, overlay protocol; this doc supplies screen *content*, back-stack and focus semantics, which scene-flow delegates to UX), `specs/engine/architecture.md` §8 (Intent + UI-intent channel), `specs/design/progression-and-pacing.md` §1, §7, §8 (run structure, meta, win/lose), `systems.md` §8 (room economy).
-**Companion UX specs:** `wand-editor-ux.md`, `hud-layout.md`, `ftue-flow.md`, `settings-spec.md`, `accessibility-spec.md`.
+**v2 (Wave A1):** §9 adds Mode Select (it replaces the S1a curse row), Goals, Daily result, Reward Skip + Reroll, the Forge tab and the per-screen touch contract. Where §9 conflicts with §1–§4, §9 wins.
+**Companion UX specs:** `mobile-touch-spec.md` (v2), `wand-editor-ux.md`, `hud-layout.md`, `ftue-flow.md`, `settings-spec.md`, `accessibility-spec.md`.
 
 ---
 
@@ -184,3 +185,120 @@ No path exceeds depth 3. No screen has a single child (which would be a pointles
 - **Modal traps:** the one irreversible action inside a modal was removed (Reward "Skip"); every other irreversible action sits behind a confirm with the safe option focused (§4). ✔
 - **Depth justified by content count:** §5. ✔
 - **Gamepad navigation for all:** the pad column in §3 covers every screen, and §3.1 gives the spatial rules. ✔
+
+---
+
+## §9 v2: new and changed screens
+
+**Status:** v2 Wave A1. The §0 principles still hold: no dead ends, no modal traps, `back` undoes the innermost state, and everything is operable by keyboard, pad, mouse and (new) **touch**. Mode, keyword, defence, forge and goal names come from `design-v2.md` and `data/modes.json` / `forge.json` / `unlocks.json`. The UX never hard-codes them.
+
+### 9.1 Inventory delta
+
+| # | Screen | Scene | Kind | One obvious next action | Replaces / adds |
+|---|---|---|---|---|---|
+| S1 | Title (items: **Start Run** · Goals · Codex · Settings · Fullscreen / **Install** · Credits) | `title` | root | Start Run | adds Goals and Install (`mobile-touch-spec.md` §7.2) |
+| **S1m** | **Mode Select** (the S1a successor) | `title` sub-panel | sub-panel | **Begin** | **replaces the Run Setup curse row** |
+| **S1g** | **Goals** | `title` sub-panel | sub-panel | read the next goal; Back | new |
+| S4 | Reward draft + **Skip (pays gold)** + **Reroll** | `reward` | modal | Take | reverses v1's "no in-modal Skip" (the Skip now has value) |
+| S5 | Shop with tabs **Buy · Forge** | `shop` | modal | Buy / Forge action | adds the Forge tab |
+| **S5f** | **Forge** tab: Merge · Evolve · +1 Slot | `shop` tab | modal tab | pick a recipe → Forge | new |
+| S7 | Run End (+ "Next goal" line) | `run-end` | root | New Run | adds the next goal |
+| **S7d** | **Daily result** (a Run End variant, `mode: daily`) | `run-end` | root | **Copy** | new |
+| **S9** | **Rotate overlay** (DOM) | — | system overlay | turn the phone | new (`mobile-touch-spec.md` §7.1) |
+| — | **Welcome-back** header in Pause:Menu | `pause` | header | Resume | new (`mobile-touch-spec.md` §7.3) |
+| — | Door threat and risk labels, twist banners, elite affix nameplates, mini-boss intro card, adapt and phase banners, BLOCKED numbers | in-world | — | — | `hud-layout.md` §9.6 |
+
+### 9.2 Mode Select (S1m)
+
+**Entry.** Title → **Start Run**. On a profile with **no finished run**, Start Run skips S1m and starts **Standard** with the Apprentice. First-launch agency matters more than choice (`ftue-flow.md` §0 targets). Afterwards Start Run always opens S1m, with focus on **Begin** and the last-used mode and loadout pre-selected, so a returning player still needs only 2 confirms.
+
+**Layout (640×360).** A panel `(16, 30, 608, 316)`. It is aligned to `data/modes.json` + `rules.heat`: there are **three modes**, and **Heat is a tier of Standard**, not a mode.
+- **Row 1, modes:** 3 cards of 192×120 at x = 24 + 200i, y 54. Each card has a 32 px icon, T2 name, a 2-line T1 description (`mode.*.desc`), and a status line:
+  - **Standard:** a **◂ Heat 0 ▸** selector inside the card, over the unlocked tiers 0…max (a win at Heat *n* unlocks *n* + 1, `rules.heat.unlockNextOnWinAt`). The card lists the selected tier's changes in T1 dim ("Enemy HP ×1.2 · 2 elite affixes · shops +20%"), taken from `rules.heat.levels[n]`. Locked tiers show "Win at Heat 2 to unlock Heat 3". Status line: "Best: Heat 2 · Floor 3".
+  - **Daily** (`requiresFeature: daily`, unlocked by the first goal): today's UTC date, the rolled loadout and rule ("Hexer + Glass"), and "✔ First try: fell at 2-4" or "Not played yet". `attempts: unlimited_first_counts` → a later attempt is labelled "Practice (first try counts)". While locked: 🔒 "Finish a run to unlock".
+  - **Gentle:** the mode's rule as **plain numbers**: "+{h} bonus half-hearts · {p}% hit absorb (grows with each Gentle loss, up to +4 / 20%)". Per the Designer's copy rule (`modes.json` `copyRule`), the card and the HUD never say "easy" and never show a penalty. Gentle excludes Heat and Daily, so selecting Gentle disables the Heat selector with the reason "Heat is off in Gentle".
+  - A locked mode shows 🔒 + its condition, never "???".
+- **Row 2, loadout:** loadout cards of 96×56 at y 186. **Daily:** the row shows the fixed daily loadout and rule, not selectable ("Today: Hexer · Rule: Glass — −2 max HP, +15% crit").
+- **Row 3:** **Begin** (a primary button, 160×37, centred at y 290) · **Back** (the modal Back on touch; Esc / B).
+- **HUD mode badge:** once in the run, the top band shows the mode in T1 left of the floor track: "Heat 3" / "Gentle +2♥ 10%" / "Daily". This is a C2 element (it fades to 40% like the track). Its rects are `hud-layout.md` §9.2 `modeBadge`.
+- **Navigation** (developer objection accepted; it fixes a keyboard/pad trap): the focus rows are **mode cards → Heat stepper** (a separate focus row inside the Standard card, reachable only while Standard is selected) **→ loadout → Begin**. Up/down moves between rows. On the mode cards, left/right moves between cards. On the Heat stepper, left/right changes the tier. Back → Title. Begin → run.
+- **Save:** `meta.lastMode`, `meta.heat` (migrated from `curseLevel`, Wave E).
+
+### 9.3 Goals (S1g)
+
+- **Entry:** Title → Goals. A "!" badge appears on the item when a goal was completed since the last visit. Back → Title.
+- **Layout:** a scroll list, full width `(24, 40, 592, 292)`. There is **one row per goal**, in the designer's order (~15), with a 24 px pitch (touch-safe). Each row shows a status icon (**✔** done · **▶** next · **○** later; shape-coded), the goal name (T1), the condition (T1 dim), and the reward (icon + name).
+- The **next goal** row is expanded to 2 lines, with progress where it is countable ("Break 12/30 defences"). Focus and scroll start on it.
+- **Queued payout** (`rules.goals`: early goals pay at most one per run end; satisfied goals queue): a 4th status, **◐ "Earned — reward at your next run's end"**, so a completed-but-unpaid goal never looks unfinished.
+- **Later goals are visible**, with their conditions. The order tells the player what to do; hiding it would turn a to-do list into a mystery. Rewards of later goals show as silhouettes plus "Reward: a new spell", so there is no spoiler.
+- **Run End:** S7 gains one line under the summary: "Next goal: {name} — {condition} ({progress})".
+
+### 9.4 Reward (S4) v2: Skip and Reroll
+
+| Control | Placement (footer, y 322–352) | Behaviour |
+|---|---|---|
+| **Take** | primary, on the focused card (or confirm / second tap) | unchanged (card → editor held; relic → applied) |
+| **Reroll ({cost})** | left of Skip, 110×30 | replaces all offered items with a new roll (`economy.draftReroll`: 8, then +8; **max 2 per offer**). Disabled with a reason: "Need 5 more gold" / "No rerolls left for this reward". Rerolling never changes the reward *kind*. |
+| **Skip (+{gold})** (`economy.skip`: 6 + 4 × floor) | footer right, 110×30. **Not** the default focus, and 12 px away from any Take target. | takes the gold, removes the pedestal, closes the modal. **There is no confirm**: the label states the exact trade, and the touch open-guard plus release-over-same (`mobile-touch-spec.md` §6) cover accidental taps. Pad and keyboard can't reach Skip by default focus; it needs 2 deliberate navigations. |
+| **Close / Back** | modal Back | still **keeps the pedestal** (v1 rule). Skip is the explicit forfeit, and leaving the room still triggers D4. |
+
+**Draft card tags (v2 data):**
+- **"Counters: {defence}"** plus the counter pip on any card that is the Designer's counter guarantee (`economy.counterGuarantee`: a card carrying the keyword the next test asks for).
+- **"DUO"** on a duo relic, with both parent icons and a ✔ for each one owned (duo offers need both parents, weight ×3).
+- **"NEW"** (v1).
+
+Tags are T1 on a 12 px chip, top-left of the card, stacked with a maximum of 2 (the rest go to the detail pane).
+
+**Why the reversal:** v1 had no Skip because a skip was pure loss, which made it a trap. v2 pays gold for it (`economy.json`), which makes it a real choice. A choice belongs on the screen where it is decided.
+
+### 9.5 Shop Forge tab (S5f)
+
+- **Tabs:** **Buy** (the v1 content) · **Forge**, switched with LB/RB or Q/E, or a tap (tabs are 24 px tall on touch). The tab choice is remembered per shop visit.
+- **Availability:** the Forge tab exists once `features.forge` is unlocked (goal "At the Gate": reach the Grave Warden). Before that, the tab shows 🔒 + "Reach the Grave Warden".
+- **Forge layout:** three recipe columns, 196 px wide each, at y 48–300 (`data/forge.json`):
+  - **Merge** (`type: merge`, 2 copies → level 2): every pair of identical owned cards (bag + wands) with a recipe, shown as "2× Spark Bolt → Spark Bolt II · {cost} gold" (cost = base + perFloor × floor). Result preview: a stat diff in T1 ("Damage 5 → 8 ▲").
+  - **Evolve** (a level-2 card + a catalyst → an evolved card): recipes whose parts you own. **A relic catalyst is kept** (`consumed: false`): the row says "Kindling stays". Recipes where you're missing a part show them dimmed, with "Needs: Fireball II + Kindling". Undiscovered evolutions show a silhouette.
+  - **+1 Slot** (`type: slot`): one row per wand: "Apprentice Wand 4 → 5 slots · {cost} gold" (costBase 45, +25 per purchase; at most 3 per run; capacity 10 max). It is disabled with the reason "Max slots" / "3 bought this run".
+- **Action:** focus a row → pane C (right, 104 px) shows the full before/after, including the **cast-preview DPS delta for every wand that holds the affected cards** ("Wand 1: ≈DPS 15 → 21 ▲"). Then the **Forge** primary button (37 px).
+- **Confirm D7** (merge / evolve only; the slot purchase is a plain buy, like any shop item): "Merge 2× Spark Bolt into Spark Bolt II? Both copies are used." / "Evolve Fireball II into Sunburst? Fireball II is used; Kindling stays." with **Cancel** (default) and Merge / Evolve. **Slotted sources:** if a merged card was in a wand slot, the result takes the **first** source's slot, and the wand is marked changed (the forced recharge applies on the next close of the editor or shop, `wand-editor-ux.md` §1).
+- **Card level cue (non-colour):** level-2 cards carry a **"II"** numeral in the name, plus **2 pips** (2×2 px) at the top edge of the card frame. Evolutions carry a ★ badge (7×7) top-left and are never offered in drafts (`specs/v2-overhaul-plan.md`).
+- **`returnTo` from Forge:** Tab → editor → back returns to the **Forge** tab.
+
+### 9.5b Shop v2 (Buy tab)
+
+- **Sale slot** (`economy.sale`: ×0.6, 1 slot, never the heal): the price shows as old → new, with the old price struck through (a line, not a colour) and a "SALE" chip.
+- **Ban** (`economy.ban`: 1 per shop, free): on a focused card or relic, a secondary action "Ban from this run" (pane C button / pad △ / KB Delete) → D9 confirm, "Ban {item}? It won't appear again this run." (**Cancel** default). The banned slot restocks with a new item. It is cuttable per the plan's cut order.
+
+### 9.6 Daily result (S7d) and the share line
+
+- **Layout:** the S7 summary plus a **share panel** `(120, 232, 400, 72)`:
+  - The **share line**: exactly `modes.daily.shareTemplate`, e.g. "Spellwright Daily 2026-09-27 | Hexer + Glass | fell at 2-4 | 14:22 | 212 kills" (ASCII-only, so it survives every font and chat app). It is rendered in T1, wrapped at 392 px (2 lines max).
+  - **[Copy]** primary, 37 px.
+  - "Best today: {best}" in T1 dim.
+- **Copy:** `navigator.clipboard.writeText(line)` (https + a user activation are both true). On success: toast "Copied" (with a 6 ms haptic on touch). **On failure or missing API:** confirm-style dialog **D8** shows the line inside a DOM `<textarea readonly>` over the canvas, pre-selected, with "Long-press to copy" (touch) or "Ctrl/⌘ + C to copy" (desktop), plus [Done]. DOM keeps the text selectable, which the canvas can't do.
+- **Default focus:** Copy. Then New Run / Title as in S7. `attempts: unlimited_first_counts`: a later attempt the same day shows "Practice run. Your first try ({result}) is today's result." The share line always reports the **first** attempt.
+
+### 9.7 Touch contract per screen (`mobile-touch-spec.md` §5.2, applied)
+
+| Screen | Touch deltas |
+|---|---|
+| All modals | **Back button** `‹` at `(sL + 20, sT + 20)`, 40×40 hit. Two-tap inspect → activate for cards and items. Footer glyph hints are replaced by the touch family's (`controller-prompts.md` §9) or removed where buttons exist. |
+| Title / S1m / S1g / Settings / Credits | row pitch **24** in the touch profile. Title items are 160×24, and Start Run is 160×37. |
+| Pause | tabs are 24 px tall and tapped directly. Menu tab: Resume 37 px. The welcome-back header appears after a return (`mobile-touch-spec.md` §7.3). |
+| Wand editor | `wand-editor-ux.md` §10 |
+| Reward / Shop / Forge | cards and items are ≥ 36 px in their smaller dimension. Take / Buy / Forge are primary, 37 px. Reroll and Skip are 30 px, ≥ 12 px apart. |
+| Run End / Daily | New Run 37 px; Copy 37 px |
+| Confirms D1–D8 | 2 buttons, 120×37 each, 16 px apart, **safe option on the left and focused** |
+| In run | PAUSE and EDIT buttons (`mobile-touch-spec.md` §4). Walking into a door still commits. The USE button replaces E / X. |
+
+### 9.8 New confirms
+
+| ID | Trigger | Text | Options (default **bold**) |
+|---|---|---|---|
+| D7 | Forge Merge / Evolve | "Merge 2× {card} into {result}? Both cards are used." / "Evolve {base} with {catalyst} into {result}? Both are used." | **Cancel** · Merge / Evolve |
+| D8 | Daily Copy fallback | (the share line in a selectable DOM box) | **Done** |
+| D9 | Shop Ban | "Ban {item}? It won't appear again this run." | **Cancel** · Ban |
+
+### 9.9 Depth audit delta
+
+Title → S1m (depth 1). Title → S1g (1). Shop → Forge (a tab, 1). Run End → S7d (a variant of the same screen). No path exceeds depth 3, and the rotate overlay sits above the stack without adding depth.

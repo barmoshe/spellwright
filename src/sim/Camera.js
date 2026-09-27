@@ -1,7 +1,8 @@
 // sim/Camera.js — feel-spec §verb-7 camera (sim-contract §2 ctx.cam).
-// Rooms ≤ 640×360 → locked centred, no look-ahead. Larger rooms (per axis) → target = player + aim ×
-// min(|cursorOffset| × lookAheadFrac, lookAheadMaxPx) (pad: aim × lookAheadMaxPx × stick magnitude);
-// eased with lerp = 1 − (1 − cameraLerp)^(dt·60) (frame-rate independent), bounded to the room.
+// Rooms ≤ 640×360 → locked centred, no look-ahead. Larger rooms (per axis) → v2 VELOCITY lead (plan Addendum 1):
+// target lead = clampLen(playerVel × lookAheadLeadMs/1000, lookAheadMaxPx), the same for every device (auto-aim
+// flips and mouse flicks no longer swing the view); the lead eases with time constant lookAheadEaseMs; the camera
+// eases with lerp = 1 − (1 − cameraLerp)^(dt·60) (frame-rate independent), bounded to the room.
 // Reduced motion: no look-ahead (smoothing stays). Shake offset comes from Fx (clamped).
 
 import { VIEW_W, VIEW_H } from '../config.js';
@@ -13,12 +14,14 @@ export class CameraRig {
     this.cx = VIEW_W / 2; this.cy = VIEW_H / 2;     // camera centre (world)
     this.pan = null;
     this.view = { x: 0, y: 0, w: VIEW_W, h: VIEW_H };
+    this.lx = 0; this.ly = 0;                         // current (eased) velocity lead, px
   }
 
   get T() { return this.ctx.T; }
 
   /** Snap to the room framing (room load). */
   snap() {
+    this.lx = 0; this.ly = 0;
     const t = this._target();
     this.cx = t.x; this.cy = t.y;
     this._apply();
@@ -31,22 +34,23 @@ export class CameraRig {
     const lockX = w.w <= VIEW_W, lockY = w.h <= VIEW_H;
     if (this.pan) return { x: this.pan.x, y: this.pan.y };
     tx = p ? p.x : w.w / 2; ty = p ? p.y : w.h / 2;
-    if (p && !this.ctx.flags.reducedMotion && (!lockX || !lockY)) {
-      const it = this.ctx.intent;
-      let lead;
-      if (it && it.device === 'pad') lead = this.T('lookAheadMaxPx') * (it.aimMag ?? 1);
-      else {
-        const offX = it ? it.aimWorldX - p.x : 0, offY = it ? it.aimWorldY - p.y : 0;
-        lead = Math.min(Math.hypot(offX, offY) * this.T('lookAheadFrac'), this.T('lookAheadMaxPx'));
-      }
-      if (it) { tx += it.aimX * lead; ty += it.aimY * lead; }
-    }
+    if (p && !this.ctx.flags.reducedMotion && (!lockX || !lockY)) { tx += this.lx; ty += this.ly; }
     if (lockX) tx = w.w / 2; else tx = Math.max(VIEW_W / 2, Math.min(w.w - VIEW_W / 2, tx));
     if (lockY) ty = w.h / 2; else ty = Math.max(VIEW_H / 2, Math.min(w.h - VIEW_H / 2, ty));
     return { x: tx, y: ty };
   }
 
   step(dtMs) {
+    // velocity lead (feel-spec §verb-7 v2): target = clampLen(vel × leadMs, max); lead += (target − lead)(1 − e^(−dt/ease))
+    const p = this.ctx.player, b = p && p.body;
+    let gx = 0, gy = 0;
+    if (b && b.velocity) {
+      const k = this.T('lookAheadLeadMs', 250) / 1000, max = this.T('lookAheadMaxPx');
+      gx = b.velocity.x * k; gy = b.velocity.y * k;
+      const m = Math.hypot(gx, gy); if (m > max) { gx *= max / m; gy *= max / m; }
+    }
+    const a = 1 - Math.exp(-dtMs / this.T('lookAheadEaseMs', 300));
+    this.lx += (gx - this.lx) * a; this.ly += (gy - this.ly) * a;
     const t = this._target();
     if (this.pan && this.pan.ms > 0) {
       this.pan.t = Math.min(this.pan.ms, this.pan.t + dtMs);

@@ -51,6 +51,7 @@ export function tickWand(wandDef, ws, dtMs, env, cards, rng) {
     ws.rechargeTimerMs = Math.max(0, ws.rechargeTimerMs - dtMs);
     if (ws.rechargeTimerMs === 0) {        // on reaching 0: cursor = 0; reshuffle if shuffle
       ws.cursor = 0;
+      ws.freeWraps = 0;                      // wrap_no_recharge: the per-cycle counter resets when a recharge completes
       if (wandDef.shuffle) buildOrder(wandDef, ws, cards, rng);
       return 'recharged';
     }
@@ -93,6 +94,13 @@ export function castWand(wandDef, ws, cards, env) {
   plan.delayMs = delay;
   plan.wrapped = ctx.wrapped;
   plan.exhausted = ctx.wrapped || ws.cursor >= ws.order.length;
+  // rule relic wrap_no_recharge {perCycle} (mechanic-spec §7.1, §11 Ex 7): up to perCycle times per wand cycle a cast
+  // that WRAPPED does not force a recharge — the cast delay applies and the cursor stays where the wrap left it
+  const wnr = env.relicRules && env.relicRules.wrap_no_recharge;
+  if (plan.exhausted && ctx.wrapped && wnr && (ws.freeWraps | 0) < (wnr.perCycle | 0)) {
+    ws.freeWraps = (ws.freeWraps | 0) + 1;
+    plan.exhausted = false;
+  }
   if (plan.exhausted) {
     const rech = effectiveRechargeMs(wandDef, ws, cards, env);
     plan.rechargeMs = Math.max(delay, rech);

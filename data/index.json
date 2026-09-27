@@ -12,6 +12,9 @@
     "rules": "data/rules.json",
     "economy": "data/economy.json",
     "unlocks": "data/unlocks.json",
-    "loadouts": "data/loadouts.json"
+    "loadouts": "data/loadouts.json",
+    "forge": "data/forge.json",
+    "modes": "data/modes.json",
+    "affixes": "data/affixes.json"
   }
 }

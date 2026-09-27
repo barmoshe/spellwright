@@ -5,6 +5,8 @@
 
 ---
 
+> **v2 (design-v2.md) supersedes §1 (run structure), the §3 budgets, the §4.3 numbers, the §5 boss HP and §7 (meta).** The v2 versions are §10–§14 below. §2, §4.1, §4.4 principles, §6 schedule typing and §8 still hold.
+
 ## §1 Run structure
 
 A run = **3 floors × 10 steps** (step 0 start … step 9 boss). Each step is one room. Rooms never repeat within a floor (template choice avoids the previous template when possible).
@@ -259,3 +261,126 @@ New-verb/new-combination : content-gate = **11 : 1** (≥ 2:1 ✔). Loadouts sta
 **progression-curve (progression-and-reward-design DOG):** (1) every stream typed with a justification (§6) ✔ · (2) beats per cohort with math (§6) ✔ · (3) unlock classes and an 11:1 ratio (§7) ✔ · (4) meta legibility at runs 1/3/N (§7) ✔ · (5) per-stream compulsion audit (§6) ✔ · (6) economy steady-state with equilibrium and rate cliffs (`systems.md` §3) ✔.
 
 **pacing-spec (difficulty-and-pacing DOG):** (1) flow-channel plot with named excursions (§4.2) ✔ · (2) beat sequence per floor with the peak:valley ratio justified (§2) ✔ · (3) spikes with teaching reason, cost and recovery (§4.4) ✔ · (4) per-encounter numbers (§4.3) ✔ · (5) skill curve with comparable-title evidence (§4.1) ✔ · (6) single curve, no DDA, opt-in curses (§4.5) ✔.
+
+---
+
+# v2 (design-v2.md; Wave A1)
+
+## §10 Run structure v2 (18–20 min; `floors.json`)
+
+Every floor = **start + 6 rooms + mini-boss (step 4) + boss (step 8)**. The six rooms are steps 1, 2, 3, 5, 6 (shop) and 7 (puzzle).
+
+| Step | Kind | F1 | F2 | F3 | Budget F1 / F2 / F3 (s) |
+|---|---|---|---|---|---|
+| 0 | rest | Sanctum | Landing | Landing | 10 / 10 / 10 |
+| 1 | combat | fixed → modifier (**tut_first_blood** run 1) | fixed → spell, threat rolled | same | 40 / 40 / 45 |
+| 2 | combat / choice | fixed → spell (**tut_gauntlet** run 1) | choose 2 | choose 2 | 40 / 40 / 45 |
+| 3 | choice | choose 2 (combat / treasure) | choose 2 | choose 2 | 40 / 40 / 45 |
+| 4 | **mini-boss** | Grave Warden | Lantern Matron | Iron Colossus | 50 / 50 / 50 |
+| 5 | choice + **risk** | choose 2 (incl. heal, elite, risk door) | same | same | 40 / 40 / 45 |
+| 6 | rest | Shop (+ forge) | Shop | Shop (cash-out) | 25 / 25 / 25 |
+| 7 | **puzzle** | Sentinel Gate (pierce) | Choir of Wards (shock) | Iron Hall (blast) | 40 / 40 / 40 |
+| 8 | boss | Ossuary Knight | Mire Queen | Archlich → VICTORY | 60 / 65 / 80 |
+| | | | | **Σ** | **345 / 350 / 385 = 1,080 s = 18.0 min** |
+
+- Each budget includes the reward pick and the wand edit (about 10–15 s of every combat room's 40–45).
+- **Spread:** first run +≈ 1 min (tutorial); p10 ≈ 15 min, p90 ≈ 23 min.
+- **Limits per floor:** heal 1, wand 1, corrupted 1. **Risk door:** at most 1 per run (`rules.risk`).
+- **Tutorial path unchanged:** F1 steps 1–2 fixed with `tutorialTemplate`, and `tutorialDone` flips when step 3's doors open.
+- **Beat sequence (pacing DOG 2), per floor:**
+
+```text
+Rest · Combat · Combat · [Combat|Treasure] · PEAK(mini) · [Combat|PEAK(elite/risk)] · REST(shop) · PEAK(puzzle) · BOSS
+```
+
+  That is 5–6 peaks to 2–3 rests, and every combat room ends in a crafting valley. The shop sits directly before the puzzle and boss, so the floor's lesson can be *bought* (Slay the Spire's rest-before-boss rule).
+
+## §11 Waves v2: grammar, door threats, spawn safety
+
+```text
+door option threat:"roll"  → pick from floor.threats (weight, minStep ≤ step)   # run stream; shown on the door
+room waves (combat/elite): budget per wave as §3, then per wave w:
+  anchors = 0 if (this is the run's very first wave) else 1
+          + 1 if step ≥ grammar.doubleAnchorFromStep(5) and floor ∈ {2,3} and budget allows
+  if threat has anchors and no anchored wave has used it yet → the first anchor = a random threat anchor (floor-local)
+  other anchors: weighted from enemyPool where role = anchor, minStep ok, threat ≤ remaining
+  support: with chance 0.35 on floors ≥ 2, add 1 support (lantern_acolyte) if a support fits the budget
+  fill with pressure (role = pressure; threat "swarm" → only threat.pressureOnly ids, budget × 1.2) up to maxPerWave 8
+  elite rooms: wave 0 places `elites` elite(s) first (a threat anchor if it is an elite candidate), each costing threat × 2
+puzzle rooms: fixedWaves always (no budget); twists never apply
+next wave: ≥ 65% of this wave dead (or ≤ 1 alive) AND ≥ 3 s elapsed
+spawn: portal 850 ms; ≥ 104 px from the player; never inside ±35° of the aim direction within 220 px; enemy shots ≤ 36 in air
+```
+
+**Door threat pools** (weight @ minStep):
+- F1: none 4 · swarm 2 @ 3 · **shield 3 @ 3** · armour 1 @ 5
+- F2: none 2 · swarm 2 · shield 2 · **ward 3 @ 2** · ranged 2 · armour 2 · summoner 1 @ 5
+- F3: none 1 · swarm 2 · shield 2 · ward 2 · **armour 3** · ranged 2 · summoner 2 @ 2
+
+**What each door teaches** (level-and-content DOG 1–2):
+- **F1** introduces the shield at step 3 (door), isolates it at the Warden (step 4), and recombines it in Sentinel Gate + the Knight's `shield_wall`.
+- **F2** does the same for ward (door step 2+ → Matron → Choir of Wards → Queen `veil`).
+- **F3** does the same for armour (Colossus → Iron Hall), and the Archlich reads the whole build.
+
+## §12 Mini-bosses and new boss attacks (windups; mechanic-spec §9.3, §10)
+
+| Mini (HP; defence) | Attack | Type | Windup | Dmg | Answer |
+|---|---|---|---|---|---|
+| **Grave Warden** (260; shield, wears after 7 / mercy 4) | shield_bash | charge 220 px/s × 500 ms | 800 | 1 | sidestep at lock; wall stun 900 ms = punish from behind (no shield) |
+| | bone_toss | 3-fan, 30° @ 105 | 600 | 1 | move tangentially |
+| | raise_sentinel (P2) | summon tomb_sentinel (max 1) | 900 | 0 | kill or flank |
+| **Lantern Matron** (600; ward 6 / mercy 3, regrows at P2) | call_acolytes | summon 2 acolytes | 900 | 0 | priority: acolytes |
+| | lantern_ring | ring 12 @ 85 (fire) | 650 | 1 | stand in a gap |
+| | ember_fan | 5-fan, 50° @ 115 | 550 | 1 | sidestep |
+| | kindle_choir | ward_allies 3 × 3 hits, r160 | 800 | 0 | shock, or burst acolytes first |
+| **Iron Colossus** (900; armour 260 / mercy × 0.6, half regrows at P2) | quake | slam self r52 + ring 10 | 900 | **2** | leave the circle, weave the ring |
+| | rock_volley | 3-fan, 20° @ 130 | 600 | 1 | sidestep |
+| | iron_charge | charge 230 px/s × 700 | 950 | **2** | sidestep; bait into a pillar (1300 ms stun) |
+
+| Boss (v2 HP) | New attack | Type | Windup | Notes |
+|---|---|---|---|---|
+| Ossuary Knight (**520**) | shield_wall | guard: frontal shield for 3 s | 600 | in P2; in P1 too if adapt (≥ 3 shots/cast) |
+| | bone_rain (heat 4+) | hazard × 6, r20 | 1000 | |
+| Mire Queen (**1,100**) | veil | self-ward 5 hits | 700 | in P2; in P1 too if adapt (cast rate > 5/s) |
+| | bog_surge (heat 4+) | 2 rings × 18 @ 80 | 800 | |
+| Archlich (**2,000**) | mirror_volley | a fan sized by the player's shots per cast (3–9) | 650 | every phase; the final boss reads your wand |
+| | grand_spiral (heat 4+) | spiral 6 × 12 | 900 | |
+
+All windups still clear the floors (≥ 450 on bosses, ≥ 600 for 2-damage attacks), validated by `build.py`. The final boss is still the longest fight (§14).
+
+## §13 Heat, Gentle, Daily, Goals (details: design-v2.md §11)
+
+- **Heat 1–5** (`rules.heat`): cumulative. HP × 1.15 → 1.3; 2 affixes on elites from H2; +2/+3 pressure budget; H3 faster shots, shop × 1.2 and −1 heal; H4 boss heat attacks with mercy rules off; H5 windups × 0.9 and −1 heart. Winning at N unlocks N+1 (the first win unlocks H1). Excludes Gentle. The deprecated `rules.curses` record stays only until the Wave E migration.
+- **Gentle:** +1 half-heart per lost Gentle run (cap 4) and +5% hit-shrug per loss (cap 20%). Never decreases, never shames. Available from run 1.
+- **Daily:** the UTC-date seed picks a loadout (4) and a rule (6). First result counts. Share line.
+- **Goals:** 15, ordered. Early (order ≤ 6) pay one per run end from a queue; later goals pay immediately. The only stat unlock is +1 starting slot.
+
+**Reward cadence v2 (progression DOG 2):**
+- **Full 18-min run:** 15 room rewards + 3 mini relic drafts + 2 boss drafts + 3 shops + the goal at run end ≈ **24 beats in 18 min** (one per 45 s). ✔
+- **Short 8-min death** (F1 boss or early F2): about 9 beats plus a guaranteed early goal (queue). ✔
+
+**Schedule typing additions (DOG 1, 5):**
+- Skip pay: **fixed-ratio**.
+- Draft reroll: player-initiated. Its escalating cost bounds the "one more pull" loop, and a reroll never reveals near-misses.
+- Pity: a **negative-feedback** modifier on the variable-ratio rarity roll. It *reduces* variance, which is white-hat.
+- Goals: fixed milestones, visible, with no currency.
+- Daily: a fixed interval (1/day), with no streak penalty and no missed-day punishment. It is **deliberately not a login streak** (Octalysis 8 avoided).
+
+## §14 Per-encounter tuning targets v2 (pacing DOG 4; median build)
+
+| Encounter | Enemies / HP | dps_out (median) | Fight time median (p10/p90) | HP lost (median) |
+|---|---|---|---|---|
+| F1 combat s1–3 | 5–7 / 79–108 HP | 15 → 25 | 25 s (18/40) | 0.5 |
+| F1 mini: Warden | 260 (+1 sentinel) | 22 | 35 s (25/55) | 1 |
+| F1 puzzle: Sentinel Gate | 9 / 158 HP | 25 | 30 s (20/50) | 0.5 |
+| F1 boss: Knight | 520 | 28 | 45 s (35/70) | 2 |
+| F2 combat | 8–12 / 250–396 HP | 40 → 70 | 28 s (20/45) | 1 |
+| F2 mini: Matron | 600 + acolytes | 50 | 40 s (30/60) | 1.5 |
+| F2 boss: Queen | 1,100 | 65 | 50 s (40/75) | 2.5 |
+| F3 combat | 12–18 / 698–1,100 HP | 80 → 130 | 32 s (22/50) | 1.25 |
+| F3 mini: Colossus | 900 + armour 260 | 95 | 40 s (30/60) | 1.5 |
+| F3 boss: Archlich | 2,000 (3 phases, 2 × 1.5 s invulnerable) | 120 | **65 s (50/95)**, the longest fight ✔ | 3 |
+
+**Flow-channel note:**
+- Defences create **intentional local spikes** for a player without the keyword. The teaching reason is the floor's keyword. The first-failure cost is time, not death, because every defence erodes. The recovery affordance is the counter guarantee in the next draft plus the shop right before the puzzle and boss.
+- The **never-edit** player (the starter plus whatever auto-slots) should be able to clear F1 sometimes and rarely win. The target gap, after Wandcraft's two-bot bench principle (`research/balance-w1.md`), is to be measured by `scripts/balance-calc.mjs` in Wave E.

@@ -17,7 +17,7 @@ import Phaser from '../../../lib/phaser.esm.min.js';
 import { DEPTH } from '../../config.js';
 import { Art } from '../../core/art.js';
 import { Save } from '../../core/save.js';
-import { COL, EL_HUE, FLYER_HOVER_PX, DEG, TAU, q8, clamp, quadIn, quadOut, lerpColor } from './tokens.js';
+import { COL, EL_HUE, FLYER_HOVER_PX, DEG, TAU, q8, clamp, quadIn, quadOut, lerpColor, OUTLINE, DEF_COL } from './tokens.js';
 import { placeholderKey, placeholderSize } from './placeholderArt.js';
 
 const TM = Phaser.TintModes;
@@ -42,6 +42,11 @@ export class EnemyViews {
       dizzyMs: T('dizzyOrbitPeriodMs'), risePx: T('bossRisePx'), deadband: T('facingDeadband'), flashMs: T('enemyHitFlashMs'),
       puff: T('deathPuffParticles'), fadeMs: T('corpseFadeMs'), panMs: T('bossIntroPanMs'), phaseMs: T('bossPhaseShockwaveMs'),
       unravelMs: T('bossDeathUnravelMs'), deathStopMs: T('bossDeathHitstopMs'),
+      // v2 (state-graph-spec §8 / telegraphs §3.7–3.8): defence reads + affix outline
+      defReadMs: T('defenceReadCooldownMs', 120), recoilPx: T('defenceRecoilPx', 1), breakFreezeMs: T('defenceBreakFreezeMs', 66),
+      breakShards: T('defenceBreakShards', 6), wardOrbitMs: T('wardOrbitPeriodMs', 1200), wardPopMs: T('wardPopMs', 150),
+      wardStepMs: T('wardRegrowStepMs', 130), guardBlinkMs: T('guardEndBlinkMs', 500), affixPeriodMs: T('affixPulsePeriodMs', 1600),
+      affixAlphaMin: T('affixPulseAlphaMin', 0.45),
     };
     this.groundG = s.add.graphics().setDepth(DEPTH.shadows);
     this.overlayG = s.add.graphics().setDepth(DEPTH.actors + 0.9);
@@ -66,13 +71,15 @@ export class EnemyViews {
    * (codemanu greyscale-baked light, tinted with the token); tint −1 = none. originY 0.5 centred, 1 = feet.
    */
   spr(id, i, x, y, depth, add, tint, alpha, rot, originY) {
-    const n = this.count(id); if (!n) return null;
-    const a = Art.getQuiet(id, ((i % n) + n) % n); if (!a) return null;
+    const n = this.count(id);
+    const a = n ? Art.getQuiet(id, ((i % n) + n) % n) : Art.getQuiet(id);    // non-indexed ids (authored.*) too
+    if (!a) return null;
     let im = this.sprPool[this.sprN];
     if (!im) { im = this.scene.add.image(0, 0, a.key, a.frame); this.sprPool.push(im); }
     this.sprN++;
     im.setTexture(a.key, a.frame).setOrigin(0.5, originY).setPosition(Math.round(x), Math.round(y)).setDepth(depth)
-      .setBlendMode(add ? Phaser.BlendModes.ADD : Phaser.BlendModes.NORMAL).setAlpha(alpha).setRotation(rot).setVisible(true);
+      .setBlendMode(add ? Phaser.BlendModes.ADD : Phaser.BlendModes.NORMAL).setAlpha(alpha).setRotation(rot).setVisible(true)
+      .setScale(1).setFlipX(false);                                  // pooled: v2 overlays may scale/flip (defence plates)
     if (tint >= 0) im.setTint(tint).setTintMode(TM.MULTIPLY); else im.setTint(0xffffff).setTintMode(TM.MULTIPLY);
     return im;
   }
@@ -89,15 +96,19 @@ export class EnemyViews {
 
   /** Frames for an actor: TA atlas frames when present, else generated placeholders (never crash on a miss). */
   framesFor(e) {
-    const key = `${e.id}|${e.elite ? 1 : 0}`;
+    const aff = !!(e.elite && e.affixes && e.affixes.length);
+    const key = `${e.id}|${e.elite ? 1 : 0}|${aff ? 1 : 0}`;
     let fr = this.frameCache.get(key);
     if (fr) return fr;
     const base = e.isBoss ? `bosses.${e.id}` : `enemies.${e.id}`;
     const nI = Art.count(`${base}.idle`);
-    fr = { idle: [], move: [], windup: null, originY: 1, placeholder: false };
+    fr = { idle: [], move: [], windup: null, originY: 1, placeholder: false, base, rings: null, hasRing: false };
     if (nI > 0) {
-      // TA atlas-key contract: enemies.<id>.{idle,move,windup_frame}[_elite].N (elite = baked gold outline, own pivot)
-      const sfx = e.elite && Art.count(`${base}.idle_elite`) ? '_elite' : '';
+      // TA atlas-key contract: enemies.<id>.{idle,move,windup_frame}[_elite].N (elite = baked gold outline, own pivot).
+      // v2 (state-graph §8.2): an affixed elite draws the BASE frames + the affix outline overlay (ring1); the
+      // baked _elite frames stay the fallback for actors without ring frames. Ring frames resolve lazily (ringFrame).
+      fr.hasRing = !!Art.getQuiet(`${base}.idle.ring1`, 0);
+      const sfx = e.elite && !(aff && fr.hasRing) && Art.count(`${base}.idle_elite`) ? '_elite' : '';
       const ni = Art.count(`${base}.idle${sfx}`);
       for (let i = 0; i < ni; i++) { const a = Art.getQuiet(`${base}.idle${sfx}`, i); if (a) fr.idle.push(a); }
       const nm = Art.count(`${base}.move${sfx}`);
@@ -115,6 +126,21 @@ export class EnemyViews {
     }
     this.frameCache.set(key, fr);
     return fr;
+  }
+
+  /** Lazy per-actor ring-overlay frame lookup (plan Addendum 6: resolved on first use, never all at spawn). */
+  ringFrame(fr, clip, ring, i) {
+    if (!fr.hasRing) return null;
+    const rings = fr.rings || (fr.rings = {});
+    const k = `${clip}.${ring}`;
+    let list = rings[k];
+    if (!list) {
+      list = rings[k] = [];
+      const id = `${fr.base}.${clip}.${ring}`;
+      const n = Art.count(id);
+      for (let j = 0; j < n; j++) { const a = Art.getQuiet(id, j); if (a) list.push(a); }
+    }
+    return list.length ? list[i % list.length] : null;
   }
 
   weaponTexture(kind) {
@@ -191,6 +217,7 @@ class EnemyView {
     this.L = L;
     this.sprite = L.scene.add.image(-100, -100, 'ph-px').setVisible(false);
     this.weapon = null;
+    this.outline = null;          // v2 affix / dark-twist outline overlay (ring frames), created on first use
     this.e = null;
     this.done = false;
   }
@@ -215,6 +242,12 @@ class EnemyView {
     this.blinkNext = now + 2500 + L.sys.fxRng.float(0, 1500); this.blinkAt = -1e9;
     this.dying = false; this.done = false; this.dieAt = 0; this.deathKind = ''; this.puffed = false; this.sx = e.x; this.sy = e.feetY;
     this.slideVx = 0; this.slideVy = 0; this.frozenAt = -1e9; this.wasFrozen = false; this.thawAt = -1e9; this.weaponGone = false;
+    // v2 defence / affix read state (sim-clock ms)
+    this.defReadAt = -1e9; this.blockUntil = -1e9; this.freezeUntil = -1e9; this.clangUntil = -1e9; this.rattleUntil = -1e9;
+    this.wardFormAt = -1e9; this.regrowAt = -1e9; this.guardAt = -1e9; this.mirrorAt = -1e9; this.affixHoldUntil = -1e9;
+    this.affixPhase = L.sys.fxRng.float(0, 1);
+    this.hasteT = 0;
+    if (this.outline) this.outline.setVisible(false);
     const wk = e.actor.weapon;
     if (wk) {
       const t = L.weaponTexture(wk);
@@ -251,6 +284,87 @@ class EnemyView {
     const e = this.e; if (!e) return;
     this.L.ctx.fx.particles('spark', e.x, e.y, 2, { color: 0xb8b8c8, speed: 40, lifeMs: 120 });
   }
+  // ------------------------------------------------------------------ v2 defence reads (telegraphs §3.7; state-graph §8.1)
+  /**
+   * Driven only by the sim (Defences): block | wear | break | reduce | reduce-blast | absorb | empty | strip |
+   * grant | regrow | spawn | guard-start | guard-end. Repeat reads within defenceReadCooldownMs coalesce per
+   * enemy (a 20-hit/s stream shows ≤ 8 reads/s); break / strip are never throttled. Blocks never use the body flash.
+   */
+  defenceEvent(kind, o) {
+    const e = this.e; if (!e || this.dying) return;
+    const L = this.L, now = L.ctx.time.ms, t = L.t, fx = L.ctx.fx, reduced = L.reduced, p = L.ctx.player;
+    const hitThrottled = kind === 'block' || kind === 'wear' || kind === 'absorb' || kind === 'reduce' || kind === 'reduce-blast';
+    if (hitThrottled) { if (now - this.defReadAt < t.defReadMs) return; this.defReadAt = now; }
+    const away = Math.atan2(e.y - p.coreY, e.x - p.coreX);          // pushed away from the shooter
+    const cy = e.y;
+    switch (kind) {
+      case 'block': case 'wear': {
+        this.blockUntil = now + STEP_MS;
+        if (!reduced) { this.recoilX = Math.round(Math.cos(away) * t.recoilPx); this.recoilY = Math.round(Math.sin(away) * t.recoilPx); this.recoilUntil = now + 2 * STEP_MS; }
+        const fa = away + Math.PI;                                   // the plate faces the shooter; sparks glance off tangentially
+        const px = e.x + Math.cos(fa) * e.r, py = cy + Math.sin(fa) * e.r;
+        fx.particles('spark', px, py, 1, { color: DEF_COL.shield, speed: 55, dir: fa + Math.PI / 2, spread: 0.25, lifeMs: 150 });
+        fx.particles('spark', px, py, 1, { color: DEF_COL.shield, speed: 55, dir: fa - Math.PI / 2, spread: 0.25, lifeMs: 150 });
+        if (kind === 'wear') fx.particles('shard', px, py + 2, 1, { color: DEF_COL.shield, speed: 20, gravity: 80, lifeMs: 300 });
+        break;
+      }
+      case 'break': {
+        const col = o && o.type === 'armour' ? DEF_COL.armour : DEF_COL.shield;
+        fx.particles('shard', e.x, cy, reduced ? Math.min(3, t.breakShards) : t.breakShards, { color: col, speed: 70, dir: away, spread: 1.1, lifeMs: 250 });
+        this.freezeUntil = now + t.breakFreezeMs;
+        break;
+      }
+      case 'reduce': case 'reduce-blast': {
+        this.clangUntil = now + STEP_MS;                             // R5 2a: steel FILL instead of the white flash
+        const n = kind === 'reduce-blast' ? 4 : 2;
+        if (!reduced) { if (kind === 'reduce-blast') this.rattleUntil = now + 2 * STEP_MS; fx.particles('shard', e.x, cy, n, { color: DEF_COL.armour, speed: 45, lifeMs: 220 }); }
+        else fx.particles('shard', e.x, cy, Math.min(3, n), { color: DEF_COL.armour, speed: 45, lifeMs: 220 });
+        break;
+      }
+      case 'absorb': case 'empty': {                                  // the mote nearest the shot pops (a small cyan ring)
+        const m = this._nearestMote(e, now, away + Math.PI);
+        if (m) L.sys.tl.ring(m.x, m.y, 1, 3, t.wardPopMs, DEF_COL.ward, 1, 1);
+        break;
+      }
+      case 'strip': {                                                 // every mote bursts; a shock arc crackles to core
+        const n = Math.min(18, 6 * Math.max(1, this.lastMotes || 1));
+        fx.particles('spark', e.x, cy, reduced ? 3 : n, { color: DEF_COL.ward, speed: 60, lifeMs: 220 });
+        fx.bolt(p.coreX + (e.x - p.coreX) * 0.6, p.coreY + (cy - p.coreY) * 0.6, e.x, cy, { color: EL_HUE.shock, ms: STEP_MS });
+        this.freezeUntil = now + t.breakFreezeMs;
+        break;
+      }
+      case 'grant': this.wardFormAt = now; break;
+      case 'regrow': this.wardFormAt = now; this.regrowAt = now; break;
+      case 'spawn': this.wardFormAt = -1e9; this.regrowAt = -1e9; break;
+      case 'guard-start': this.guardAt = now; this.regrowAt = now; break;
+      default: break;
+    }
+  }
+  /** Tether arrival read on the ward recipient (telegraphs §2.14): motes re-form from the arrival. */
+  wardArrive() { this.wardFormAt = this.L.ctx.time.ms; }
+  /** First player hit on an elite: the outline holds at α 1 for 600 ms (telegraphs §3.8). */
+  affixHold() { this.affixHoldUntil = this.L.ctx.time.ms + 600; }
+  /** mirror release: 1-step ghost flash at the hand (telegraphs §2.15). */
+  mirrorFlash() { this.mirrorAt = this.L.ctx.time.ms; }
+
+  _motePos(e, now, i, n, out) {
+    const a = (now / this.L.t.wardOrbitMs) * TAU + (i * TAU) / n, R = e.r + 5;
+    out.x = e.x + Math.cos(a) * R; out.y = e.y + Math.sin(a) * R * 0.75;
+    return out;
+  }
+  _nearestMote(e, now, toward) {
+    const n = Math.max(1, Math.min(6, this.lastMotes || 1));
+    let best = null, bd = 1e9;
+    const tmp = this._mp || (this._mp = { x: 0, y: 0 }), res = this._mb || (this._mb = { x: 0, y: 0 });
+    const tx = e.x + Math.cos(toward) * 20, ty = e.y + Math.sin(toward) * 20;
+    for (let i = 0; i < n; i++) {
+      this._motePos(e, now, i, n, tmp);
+      const d = (tmp.x - tx) ** 2 + (tmp.y - ty) ** 2;
+      if (d < bd) { bd = d; res.x = tmp.x; res.y = tmp.y; best = res; }
+    }
+    return best;
+  }
+
   /** Frozen → thaw (Combat fires the freeze_shatter cue): shell shatter + 4 shards. */
   thaw() {
     const e = this.e; if (!e) return;
@@ -277,6 +391,10 @@ class EnemyView {
     const L = this.L, fx = L.ctx.fx, ai = e.ai, rng = L.sys.fxRng, a = e.actor, st = ai.state;
     if (st === 'spawning' || st === 'intro') return;
     this.moteT += dt; this.dustT += dt; this.ghostT += dt; this.bubbleT += dt;
+    if (e.affixes.length && e.affixes.includes('hasted') && st === 'move' && this.sprite.visible && !L.reduced) {   // state-graph §8.2 hasted ghost
+      this.hasteT += dt;
+      if (this.hasteT >= 200) { this.hasteT = 0; fx.afterimage(this.sprite, { tint: OUTLINE['outline.gold'], alpha: 0.35, fadeMs: 150 }); }
+    }
     if (a.mote && (st === 'move' || st === 'recover') && this.moteT >= a.moteMs) {
       this.moteT = 0;
       fx.particles(a.id === 'fire_imp' ? 'ember' : 'mote', e.x + rng.float(-3, 3), e.y - 2, 1, { color: a.mote, speed: 8, lifeMs: 500 });
@@ -340,7 +458,7 @@ class EnemyView {
     const type = ai.atk ? ai.atk.type : '';
     const openingMs = t.openingMs;
     if (st === 'spawning') {
-      const portalMs = L.sys.rules.enemies.spawnPortalMs, em = portalMs - t.emergeMs;
+      const portalMs = e.portalMs ?? L.sys.rules.enemies.spawnPortalMs, em = portalMs - t.emergeMs;
       if (inSt < em) alpha = 0;
       else sy = q8(clamp(backOut(clamp((inSt - em) / t.emergeMs, 0, 1)), 0, 1.25));
     } else if (st === 'windup') {
@@ -360,11 +478,11 @@ class EnemyView {
         case 'shoot':
           if (e.id === 'mire_queen') oy -= Math.round(2 * kOpen); else if (e.id !== 'eye_turret') oy -= 1;   // casters stand tall
           if (e.id === 'wraith') alpha = 0.85 + 0.15 * kOpen;                                       // solidifies to shoot
-          if (e.id === 'eye_turret') useWindup = true;
+          if (e.id === 'eye_turret' || a.windupFrame) useWindup = true;
           this._handGlow(e, p, ai, now, false);
           break;
         case 'ring': {
-          if (e.id === 'eye_turret') useWindup = true;
+          if (e.id === 'eye_turret' || a.windupFrame) useWindup = true;
           const pulses = [0, 0.33, 0.6, 0.8];
           for (let i = 0; i < 4; i++) { const t0 = pulses[i] * ai.wTotal; if (ai.wElapsed >= t0 && ai.wElapsed < t0 + 2 * STEP_MS) sx = 1.125; }
           if (ai.atk.id === 'soul_storm') oy -= Math.round(t.risePx * p);
@@ -410,9 +528,18 @@ class EnemyView {
         case 'hazard':
           if (e.id === 'mire_queen' && ((ps > 0.2 && ps < 0.27) || (ps > 0.5 && ps < 0.57) || (ps > 0.8 && ps < 0.87))) oy += 2;   // spitting
           break;
+        case 'ward_allies':                                                                          // telegraphs §2.14
+          if (ai.wardSelf && !(ai.wardTargets && ai.wardTargets.length)) oy += Math.round(2 * kOpen);   // veil: hunch
+          else oy -= Math.round(2 * kOpen);                                                          // lantern raised
+          this._tethers(e, ai, p, now);
+          break;
+        case 'mirror':                                                                               // telegraphs §2.15 (as shoot)
+          oy -= 1;
+          this._handGlow(e, p, ai, now, false);
+          break;
         default: break;
       }
-      if (e.isBoss && (type === 'shoot' || type === 'ring' || type === 'spiral')) this._castGlyph(e, now, p);
+      if (e.isBoss && (type === 'shoot' || type === 'ring' || type === 'spiral' || type === 'mirror')) this._castGlyph(e, now, p);
     } else if (st === 'act' || st === 'airborne') {
       const ca = Math.cos(ai.aim), sa = Math.sin(ai.aim);
       if (inSt < t.stretchMs && st === 'act' && !reduced) { if (Math.abs(ca) >= Math.abs(sa)) sx = 1.125; else sy = 1.125; }   // release stretch
@@ -433,6 +560,7 @@ class EnemyView {
           }
           break;
         case 'ring': break;
+        case 'mirror': if (inSt < 3 * STEP_MS) this._handGlow(e, 1, ai, now, true); break;
         default: break;
       }
     } else if (st === 'recover') {
@@ -451,10 +579,10 @@ class EnemyView {
       timeScale = 0;
       if (inSt < STEP_MS) fillReq = true;                                                            // 1-step crack-in flash
     } else if (st === 'intro') {
-      const rise = t.panMs / 2;
+      const rise = e.tier === 'mini' ? 0 : t.panMs / 2;                                             // minis: no pan, rise at 0 (§8.3)
       if (inSt < rise) { timeScale = 0; oy += t.risePx; }
       else if (inSt < rise + 300) oy += Math.round(t.risePx * (1 - clamp(backOut((inSt - rise) / 300), 0, 1.2)));
-      const act = L.sys.rules.enemies.bossActivateDelayMs;
+      const act = e.activateMs || L.sys.rules.enemies.bossActivateDelayMs;
       if (inSt >= act - 150 && inSt < act - 150 + STEP_MS) fillReq = true;   // "awake"
     } else if (st === 'phase') {
       if (inSt < STEP_MS) fillReq = true;                                                            // FILL held through the phase stop
@@ -478,7 +606,9 @@ class EnemyView {
     if (now < this.squashUntil && !frozen && !e.isBoss) { if (this.squashX) { sx *= 1.125; sy *= 0.875; } else { sx *= 0.875; sy *= 1.125; } }
     if (now < this.recoilUntil) { ox += this.recoilX; oy += this.recoilY; }
 
-    // ---- frame advance (sim-time, pauses with hit-stop; frozen/stunned/lock hold the frame)
+    // ---- frame advance (sim-time, pauses with hit-stop; frozen/stunned/lock hold the frame; defence break = local anim freeze)
+    if (now < this.freezeUntil) timeScale = 0;
+    if (now < this.rattleUntil) ox += (Math.floor(now / STEP_MS) % 2) ? 1 : -1;      // blast into armour: plate rattle ±1 px
     this.animT += dtNow * timeScale;
     const n = frames.length;
     this.frameIdx = n > 1 ? Math.floor((this.animT / 1000) * fps) % n : 0;
@@ -519,6 +649,112 @@ class EnemyView {
     if (e.portalSpawn) this._portal(e, now);
     if (st !== 'spawning') this._status(e, fx0, spriteY, now);
     if (a.trail && alpha > 0) this._glowDisc(fx0, spriteY + anc.core, 5, COL.hotPeak, 0.35);
+    // ---- v2: defence overlay region (state-graph §8.1) + affix / dark-twist outline (§8.2)
+    if (st !== 'spawning' && alpha > 0) this._defence(e, fx0 + ox, spriteY, now, ai);
+    this._outline(e, frames, useWindup, now, st, ai, alpha);
+    if (now - this.mirrorAt < 2 * STEP_MS) this._glowDisc(fx0 + anc.hand[0] * this.facing, spriteY + anc.hand[1], 5, 0xffffff, 0.9);
+  }
+
+  // ------------------------------------------------------------------ v2 overlays
+  _defence(e, x, spriteY, now, ai) {
+    const d = e.defence; if (!d) { this.lastMotes = 0; return; }
+    const L = this.L, t = L.t, anc = e.anchor, b = this.base, cy = Math.round(spriteY + anc.core);
+    const regrowK = now - this.regrowAt < 300 ? Math.floor((now - this.regrowAt) / 100 + 1) / 3 : 1;   // Stepped 3 over 300 ms
+    const bodyD = this.sprite.depth;
+    if (d.type === 'shield') {
+      const a = L.ctx.combat.defences.facing(e), ca = Math.cos(a), sa = Math.sin(a);
+      const dep = sa < -0.6 ? bodyD - 0.00003 : bodyD + 0.00003;                                      // facing up: the plate is behind
+      const flash = now < this.blockUntil;
+      if (d.temp) {                                                                                    // guard: boss plate + front-arc rim (§2.13)
+        const want = e.r + 6, radii = [10, 12, 14, 16, 18, 22];
+        let R = radii[0]; for (const r of radii) if (r <= want) R = r;
+        const left = d.untilMs - now;
+        const blinkOff = left < t.guardBlinkMs && (Math.floor(left / 125) % 2 === 1);                 // 4 Hz blink at the end
+        if (!blinkOff) L.spr(`authored.shield_arc_r${R}${flash ? '_hit' : ''}`, 0, e.x, cy, dep, false, -1, 0.85 * regrowK, a, 0.5);
+      } else if (flash) {
+        const R = e.r + 6 <= 12 ? 10 : e.r + 6 <= 16 ? 14 : 18;
+        L.spr(`authored.shield_arc_r${R}_hit`, 0, e.x, cy, dep, false, -1, 0.9, a, 0.5);             // the block glint on the front arc
+      }
+      const wb = d.wearBlocks, stage = d.blocks >= Math.ceil((2 * wb) / 3) ? 2 : d.blocks >= Math.ceil(wb / 3) ? 1 : 0;
+      const off = Math.max(4, e.r - 1);
+      const im = L.spr(`defences.shield.held.${stage === 0 ? 'fresh' : stage === 1 ? 'worn' : 'cracked'}`, 0,
+        x + ca * off, cy + sa * off * 0.6, dep, false, -1, regrowK, 0, 0.5);
+      if (im) { im.setScale(b).setFlipX(ca < 0); if (flash) im.setTint(0xffffff).setTintMode(TM.FILL); }
+      this.lastMotes = 0;
+    } else if (d.type === 'ward') {
+      const n = d.hits;
+      const formed = now - this.wardFormAt < n * t.wardStepMs ? Math.min(n, Math.floor((now - this.wardFormAt) / t.wardStepMs) + 1) : n;
+      const shown = Math.min(6, formed);
+      this.lastMotes = shown;
+      const mp = this._mp || (this._mp = { x: 0, y: 0 });
+      for (let i = 0; i < shown; i++) {
+        this._motePos(e, now, i, shown, mp);
+        const back = Math.sin((now / t.wardOrbitMs) * TAU + (i * TAU) / shown) < 0;
+        L.spr('defences.ward.pips', i < formed && now - this.wardFormAt < (i + 1) * t.wardStepMs + 60 ? 2 : 0, mp.x, mp.y - (e.y - cy), back ? bodyD - 0.00003 : bodyD + 0.00003, false, -1, 1, 0, 0.5);
+      }
+      if (n > 6) L.digit(L.overlayG, Math.round(x + e.r + 6), cy - 3, Math.min(9, n), DEF_COL.ward);
+    } else if (d.type === 'armour') {                                                                 // steel plates: intact > 66 / dented > 33 / cracked
+      const frac = d.max > 0 ? d.points / d.max : 0;
+      const plates = frac > 0.66 ? 3 : frac > 0.33 ? 2 : 1;
+      const g = L.overlayG, w = 3 * b, h = 2 * b, y0 = cy - Math.round(h * 1.5);
+      for (let i = 0; i < plates; i++) {
+        const px = Math.round(x - w / 2 + (i === 1 ? -w + 1 : i === 2 ? w - 1 : 0)), py = y0 + (i === 0 ? 0 : h);
+        g.fillStyle(COL.rimDark, regrowK).fillRect(px - 1, py - 1, w + 2, h + 2);
+        g.fillStyle(DEF_COL.armour, regrowK).fillRect(px, py, w, h);
+      }
+      this.lastMotes = 0;
+    }
+  }
+
+  /** ward_allies tethers: dashed 1 px defence-ward lines caster → recipient, α ∝ p, solid at the lock (§2.14). */
+  _tethers(e, ai, p, now) {
+    const list = ai.wardTargets; if (!list || !list.length) return;
+    const g = this.L.overlayG, a = 0.3 + 0.7 * clamp(p, 0, 1);
+    g.lineStyle(1, DEF_COL.ward, a);
+    for (let k = 0; k < list.length; k++) {
+      const o = list[k]; if (!o.alive) continue;
+      const dx = o.x - e.x, dy = o.y - e.y, L = Math.hypot(dx, dy); if (L < 2) continue;
+      if (ai.locked) { g.lineBetween(Math.round(e.x), Math.round(e.y), Math.round(o.x), Math.round(o.y)); continue; }
+      const ux = dx / L, uy = dy / L, crawl = Math.floor(now / 66) % 3;
+      for (let s0 = crawl; s0 < L; s0 += 3) {
+        const s1 = Math.min(L, s0 + 2);
+        g.lineBetween(Math.round(e.x + ux * s0), Math.round(e.y + uy * s0), Math.round(e.x + ux * s1), Math.round(e.y + uy * s1));
+      }
+    }
+  }
+
+  /**
+   * Affix outline overlay (ring1 frame index-synced to the body, NORMAL tint with the affix token, feet on the
+   * body's feet via the frame pivot → setOriginFromFrame). Pulse α affixPulseAlphaMin ↔ 1 (Sine, random phase),
+   * held at 1 in the lock window and for 600 ms after the first hit; two affixes alternate tokens each half period.
+   * Dark twist: every enemy gets the ring1 outline in #fdf7ed at α 1 (the affix token wins on elites).
+   */
+  _outline(e, frames, useWindup, now, st, ai, alpha) {
+    const L = this.L, fr = this.fr;
+    const affixed = e.elite && e.affixes.length > 0;
+    const dark = L.sys.darkOutline;
+    if ((!affixed && !dark) || !fr.hasRing || alpha <= 0 || !this.sprite.visible) { if (this.outline) this.outline.setVisible(false); return; }
+    const clip = useWindup && this.fr.windup ? 'windup_frame' : (frames === fr.move && fr.move !== fr.idle ? 'move' : 'idle');
+    const a = L.ringFrame(fr, clip, 'ring1', clip === 'windup_frame' ? 0 : this.frameIdx) || L.ringFrame(fr, 'idle', 'ring1', this.frameIdx);
+    if (!a) { if (this.outline) this.outline.setVisible(false); return; }
+    let ol = this.outline;
+    if (!ol) ol = this.outline = L.scene.add.image(0, 0, a.key, a.frame);
+    if (ol.texture.key !== a.key || ol.frame.name !== a.frame) ol.setTexture(a.key, a.frame);
+    ol.setOriginFromFrame();
+    let color = OUTLINE.dark, oa = 1;
+    if (affixed) {
+      const P = L.t.affixPeriodMs, k = ((now / P) + this.affixPhase) % 1;
+      const half = e.affixes.length > 1 && k >= 0.5 ? 1 : 0;                    // swap at the α minimum (k = 0 / 0.5 troughs)
+      const AF = L.ctx.cat.affixes || {};
+      const def = AF[e.affixes[half]] || AF[e.affixes[0]];
+      color = (def && OUTLINE[def.outlineKey]) ?? COL.eliteGold;
+      const hold = L.reduced || now < this.affixHoldUntil || (st === 'windup' && ai.locked);
+      oa = hold ? 1 : L.t.affixAlphaMin + (1 - L.t.affixAlphaMin) * (0.5 - 0.5 * Math.cos(k * 2 * TAU));
+    }
+    const sp = this.sprite;
+    // Dark twist (B's objection): the outline must read ABOVE the darkness layer (DEPTH_DARK 61.5) → 61.75
+    ol.setPosition(sp.x, sp.y).setScale(sp.scaleX, sp.scaleY).setFlipX(sp.flipX).setDepth(dark ? 61.75 : sp.depth + 0.00002)
+      .setTint(color).setTintMode(TM.MULTIPLY).setAlpha(oa * clamp(alpha, 0, 1)).setVisible(true);
   }
 
   _enter(st, now) {
@@ -540,6 +776,7 @@ class EnemyView {
       else { mode = null; }
       if (mode === null) { fillReq = false; }
     }
+    if (!mode && now < this.clangUntil) { mode = TM.FILL; color = DEF_COL.armour; }          // armour clang (R5 2a)
     if (!mode) {
       if (frozen) { mode = TM.MULTIPLY; color = COL.frostTint; }
       else if (hot >= 0) { mode = TM.ADD; color = hot; }
@@ -613,7 +850,7 @@ class EnemyView {
    * then fx_spawn_portal_close (f4–9 @ 14 fps, once; may finish after the enemy is live). Graphics fallback.
    */
   _portal(e, now) {
-    const L = this.L, t = now - e.spawnMs, portalMs = L.sys.rules.enemies.spawnPortalMs, em = portalMs - L.t.emergeMs;
+    const L = this.L, t = now - e.spawnMs, portalMs = e.portalMs ?? L.sys.rules.enemies.spawnPortalMs, em = portalMs - L.t.emergeMs;
     const x = Math.round(e.x), feetY = Math.round(e.feetY);
     if (L.art.portal) {
       const closeF = Math.floor(((t - em) * 14) / 1000);
@@ -737,6 +974,7 @@ class EnemyView {
   // ------------------------------------------------------------------ deaths (visual-only `dying`, telegraphs §4)
   _renderDying(now, dtNow) {
     const e = this.e, L = this.L, spr = this.sprite, t = L.t, fx = L.ctx.fx, anc = e.anchor, b = this.base;
+    if (this.outline && this.outline.visible) this.outline.setVisible(false);     // the overlay falls with the corpse
     const k = now - this.dieAt;
     const rng = L.sys.fxRng;
     if (k < 0) return;                                          // staggered chain/cleanup deaths wait (sim-dead already)
@@ -830,11 +1068,12 @@ class EnemyView {
     const e = this.e;
     this.sprite.setVisible(false).setActive(false);
     if (this.weapon) this.weapon.setVisible(false);
+    if (this.outline) this.outline.setVisible(false);
     if (e) { e.view = null; }
     this.e = null;
     this.done = false; this.dying = false;
     this.L.free.push(this);
   }
 
-  destroy() { this.sprite.destroy(); if (this.weapon) this.weapon.destroy(); }
+  destroy() { this.sprite.destroy(); if (this.weapon) this.weapon.destroy(); if (this.outline) this.outline.destroy(); }
 }

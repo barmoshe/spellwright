@@ -87,3 +87,56 @@ UX asked for an art pass rather than a nearest-neighbour halve (correct: plain h
 - **Nothing in the UX layout needs art that won't render at 640×360** — all sizes were authored at 1×. The only runtime scaling is text Display ×2 (integer) and the wordmark ×3.
 - Kenney `ui_l` frames have 5–6 px borders, which is why card cells are **authored** 2 px-border overlays: the UX 36 px cell (32 icon + 2 frame) can't be 9-sliced from a 6 px-border tile.
 - Localization: every frame is 9-slice or fixed-size icon, so no text is baked into art.
+
+---
+
+## §9 v2 (Wave A2) — new screens, HUD pieces and touch controls
+All frames below are in `assets/src/art/spellwright_ui.png` (+ `.json`) unless marked `icon` (7Soul1, via `icons16`/`icon32`). v1 frames are unchanged; v2 frames are appended.
+
+### 9.1 Card levels & relic classes
+| Cue | Pixels | Where |
+|---|---|---|
+| Level 2 | `lvl_pips_36` / `lvl_pips_18` (two 2×2 `#fdf7ed` pips on the top edge) + "II" in the name | every card cell |
+| Evolved | `g_star_7` top-left + `card_evolved_corners_36` / `_18` (gold corner brackets over the keyline) | every card cell |
+| Corrupted relic | `g_corrupt_7` top-right on the icon cell | drafts, Relics tab, risk-door draft |
+| Duo relic | UX DUO chip + both parent `icon16` + `g_ok` per owned parent | drafts |
+
+### 9.2 Forge tab (S5f)
+Panel = `panel_ornate` over `#2a2a3a`; three 196 px columns split by 1 px `#515f6b` rules. Tab icon: `icon I_GoldBar`. Recipe rows: **Merge** = two card cells offset 4 px → `g_arrow` → result cell with `lvl_pips`; **Evolve** = base cell + catalyst `icon16` → `g_arrow` → result cell with `g_star_7` (missing parts: dimmed 50 % + "Needs…"; undiscovered result: icon silhouette = fill `#2a2a3a`, keyline `#778d9f`); **+1 Slot** = `cell_empty_36` + `g_plus_7`. DPS delta uses `g_up` / `g_down`. Result FX: `fx.forge_merge` (nebula, gold) / `fx.forge_evolve` (+ star pop).
+
+### 9.3 Mode Select (S1m), Goals (S1g), Daily (S7d)
+- **Modes** (32 px icons): Standard `C_Hat01` · Gentle `I_Feather01` · Daily `I_Scroll02`. Heat selector numerals: `heat_0 … heat_5` (9×9 flame + knocked-out digit). A locked mode = its icon silhouette + 🔒 (`g_lock_7x7`).
+- **Goals** status (9×9, shape-coded): ✔ `g_ok` · ▶ `g_goal_next` · ○ `g_goal_later` · ◐ `g_goal_queued`. Reward icons = the unlocked item's icon; features: Daily `I_Scroll02`, Forge `I_GoldBar`, Duos `Ac_Necklace04`, Corrupted `E_Bones02`, Heat `heat_1`, +1 slot = `W_Staff01` + `g_plus_7`. Later-goal rewards show as silhouettes.
+- **Daily result**: dark panel share box; Copy = primary button; the iOS/DOM share glyph `share_12` (24 CSS px = ×2).
+
+### 9.4 Reward (S4) Skip / Reroll
+Reroll = `g_recharge` + cost (T1) on a `button` (30 px); Skip = coin icon + "+{gold}" (T1) on a `button`; both disabled per §7. "Counters: {defence}" chip carries the `def_*` icon; the SWAP button's pips use `kw_pierce` / `kw_blast` / `kw_shock`.
+
+### 9.5 HUD & in-world additions (`hud-layout.md` §9)
+| Element | Pixels |
+|---|---|
+| Counter pips (7×7) | `def_shield` / `def_armour` / `def_ward`; filled = full alpha with a `#fdf7ed` rim (the frame already has it), hollow = α 0.5 |
+| Mode badge | T1 only (no art) |
+| Door threat icon (third 16 px icon) | `door_shield` · `door_armour` · `door_ward` · `door_swarm` · `door_ranged` · `door_summoner` · `door_none`; risk door `door_risk`; hidden `door_unknown` |
+| Affix nameplate | the affix glyph (7×7): `def_armour` · `def_ward` · `def_shield` · `affix_wing` · `affix_burst` (two side by side at Heat 2+) |
+| Ward runes on actors | `ward_rune_full` / `_spent` / `_regrow` (5×5) |
+| BLOCKED / ARMOURED / WARDED / BROKEN numbers | T1 `#b6cbcf` + the 7×7 defence icon |
+| Mini-boss intro | letterbox bars `#0d0a10` 16 px; T2 name + T1 epithet, outlined glyphs; mini bar = `bar_frame_6` at 0.6 width |
+
+### 9.6 Touch controls (`mobile-touch-spec.md` §12)
+| Asset | Frames | Notes |
+|---|---|---|
+| DASH / SWAP / USE body 38×38 | `btn_round_38`, `_pressed`, `_disabled` | `#2a2a3a` body, `#222222` keyline, `#778d9f` inner ring; pressed = `#515f6b` body + `#fdf7ed` ring; runtime α 0.55 allowed |
+| Button icons 16×16 | `t_dash` (›››) · `t_swap` · `t_use_hand` · `t_use_coin` · `t_use_stair` · `t_use_eye` | monochrome `#fdf7ed` + auto `#222222` keyline (frames are 16×16 incl. keyline) |
+| PAUSE / EDIT 28×28 | `btn_sq_28`, `btn_sq_28_pressed` + `t_pause` / `t_edit` + `g_plus_7` badge | |
+| Modal Back 28×28 | `btn_sq_28` + `g_back_12` | |
+| Stick | `stick_ring_58`, `stick_knob_22` (optional; procedural R 28 / 10 is equivalent) | |
+| Target marker | `target_tick_3` (3×3 L, rotate ×4 for corners) | |
+| Coach hand | `ghost_hand_16`, `ghost_hand_tap_16` | |
+| Rotate overlay | `rotate_32` (DOM: export ×2 = 64 CSS, ×3) | |
+| iOS share glyph | `share_12` (+ ×2 for 24 CSS) | |
+| App icons | `assets/src/art/appicon/appicon_64.png` → 192 (×3), 512 (×8), maskable 512 (same art, full-bleed); `appicon_60.png` → 180 (×3) | integer scales only |
+| Touch prompt glyphs 12×12 (`controller-prompts.md` §9) | TA Wave B in `scripts/author-prompt-glyphs.py` | redraw at 12 px from the 16 px icons above so each prompt pictures its button (style: `#fdf7ed` on `#4b5468`, `#222222` keyline) |
+
+### 9.7 World-entry title card (Worlds addendum)
+A 640×96 band centred at y 96: that world's backdrop strip drawn at 1× (W1 crypt wall + 2 candles · W2 slate wall + drain + shallow-water row · W3 bookshelf wall + candelabra pair), its emblem prop at 1× (W1 `bone_pile`, W2 `drip_f2`, W3 `candelabra_f0`), the name in T2 and the fantasy line in T1 (outlined glyphs), and a 1 px accent rule in the world light colour (`#ee8e2e` / `#72d6ce` / `#facb3e`). Reduced motion: the card appears instead of sliding. Frames: `art-slot-map.json → world_cards`.

@@ -2,6 +2,7 @@
 // reward behind?"). Default focus = the SAFE option. back = the safe option. Keyboard, pad and mouse.
 //   flow.open('confirm', { text, options: [{label, value}], safeIndex: 0, onResult(value) })
 
+import { T } from '../core/tunables.js';
 import Phaser from '../../lib/phaser.esm.min.js';
 import { VIEW_W, VIEW_H } from '../config.js';
 import { txt, panel, drawFocus, C } from '../ui/kit.js';
@@ -15,6 +16,7 @@ export class ConfirmScene extends Phaser.Scene {
     this.router = this.registry.get('router');
     this.flow = this.registry.get('flow');
     const d = this.d;
+    this.openAt = performance.now(); this._down = -1;
     const bd = this.add.rectangle(0, 0, VIEW_W, VIEW_H, 0x07060c, 0.6).setOrigin(0).setInteractive();
     bd.on('pointerdown', (p) => { if (p.rightButtonDown()) this.finish(d.options[d.safeIndex ?? 0].value); });
     const w = 300, h = 86, x = (VIEW_W - w) / 2, y = (VIEW_H - h) / 2;
@@ -27,7 +29,9 @@ export class ConfirmScene extends Phaser.Scene {
       const label = txt(this, bx + bw / 2, by + 10, o.label, 'T1', { origin: [0.5, 0.5] });
       const hit = this.add.rectangle(bx, by, bw, 20, 0, 0).setOrigin(0).setInteractive({ useHandCursor: true });
       hit.on('pointermove', () => { if (this.focus !== i) { this.focus = i; this.paint(); } });
-      hit.on('pointerdown', (p) => { if (!p.rightButtonDown()) this.finish(o.value); });
+      // release-over-same + open-guard (mobile-touch-spec §6)
+      hit.on('pointerdown', (p) => { this._down = (!p.rightButtonDown() && performance.now() - this.openAt >= T('uiOpenGuardMs', 180)) ? i : -1; });
+      hit.on('pointerup', (p) => { if (this._down === i && !p.rightButtonDown()) this.finish(o.value); this._down = -1; });
       return { g, label, bx, by, bw, i, o };
     });
     this.paint();

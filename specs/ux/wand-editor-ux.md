@@ -60,21 +60,21 @@ y:0 ┌────────────────────────�
 |---|---|---|---|
 | Backdrop | 0, 0, 640, 360 | The frozen game at 30% brightness (70% black overlay). The HUD is dimmed underneath (scene-flow §3). | — |
 | Tab bar | 8, 2, 624, 16 | 5 tabs, T1 labels, the active tab underlined 2 px; previous/next glyphs at both ends. | tabs (mouse), LB/RB, Q/E |
-| **A1** Wand list | 8, 22, 120, 4 × 42 | One card per carried wand (up to `rules.player.wandSlots`; layout supports 4). Card 120×40: 32 px icon at +4,+4; name T1 at +40,+3 (≤ 2 lines, 12 px pitch); fill T-small "2/4 slots" at +40,+29. **✋ equipped** marker (8×8 icon, top-right) = the wand active in combat. **Selected-for-editing** = 2 px bright frame plus a 2 px connector to region B. ↻ badge + duration when changed. An empty wand slot shows a dashed card "Empty wand slot". | yes |
+| **A1** Wand list | 8, 22, 120, 4 × 42 | One card per carried wand (up to `rules.player.wandSlots`; layout supports 4). Card 120×40: 32 px icon at +4,+4; name T1 at +40,+3 (≤ 2 lines, 12 px pitch); fill "2/4" in T1 at +40,+27 (v2: abbreviated from the T-small "2/4 slots"). **✋ equipped** marker (8×8 icon, top-right) = the wand active in combat. **Selected-for-editing** = 2 px bright frame plus a 2 px connector to region B. ↻ badge + duration when changed. An empty wand slot shows a dashed card "Empty wand slot". | yes |
 | **A2** Wand stats | 8, 194, 120, 146 | 9 rows at 12 px pitch, label left and value right-aligned at x 127: Slots · Mana (max, +regen/s) · Cast delay · Recharge (**effective**, incl. every slotted card's `rechargeAddMs` and relic `rechargeMult`) · Spread · Speed · Spells/cast · Shuffle · Always cast (icon, or "—"). A value changed by relics shows a trailing `*`; focusing the wand card explains it in C. | no (read via the wand card) |
 | **B1** Header | 136, 22, 384, 10 | Selected wand name (T1, left) · "Slots n/cap" (T1, right). | no |
-| **B2** Slot indices | 136, 34, 384, 6 | T-small digits 1…cap centred over each cell. | no |
+| ~~**B2** Slot indices~~ | — | **Dropped in v2** (`accessibility-spec.md` §2.3 #14). Order is left to right; pane C names the slot. | no |
 | **B3** Slot row | 137, 42, 38·cap − 2, 36 | `capacity` cells of **36×36** (32 px icon + 2 px frame), pitch **38**, left-aligned (so slot *n* is at the same x on every wand). Cap 10 → 378 px. An **always-cast** card (e.g. `echo_wand`) renders as an extra locked cell before slot 1 (lock badge, frame style "virtual", not draggable), and the row shifts right one pitch. Only wands with capacity ≤ 9 carry always-cast (data: `echo_wand` cap 4), so it always fits. | yes (each cell) |
 | **B4** Next-card marker | under the next slot, y 79–81 | A 5×3 px chevron under the slot the next cast draws first (the same cursor as the HUD). Hidden and replaced by "↻" at slot 1 once the wand is changed. | no |
-| **B5** Cast brackets | 136, 82, 384, 18 | Two lanes (y 82–90, y 92–100). One bracket per cast in the previewed cycle, spanning the slots drawn by that cast, labelled with the cast number (T-small) centred in a gap. A cast that **wraps** draws its bracket to the row's end with a ↩ icon, then continues in lane 2 from slot 1 (dashed). Skipped (no-mana) cells inside a bracket get a slash overlay on the cell itself. **Shuffle wands:** brackets are hidden and the lane shows "Shuffled: order changes every recharge" (T-small). | no |
+| **B5** Cast brackets | 136, 82, 384, 18 | Two lanes (y 82–90, y 92–100). One bracket per cast in the previewed cycle, spanning the slots drawn by that cast, labelled with the cast number (T1, lane 1 only; v2 lanes: lane 1 y 80–95, lane 2 y 97–101 line + ↩ only) centred in a gap. A cast that **wraps** draws its bracket to the row's end with a ↩ icon, then continues in lane 2 from slot 1 (dashed). Skipped (no-mana) cells inside a bracket get a slash overlay on the cell itself. **Shuffle wands:** brackets are hidden and the lane shows "Shuffled: order changes every recharge" (T-small). | no |
 | **B6** Bag header | 136, 104, 384, 10 | "Bag n/12" T1. At 11/12 the text gains a ⚠ icon; at 12/12 it reads "Bag full" with ⛔ (shape, not colour alone). | no |
 | **B7** Bag grid | 137, 116, 226, 74 | 12 cells of 36×36 in **6 × 2**, pitch 38 (rows at y 116 and 154). Filled cells hold the card icon; empty cells are dashed. | yes |
-| **B8** Salvage bin | 380, 116, 136, 74 | Icon + "SALVAGE" T1 + "drop a card for coins" T-small. While a card is held, the second line becomes "+{n} coins" (⌊0.3 × price at the current floor⌋, `systems.md` §8). | yes |
+| **B8** Salvage bin | 380, 116, 136, 74 | Icon + "SALVAGE" T1 + "drop a card for coins" T1, wrapped (v2). While a card is held, the second line becomes "+{n} coins" (⌊0.3 × price at the current floor⌋, `systems.md` §8). | yes |
 | **B9** Cast preview | 136, 194, 384, 146 | §5. Header line (T1) at y 196. **5 visible cast lines** at 17 px pitch from y 210 (16 px mini-icons need the 17 px pitch). A **summary block** is pinned at y 300–340 (3 lines at 13 px). The list scrolls when there are > 5 lines (casts + warnings); "▼ n more" shows at the list's bottom-right. Full rules in §5. | yes (each cast line, each warning line) |
 | **C** Detail pane | 528, 22, 104, 318 | §4. Shows the focused item (card, wand, cast line or warning), or the held card, or the primer when nothing is focused. | no (read-only; scroll with the right stick or wheel if it overflows) |
 | Footer | 8, 344, 624, 14 | Left: device-specific hints (§3.3). Right: change status (§1). | Revert and Close are clickable text buttons at the footer's left end. |
 
-**Text roles** (`accessibility-spec.md` §2): T1 = body, the minimum for anything the player needs to decide on (cap height 7 px). T-small = labels that are always redundant with position or with a T1 value (slot indices, bracket numbers, "2/4 slots" under a name).
+**Text roles** (`accessibility-spec.md` §2): T1 = body, the minimum for **all** text (cap height 7 px). v2 removed T-small; its former sites are ruled in `accessibility-spec.md` §2.3.
 
 ### 2.2 Card visual contract (aligned to `style-guide.md` §8 and `art-slot-map.md` §G3–G4; type must read **without colour**)
 
@@ -87,7 +87,7 @@ The 2D Artist's decision stands: **the card frame material carries the category*
 | **Multicast** | bronze `ui_l 32` | `×2` / `×3` / `×4` badge, bottom-right (Kenney Mini, `#fdf7ed`, 1 px `#222222`) (art) | `×n` badge kept (2 glyphs, 5 px cap) |
 | **Trigger** | bronze + rivet corners `ui_l 19` | `T` badge + condition glyph top-left: `!` on impact · `•` on end · `0.25` after time (art) | `T` badge kept |
 
-- **Mana cost:** 32 px cells only, a T-small `#fdf7ed` number on a dark 7×7 chip, bottom-left. Omitted at 16 px.
+- **Mana cost:** 32 px cells only, a T1 `#fdf7ed` number on a dark 12 px chip, bottom-left (v2: promoted from T-small). Omitted at 16 px.
 - **Rarity:** the `rar-*` token pip (`style-guide.md` §2.4) plus the word in the detail pane. It is never on the frame, so it doesn't compete with type.
 - **"NEW"** (first time a card is ever seen, `progression-and-pacing.md` §7): a 5 px star badge, top-right, until the card is focused once.
 - **Grayscale test (falsifiable):** render all 43 cards at 32 px and at 16 px in grayscale. A reviewer must name each card's type (spell / modifier / multicast / trigger) correctly for all of them.
@@ -136,7 +136,7 @@ While a card is held, the focus cursor carries it: the card draws lifted 4 px ab
 - Pad: `A pick/place · X quick move · Y salvage · LT/RT wand · B close`
 - While holding (either device): the first item becomes `… place` and `B/Esc` reads `cancel`.
 
-### 3.4 Placement rules (normative; one semantic: **swap**)
+### 3.4 Placement rules (v1: swap only. **Superseded in v2 by §10.3, insert-or-swap on every device**)
 
 | Held card dropped on… | Result |
 |---|---|
@@ -304,3 +304,93 @@ Glyph needs beyond ASCII (for the TA's `font-atlas`): `× ± °` (all in Latin-1
 - **2D Artist, `ui-artwork`:** the spell element badge (O-UX-4), cell states (empty-dashed, ghost, valid-target, invalid ⛔, changed ↻, skipped-slash, lock badge), the salvage bin, the bracket glyphs, and the 16 px mini-card set (`hud-layout.md` §7).
 - **Animator (`motion-spec`, UI):** pick-up lift (4 px, 60 ms), place settle (2 frames), swap cross-slide (≤ 90 ms), invalid-drop shake (2 × 1 px, 80 ms; reduced motion: ⛔ badge only), editor open/close per `screen-graph.md` §7.
 - **Audio Director:** `ui_card_pick`, `ui_card_place`, `ui_card_swap`, `ui_denied`, `ui_salvage`, plus a soft "preview changed" tick when the held-over-target DPS delta is positive (optional; never on every focus move).
+
+---
+
+## §10 v2: phone mode and insert-or-swap
+
+**Status:** v2 Wave A1. Phone mode is the touch profile (`mobile-touch-spec.md` §5.1) inside the Wands tab. The layout stays 640×360 (§2). Only interaction, feedback and hit sizes change. §10.3 applies to **all** devices.
+
+### 10.1 Touch gestures
+
+| Gesture | Result |
+|---|---|
+| **Tap** a card (slot, bag or forge) | **select** it: a 2 px bright frame, and pane C shows its detail. It is *not* lifted, so inspecting is never moving. Tapping it again deselects. |
+| **Tap a destination** while a card is selected | move it there per §10.3 (the same result as a drag). This is the single-pointer alternative to dragging (WCAG 2.5.7). |
+| **Drag** a card | lift and move once the finger travels **> 6 game px** (`touchDragThresholdPx`; mouse stays at 4). Below the threshold it counts as a tap. |
+| Drag off the editor, or onto empty space; `pointercancel` | the card returns to its origin (never lost) |
+| Tap a wand card (A1) | select that wand for editing. With a card selected, it moves the card into that wand per §10.3 (its first valid position). |
+| Vertical drag on the preview list (B9) or pane C | scroll. Items under the drag don't activate. |
+| **Pane C action buttons** (touch only, replacing RMB/X/Delete/R) | at the bottom of pane C, stacked, each **100×24** (primary 100×37): **[To bag]** / **[To wand]** (quick move, whichever applies) · **[Salvage +{n}]** (→ D2) · **[Revert]** (enabled only if something changed). Plus the modal **Back** button (`mobile-touch-spec.md` §5.2). |
+
+### 10.2 Drag feedback (touch)
+
+- **Hot spot:** the drop target is the cell under `finger − (0, 16)` game px, not under the finger's contact centroid. The pad of the thumb sits below the point the player means, and the offset keeps the target visible just above the nail.
+- **Ghost: 2× (64×64, integer scale)**, centred at `finger − (0, 56)` and clamped inside the canvas (it flips to *below* the finger when `finger.y < 72`, so it never leaves the top edge). α 0.9, with a 1 px `#222222` keyline. The mouse keeps the 1× ghost at +4,+4 (§3.1).
+- **Delta chip:** beside the ghost (to the right, or to the left when near the right edge), in T1 on a `#2a2a3a` chip: `DPS 15→25 ▲` on line 1 and `mana 8 s→∞` on line 2 (the time until the wand runs dry, before → after, §11.1). It appears only while hovering a valid target, and it uses the same dry-run as §5.3. The finger may cover the summary block; the chip keeps the answer next to the eye.
+- **Origin ghost:** a dashed outline, as §3.1.
+
+### 10.3 Insert-or-swap (all devices; replaces v1's swap-only rule)
+
+| Dropped on | Wand has an empty slot (the **origin counts as empty** during a same-wand move) | Wand is full |
+|---|---|---|
+| an **empty slot** | **place** there. Marker: **swap-ring**, a 2 px ring around the target cell. | — |
+| a **filled slot** | **insert before it.** Marker: **insert-bar**, a 2 px × 40 px vertical bar at the target cell's left edge, with small ▸ arrows on the cards that will shift. The cards from the target up to the nearest empty slot on the right shift right by one. If there is no empty slot to the right, the cards between the nearest empty slot on the left and the target shift left, and the held card lands immediately before the target card. | **swap.** Marker: swap-ring + a translucent copy of the displaced card drawn in the origin cell. |
+| a bag cell | **swap / place** (the bag is unordered; no insert) | — |
+
+- **Why:** reordering a program is the core edit ("put Empower first"). With swap-only, it took up to *n* − 1 swaps. With insert, it takes one gesture, and a same-wand move always has an empty slot (its own origin), so reordering never degrades into a swap.
+- **Pad and keyboard:** the same rule. A on a filled slot = insert while the wand has a free slot (or origin), else swap. The marker shows before the press, so the result is never a surprise.
+- **Seam (Developer):** `RunState.placeCard(from, to, mode)`, where `mode ∈ {place, insert, swap}` is computed by one pure function, `placementFor(wand, fromRef, toIndex)`. The editor draws the marker from it, and the drop applies it. There is one source of truth. It needs no `check-spells` change, because placement is not casting.
+
+### 10.4 Phone hit sizes
+
+Editor cells stay 36×36 (they already exceed the 24 px floor). Wand cards (A1) are 120×40. Pane C buttons are ≥ 24 tall (primary 37). Tabs in the tab bar grow to 24 px tall in the touch profile (the tab bar spans y 0–24; the regions below shift down by 6 px, and the footer hint row is removed on touch because pane C's buttons replace it).
+
+---
+
+## §11 v2: mana pressure, Enables chips and counter pips
+
+### 11.1 Mana bar: "mana per cycle vs regen" (summary line 2, replacing the text-only line)
+
+```text
+Mana  [██████████████|▒▒▒▒▒]  33/s · 25/s  Runs dry after 7 s
+       └ regen part ┘ └ overspend (hatched) ┘
+```
+
+- **Bar** `(136, 314, 150, 6)`: the full length = `max(use/s, regen/s)`. The **solid** mana-coloured part = regen/s. A **1 px `#fdf7ed` tick** marks use/s. If use > regen, the part between regen and use is **hatched** (a shape, not a colour; the same hatch as the HUD's low mana).
+- **Text** (T1, right of the bar; the free width is 227 px at 640×360, so the words are dropped. Developer objection accepted): `{use}/s · {regen}/s`, always in **use · regen** order. The bar supplies the meaning: the tick is use and the solid part is regen. Focusing the line shows the full labels in pane C ("29/s used · 18/s regenerated"). Then **"Never runs dry"** (✔) or **"Runs dry after {N} s"** (⚠), where N = ⌊manaMax ÷ (use − regen)⌋ (the §5.3 formula). use/s = `manaPerCycle ÷ cycleSeconds` from `previewCycle`.
+- **Held-card preview:** the bar animates to the after-state while a card hovers a target, and a ghost tick shows the before-state (reduced motion: it jumps, with the ghost tick kept).
+- **Why it leads the summary in v2:** the starter now overspends by design (`specs/v2-overhaul-plan.md`: scarcer starter mana). "Runs dry after 7 s" is the sentence that makes building a wand matter, so it gets a bar rather than a clause.
+
+### 11.2 Enables chips (summary line 3)
+
+- **What:** the **defence-breaking keywords** the wand's program actually produces this cycle: at most three, **PIERCE · BLAST · SHOCK** (`rules.keywords.defenceBreaking`). They are derived from the dry-run's **fired** shots using the data's own definitions:
+  - PIERCE = a direct hit from a shot with composed pierce ≥ 1, or any boomerang or orbit shot;
+  - BLAST = any explode, Overload or self-destruct damage;
+  - SHOCK = shock-element damage, or a chain or zap effect.
+
+  A keyword on a skipped or wasted card doesn't count; that card gets its W-warning instead. Because there are at most 3, the chips always fit.
+- **Render:** `Enables:` in T1, then chips of `[ICON KEYWORD]`: a 12 px tall pill, T1 uppercase, with a 7×7 keyword icon (art). They are ordered pierce, blast, shock. With none: `Enables: —`. The ⚠ warning count stays right-aligned on the same line.
+- **Descriptive keywords** (`rules.keywords.descriptive`: burn, chill, poison, homing, bounce, split, chain, multicast, trigger, crit, zone, orbit, mine, mobility) and card `tags` are **not** chips. They appear in pane C as a T1 "Tags: …" row, because they describe a card and don't open a defence.
+- **Card detail (pane C):** a new row, **"Enables: [PIERCE]"**, for any card whose shots can carry a breaking keyword. Modifiers that grant one say "Adds PIERCE to the spells after it" (the modifier-scope rule, mechanic-spec §11).
+- **Hover delta:** a chip gained by the held card flashes in with a `+` prefix, and a chip lost shows struck through (a line, not a colour).
+
+### 11.3 Counter pips (per wand, region A)
+
+- On each **wand card** in A1: a row of **counter pips** at `(x + 40, y + 27)` right of the "2/4" fill: one 7×7 pip per **defence type** (shield ← PIERCE, armour ← BLAST, ward ← SHOCK; `rules.defences`), filled = this wand counters it, hollow = it doesn't. This is the same derivation as the HUD's pips (`hud-layout.md` §9.3), but it shows **all** defence types (the editor is for planning, not reacting).
+- **A2 wand stats** gains a row, **"Counters"** (label T1 + the same pips at 7×7 with pitch 9), after "Always cast". A2 grows to 11 rows, 132 of 146 px.
+- **Door-threat link:** when the editor opens with the room's doors already shown, the next door's threat pip (`hud-layout.md` §9.6) pulses once on the matching pip of every wand that counters it. "Prep for the next room" is one glance.
+
+### 11.4 Worked render (v2 data: `apprentice_wand` capacity 3, mana 50, regen 18/s, cast delay 250, recharge 400; a reviewer can check it by hand)
+
+The starter `[spark, spark, —]`, with **Empower** (`damage_up`: 10 mana, +50 ms, damage ×1.4) held over slot 1 (an **insert-bar**: both sparks shift right into the empty slot 3):
+
+```text
+1 [EM][SB]    → Spark Bolt · 7 dmg (+Empower)                    wait 0.30s
+2 [SB]        → Spark Bolt · 5 dmg                           recharge 0.40s
+Cycle 0.65 → 0.70 s · ≈DPS 15 → 17 ▲
+Mana  [██████████████|▒▒▒▒▒▒]  29/s · 18/s  Runs dry after 4 s ▼
+Enables: —                                                        ⚠ 0
+```
+
+The derivation: before = 10 mana per 0.65 s = 15.4/s < 18, so it never runs dry. After = 20 per 0.70 s = 28.6/s; 50 ÷ (28.6 − 18) = 4.7 → **4 s**. The delta chip by the ghost reads `DPS 15→17 ▲ / mana ∞→4 s ▼`. This is the v2 lesson in one glance: power costs mana, and the bar says how much.

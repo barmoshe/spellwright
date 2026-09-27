@@ -10,6 +10,7 @@ A frame key is the **art-slot-map JSON path** of the slot (dot-joined, `art` seg
 |---|---|---|
 | `player.<skin>.{idle,run,hit}.N` | `player.wizzard_m.run.2` | world |
 | `enemies.<id>.{idle,move,windup_frame}.N` | `enemies.fire_imp.idle.0` | world |
+| `{enemies,bosses}.<id>.{idle,move,windup_frame}.{ring1,ring2}.N` | `enemies.brute.move.ring1.3` — white outline-only overlay (Chebyshev ring 1 / 2, +2 px pad; tint ring1 = first affix token or dark-twist #fdf7ed, ring2 = second affix). Index-synced to the body frame; `pivot` puts its feet on the body's feet (call `setOriginFromFrame()` after `setFrame`) | world |
 | `enemies.<id>.{idle,move,windup_frame}_elite.N` | `enemies.brute.move_elite.3` (baked 1 px `#facb3e` outline, +2 px) | world |
 | `enemies.<id>.shadow.0`, `bosses.<id>.{idle,move,shadow}.N`, `bosses.<id>.weapon_overlay.<name>.0` | `bosses.archlich.weapon_overlay.boss_lich_staff.0` | world |
 | `spells.<id>.projectile.N` | `spells.vortex.projectile.12` | world |
@@ -34,26 +35,59 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 
 ## Atlases
 
-### `world` — 1024×1024 (4.0 MB RGBA8), 705 keys / 552 unique rects
+### `world` — 1024×1024 (4.0 MB RGBA8), 1528 keys / 1000 unique rects
 
+- `authored.armour_chip_f0`
+- `authored.armour_chip_f1`
+- `authored.armour_chip_f2`
+- `authored.bone_pile`
+- `authored.bone_shard`
+- `authored.book_pile`
+- `authored.bookshelf_a`
+- `authored.bookshelf_b`
+- `authored.bookshelf_burning_f0`
+- `authored.bookshelf_burning_f1`
+- `authored.bookshelf_burning_f2`
+- `authored.bookshelf_collapsed`
+- `authored.bound_tome_f0`
+- `authored.bound_tome_f1`
+- `authored.candelabra_f0`
+- `authored.candelabra_f1`
+- `authored.candelabra_f2`
+- `authored.candle_f0`
+- `authored.candle_f1`
+- `authored.candle_f2`
+- `authored.cobweb`
+- `authored.drip_f0`
+- `authored.drip_f1`
+- `authored.drip_f2`
+- `authored.drip_f3`
+- `authored.ebullet_arcane_11_f0`
+- `authored.ebullet_arcane_11_f1`
 - `authored.ebullet_arcane_13_f0`
 - `authored.ebullet_arcane_13_f1`
 - `authored.ebullet_arcane_7_f0`
 - `authored.ebullet_arcane_7_f1`
 - `authored.ebullet_arcane_9_f0`
 - `authored.ebullet_arcane_9_f1`
+- `authored.ebullet_fire_11_f0`
+- `authored.ebullet_fire_11_f1`
 - `authored.ebullet_fire_13_f0`
 - `authored.ebullet_fire_13_f1`
 - `authored.ebullet_fire_7_f0`
 - `authored.ebullet_fire_7_f1`
 - `authored.ebullet_fire_9_f0`
 - `authored.ebullet_fire_9_f1`
+- `authored.ebullet_frost_11_f0`
+- `authored.ebullet_frost_11_f1`
 - `authored.ebullet_frost_13_f0`
 - `authored.ebullet_frost_13_f1`
 - `authored.ebullet_frost_7_f0`
 - `authored.ebullet_frost_7_f1`
 - `authored.ebullet_frost_9_f0`
 - `authored.ebullet_frost_9_f1`
+- `authored.ebullet_poison_11_f0`
+- `authored.ebullet_poison_11_f1`
 - `authored.ebullet_poison_13_f0`
 - `authored.ebullet_poison_13_f1`
 - `authored.ebullet_poison_7_f0`
@@ -62,103 +96,312 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `authored.ebullet_poison_9_f1`
 - `authored.eye_turret_f0`
 - `authored.eye_turret_f1`
+- `authored.floor_w3_a`
+- `authored.floor_w3_b`
+- `authored.floor_w3_c`
 - `authored.glow_16`
 - `authored.glow_32`
 - `authored.glow_64`
+- `authored.lectern`
+- `authored.light_r28`
+- `authored.light_r72`
+- `authored.moss_a`
+- `authored.moss_b`
+- `authored.rune_circle`
+- `authored.scroll_pile`
 - `authored.shadow_10x3`
 - `authored.shadow_22x5`
+- `authored.shield_arc_r10`
+- `authored.shield_arc_r12`
+- `authored.shield_arc_r14`
+- `authored.shield_arc_r16`
+- `authored.shield_arc_r18`
+- `authored.shield_arc_r22`
+- `authored.shield_arc_r10_hit`
+- `authored.shield_arc_r12_hit`
+- `authored.shield_arc_r14_hit`
+- `authored.shield_arc_r16_hit`
+- `authored.shield_arc_r18_hit`
+- `authored.shield_arc_r22_hit`
 - `authored.slimelet_f0`
 - `authored.slimelet_f1`
 - `authored.tile_pit_void`
+- `authored.tile_pit_water_f0`
+- `authored.tile_pit_water_f1`
+- `authored.tile_pit_water_f2`
+- `authored.tile_water_f0`
+- `authored.tile_water_f1`
+- `authored.tile_water_f2`
+- `authored.wall_shelf`
+- `authored.ward_rune_full`
+- `authored.ward_rune_regrow`
+- `authored.ward_rune_spent`
+- `authored.water_edge_n`
 - `bosses.archlich.idle.{0..3}`
+- `bosses.archlich.idle.ring1.{0..3}`
+- `bosses.archlich.idle.ring2.{0..3}`
 - `bosses.archlich.move.{0..3}`
+- `bosses.archlich.move.ring1.{0..3}`
+- `bosses.archlich.move.ring2.{0..3}`
 - `bosses.archlich.shadow.0`
 - `bosses.archlich.weapon_overlay.boss_lich_staff.0`
+- `bosses.grave_warden.idle.{0..3}`
+- `bosses.grave_warden.idle.ring1.{0..3}`
+- `bosses.grave_warden.idle.ring2.{0..3}`
+- `bosses.grave_warden.move.{0..3}`
+- `bosses.grave_warden.move.ring1.{0..3}`
+- `bosses.grave_warden.move.ring2.{0..3}`
+- `bosses.grave_warden.shadow.0`
+- `bosses.grave_warden.weapon_overlay.warden_shield.0`
+- `bosses.grave_warden.weapon_overlay.warden_spear.0`
+- `bosses.iron_colossus.idle.{0..3}`
+- `bosses.iron_colossus.idle.ring1.{0..3}`
+- `bosses.iron_colossus.idle.ring2.{0..3}`
+- `bosses.iron_colossus.move.{0..3}`
+- `bosses.iron_colossus.move.ring1.{0..3}`
+- `bosses.iron_colossus.move.ring2.{0..3}`
+- `bosses.iron_colossus.shadow.0`
+- `bosses.lantern_matron.idle.{0..3}`
+- `bosses.lantern_matron.idle.ring1.{0..3}`
+- `bosses.lantern_matron.idle.ring2.{0..3}`
+- `bosses.lantern_matron.move.{0..3}`
+- `bosses.lantern_matron.move.ring1.{0..3}`
+- `bosses.lantern_matron.move.ring2.{0..3}`
+- `bosses.lantern_matron.shadow.0`
 - `bosses.mire_queen.idle.{0..3}`
+- `bosses.mire_queen.idle.ring1.{0..3}`
+- `bosses.mire_queen.idle.ring2.{0..3}`
 - `bosses.mire_queen.move.{0..3}`
+- `bosses.mire_queen.move.ring1.{0..3}`
+- `bosses.mire_queen.move.ring2.{0..3}`
 - `bosses.mire_queen.shadow.0`
 - `bosses.ossuary_knight.idle.{0..3}`
+- `bosses.ossuary_knight.idle.ring1.{0..3}`
+- `bosses.ossuary_knight.idle.ring2.{0..3}`
 - `bosses.ossuary_knight.move.{0..3}`
+- `bosses.ossuary_knight.move.ring1.{0..3}`
+- `bosses.ossuary_knight.move.ring2.{0..3}`
 - `bosses.ossuary_knight.shadow.0`
 - `bosses.ossuary_knight.weapon_overlay.boss_knight_blade.0`
+- `defences.armour.hit_fx.{0..2}`
+- `defences.shield.bubble.{0..5}`
+- `defences.shield.bubble_hit.{0..5}`
+- `defences.shield.held.cracked.0`
+- `defences.shield.held.fresh.0`
+- `defences.shield.held.worn.0`
+- `defences.ward.pips.{0..2}`
+- `enemies.animated_armor.idle.{0..3}`
+- `enemies.animated_armor.idle.ring1.{0..3}`
+- `enemies.animated_armor.idle.ring2.{0..3}`
+- `enemies.animated_armor.idle_elite.{0..3}`
+- `enemies.animated_armor.move.{0..3}`
+- `enemies.animated_armor.move.ring1.{0..3}`
+- `enemies.animated_armor.move.ring2.{0..3}`
+- `enemies.animated_armor.move_elite.{0..3}`
+- `enemies.animated_armor.overlays.weapon.0`
+- `enemies.animated_armor.shadow.0`
 - `enemies.bat.idle.{0..1}`
+- `enemies.bat.idle.ring1.{0..1}`
+- `enemies.bat.idle.ring2.{0..1}`
 - `enemies.bat.move.{0..1}`
+- `enemies.bat.move.ring1.{0..1}`
+- `enemies.bat.move.ring2.{0..1}`
 - `enemies.bat.shadow.0`
+- `enemies.bone_archer.idle.{0..3}`
+- `enemies.bone_archer.idle.ring1.{0..3}`
+- `enemies.bone_archer.idle.ring2.{0..3}`
+- `enemies.bone_archer.idle_elite.{0..3}`
+- `enemies.bone_archer.move.{0..3}`
+- `enemies.bone_archer.move.ring1.{0..3}`
+- `enemies.bone_archer.move.ring2.{0..3}`
+- `enemies.bone_archer.move_elite.{0..3}`
+- `enemies.bone_archer.overlays.weapon.0`
+- `enemies.bone_archer.shadow.0`
+- `enemies.bound_tome.idle.0`
+- `enemies.bound_tome.idle.ring1.0`
+- `enemies.bound_tome.idle.ring2.0`
+- `enemies.bound_tome.idle_elite.0`
+- `enemies.bound_tome.move.0`
+- `enemies.bound_tome.move.ring1.0`
+- `enemies.bound_tome.move.ring2.0`
+- `enemies.bound_tome.move_elite.0`
+- `enemies.bound_tome.shadow.0`
+- `enemies.bound_tome.windup_frame.0`
+- `enemies.bound_tome.windup_frame.ring1.0`
+- `enemies.bound_tome.windup_frame.ring2.0`
+- `enemies.bound_tome.windup_frame_elite.0`
 - `enemies.brute.idle.{0..3}`
+- `enemies.brute.idle.ring1.{0..3}`
+- `enemies.brute.idle.ring2.{0..3}`
 - `enemies.brute.idle_elite.{0..3}`
 - `enemies.brute.move.{0..3}`
+- `enemies.brute.move.ring1.{0..3}`
+- `enemies.brute.move.ring2.{0..3}`
 - `enemies.brute.move_elite.{0..3}`
 - `enemies.brute.shadow.0`
 - `enemies.cultist.idle.{0..3}`
+- `enemies.cultist.idle.ring1.{0..3}`
+- `enemies.cultist.idle.ring2.{0..3}`
 - `enemies.cultist.idle_elite.{0..3}`
 - `enemies.cultist.move.{0..3}`
+- `enemies.cultist.move.ring1.{0..3}`
+- `enemies.cultist.move.ring2.{0..3}`
 - `enemies.cultist.move_elite.{0..3}`
 - `enemies.cultist.shadow.0`
+- `enemies.drowned_thrall.idle.{0..3}`
+- `enemies.drowned_thrall.idle.ring1.{0..3}`
+- `enemies.drowned_thrall.idle.ring2.{0..3}`
+- `enemies.drowned_thrall.idle_elite.{0..3}`
+- `enemies.drowned_thrall.move.{0..3}`
+- `enemies.drowned_thrall.move.ring1.{0..3}`
+- `enemies.drowned_thrall.move.ring2.{0..3}`
+- `enemies.drowned_thrall.move_elite.{0..3}`
+- `enemies.drowned_thrall.shadow.0`
 - `enemies.eye_turret.idle.0`
+- `enemies.eye_turret.idle.ring1.0`
+- `enemies.eye_turret.idle.ring2.0`
 - `enemies.eye_turret.idle_elite.0`
 - `enemies.eye_turret.move.0`
+- `enemies.eye_turret.move.ring1.0`
+- `enemies.eye_turret.move.ring2.0`
 - `enemies.eye_turret.move_elite.0`
 - `enemies.eye_turret.shadow.0`
 - `enemies.eye_turret.windup_frame.0`
+- `enemies.eye_turret.windup_frame.ring1.0`
+- `enemies.eye_turret.windup_frame.ring2.0`
 - `enemies.eye_turret.windup_frame_elite.0`
 - `enemies.fire_imp.idle.{0..3}`
+- `enemies.fire_imp.idle.ring1.{0..3}`
+- `enemies.fire_imp.idle.ring2.{0..3}`
 - `enemies.fire_imp.move.{0..3}`
+- `enemies.fire_imp.move.ring1.{0..3}`
+- `enemies.fire_imp.move.ring2.{0..3}`
 - `enemies.fire_imp.shadow.0`
 - `enemies.frost_mage.idle.{0..3}`
+- `enemies.frost_mage.idle.ring1.{0..3}`
+- `enemies.frost_mage.idle.ring2.{0..3}`
 - `enemies.frost_mage.idle_elite.{0..3}`
 - `enemies.frost_mage.move.{0..3}`
+- `enemies.frost_mage.move.ring1.{0..3}`
+- `enemies.frost_mage.move.ring2.{0..3}`
 - `enemies.frost_mage.move_elite.{0..3}`
 - `enemies.frost_mage.shadow.0`
+- `enemies.ink_imp.idle.{0..3}`
+- `enemies.ink_imp.idle.ring1.{0..3}`
+- `enemies.ink_imp.idle.ring2.{0..3}`
+- `enemies.ink_imp.move.{0..3}`
+- `enemies.ink_imp.move.ring1.{0..3}`
+- `enemies.ink_imp.move.ring2.{0..3}`
+- `enemies.ink_imp.shadow.0`
+- `enemies.lantern_acolyte.idle.{0..3}`
+- `enemies.lantern_acolyte.idle.ring1.{0..3}`
+- `enemies.lantern_acolyte.idle.ring2.{0..3}`
+- `enemies.lantern_acolyte.move.{0..3}`
+- `enemies.lantern_acolyte.move.ring1.{0..3}`
+- `enemies.lantern_acolyte.move.ring2.{0..3}`
+- `enemies.lantern_acolyte.shadow.0`
+- `enemies.mire_leech.idle.{0..3}`
+- `enemies.mire_leech.idle.ring1.{0..3}`
+- `enemies.mire_leech.idle.ring2.{0..3}`
+- `enemies.mire_leech.move.{0..3}`
+- `enemies.mire_leech.move.ring1.{0..3}`
+- `enemies.mire_leech.move.ring2.{0..3}`
+- `enemies.mire_leech.shadow.0`
 - `enemies.necromancer.idle.{0..3}`
+- `enemies.necromancer.idle.ring1.{0..3}`
+- `enemies.necromancer.idle.ring2.{0..3}`
 - `enemies.necromancer.idle_elite.{0..3}`
 - `enemies.necromancer.move.{0..3}`
+- `enemies.necromancer.move.ring1.{0..3}`
+- `enemies.necromancer.move.ring2.{0..3}`
 - `enemies.necromancer.move_elite.{0..3}`
 - `enemies.necromancer.shadow.0`
 - `enemies.skeleton.idle.{0..3}`
+- `enemies.skeleton.idle.ring1.{0..3}`
+- `enemies.skeleton.idle.ring2.{0..3}`
 - `enemies.skeleton.idle_elite.{0..3}`
 - `enemies.skeleton.move.{0..3}`
+- `enemies.skeleton.move.ring1.{0..3}`
+- `enemies.skeleton.move.ring2.{0..3}`
 - `enemies.skeleton.move_elite.{0..3}`
 - `enemies.skeleton.shadow.0`
 - `enemies.skull.idle.0`
+- `enemies.skull.idle.ring1.0`
+- `enemies.skull.idle.ring2.0`
 - `enemies.skull.move.0`
+- `enemies.skull.move.ring1.0`
+- `enemies.skull.move.ring2.0`
 - `enemies.skull.shadow.0`
 - `enemies.slime.idle.{0..3}`
+- `enemies.slime.idle.ring1.{0..3}`
+- `enemies.slime.idle.ring2.{0..3}`
 - `enemies.slime.idle_elite.{0..3}`
 - `enemies.slime.move.{0..3}`
+- `enemies.slime.move.ring1.{0..3}`
+- `enemies.slime.move.ring2.{0..3}`
 - `enemies.slime.move_elite.{0..3}`
 - `enemies.slime.shadow.0`
 - `enemies.slimelet.idle.{0..1}`
+- `enemies.slimelet.idle.ring1.{0..1}`
+- `enemies.slimelet.idle.ring2.{0..1}`
 - `enemies.slimelet.move.{0..1}`
+- `enemies.slimelet.move.ring1.{0..1}`
+- `enemies.slimelet.move.ring2.{0..1}`
 - `enemies.slimelet.shadow.0`
 - `enemies.stone_golem.idle.{0..3}`
+- `enemies.stone_golem.idle.ring1.{0..3}`
+- `enemies.stone_golem.idle.ring2.{0..3}`
 - `enemies.stone_golem.idle_elite.{0..3}`
 - `enemies.stone_golem.move.{0..3}`
+- `enemies.stone_golem.move.ring1.{0..3}`
+- `enemies.stone_golem.move.ring2.{0..3}`
 - `enemies.stone_golem.move_elite.{0..3}`
 - `enemies.stone_golem.shadow.0`
+- `enemies.tomb_sentinel.idle.{0..3}`
+- `enemies.tomb_sentinel.idle.ring1.{0..3}`
+- `enemies.tomb_sentinel.idle.ring2.{0..3}`
+- `enemies.tomb_sentinel.idle_elite.{0..3}`
+- `enemies.tomb_sentinel.move.{0..3}`
+- `enemies.tomb_sentinel.move.ring1.{0..3}`
+- `enemies.tomb_sentinel.move.ring2.{0..3}`
+- `enemies.tomb_sentinel.move_elite.{0..3}`
+- `enemies.tomb_sentinel.overlays.weapon.0`
+- `enemies.tomb_sentinel.shadow.0`
 - `enemies.wraith.idle.{0..3}`
+- `enemies.wraith.idle.ring1.{0..3}`
+- `enemies.wraith.idle.ring2.{0..3}`
 - `enemies.wraith.idle_elite.{0..3}`
 - `enemies.wraith.move.{0..3}`
+- `enemies.wraith.move.ring1.{0..3}`
+- `enemies.wraith.move.ring2.{0..3}`
 - `enemies.wraith.move_elite.{0..3}`
 - `enemies.wraith.shadow.0`
+- `enemy_bullets.arcane.11.{0..1}`
 - `enemy_bullets.arcane.13.{0..1}`
 - `enemy_bullets.arcane.7.{0..1}`
 - `enemy_bullets.arcane.9.{0..1}`
+- `enemy_bullets.fire.11.{0..1}`
 - `enemy_bullets.fire.13.{0..1}`
 - `enemy_bullets.fire.7.{0..1}`
 - `enemy_bullets.fire.9.{0..1}`
+- `enemy_bullets.frost.11.{0..1}`
 - `enemy_bullets.frost.13.{0..1}`
 - `enemy_bullets.frost.7.{0..1}`
 - `enemy_bullets.frost.9.{0..1}`
+- `enemy_bullets.poison.11.{0..1}`
 - `enemy_bullets.poison.13.{0..1}`
 - `enemy_bullets.poison.7.{0..1}`
 - `enemy_bullets.poison.9.{0..1}`
 - `fx.blink_puff.{0..12}`
+- `fx.block_spark.{0..1}`
 - `fx.cast_glyph.{0..15}`
 - `fx.chain_arc.{0..1}`
 - `fx.crate_break.{0..2}`
+- `fx.duo_unlock.{0..12}`
 - `fx.ebullet_pop.{0..3}`
 - `fx.enemy_slash.{0..6}`
 - `fx.explosion.{0..4}`
+- `fx.forge_merge.{0..12}`
 - `fx.freeze_shatter.{0..3}`
 - `fx.hit_ring.{0..5}`
 - `fx.hit_ring_large.{0..7}`
@@ -169,7 +412,15 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `fx.spawn_portal.{0..9}`
 - `fx.sputter_puff.{0..1}`
 - `fx.summon_sigil.{0..15}`
+- `fx.ward_kindle.{0..15}`
 - `fx.zap_bolt.0`
+- `icon16.feature_icons.corrupted`
+- `icon16.feature_icons.daily`
+- `icon16.feature_icons.duos`
+- `icon16.feature_icons.forge`
+- `icon16.modes.daily`
+- `icon16.modes.gentle`
+- `icon16.modes.standard`
 - `icon16.modifiers.accuracy`
 - `icon16.modifiers.bounce`
 - `icon16.modifiers.chain`
@@ -196,31 +447,42 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `icon16.modifiers.trigger_timer`
 - `icon16.modifiers.triple_cast`
 - `icon16.relics.alchemist_stone`
-- `icon16.relics.arcane_whetstone`
 - `icon16.relics.blast_boots`
-- `icon16.relics.deep_well`
+- `icon16.relics.blood_ink`
+- `icon16.relics.cracked_crown`
+- `icon16.relics.crowd_reader`
+- `icon16.relics.deepening_well`
 - `icon16.relics.echo_chamber`
+- `icon16.relics.echoing_payload`
 - `icon16.relics.ember_heart`
+- `icon16.relics.endless_page`
+- `icon16.relics.first_light`
 - `icon16.relics.frost_crown`
-- `icon16.relics.glass_lens`
-- `icon16.relics.greed_ring`
-- `icon16.relics.heart_vessel`
+- `icon16.relics.full_focus`
+- `icon16.relics.hollow_runes`
+- `icon16.relics.hungry_rune`
 - `icon16.relics.kindling`
-- `icon16.relics.magnet_charm`
-- `icon16.relics.mana_font`
+- `icon16.relics.last_stand`
 - `icon16.relics.merchant_seal`
+- `icon16.relics.misers_ring`
+- `icon16.relics.overflow_cell`
 - `icon16.relics.phoenix_feather`
+- `icon16.relics.plague_bloom`
 - `icon16.relics.plague_vial`
 - `icon16.relics.prism_shard`
-- `icon16.relics.quickened_quill`
-- `icon16.relics.sand_hourglass`
 - `icon16.relics.shadow_cloak`
 - `icon16.relics.shatter_heart`
+- `icon16.relics.steam_engine`
+- `icon16.relics.still_hand`
 - `icon16.relics.storm_battery`
+- `icon16.relics.storm_furnace`
+- `icon16.relics.tally_stone`
+- `icon16.relics.thorn_blaze`
 - `icon16.relics.thorn_mantle`
+- `icon16.relics.unbroken_seal`
+- `icon16.relics.unstable_core`
 - `icon16.relics.vampiric_fang`
 - `icon16.relics.warding_sigil`
-- `icon16.relics.winged_boots`
 - `icon16.reward_kind.modifier`
 - `icon16.reward_kind.relic`
 - `icon16.reward_kind.shop`
@@ -228,23 +490,47 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `icon16.reward_kind.treasure`
 - `icon16.reward_kind.wand`
 - `icon16.spells.arcane_orbit`
+- `icon16.spells.arcane_orbit_2`
+- `icon16.spells.blight_needle`
 - `icon16.spells.blink_bolt`
+- `icon16.spells.blink_bolt_2`
 - `icon16.spells.boomerang_blade`
+- `icon16.spells.boomerang_blade_2`
 - `icon16.spells.bouncing_burst`
+- `icon16.spells.bouncing_burst_2`
 - `icon16.spells.chain_lightning`
+- `icon16.spells.chain_lightning_2`
 - `icon16.spells.comet`
+- `icon16.spells.comet_2`
 - `icon16.spells.fire_bolt`
+- `icon16.spells.fire_bolt_2`
 - `icon16.spells.fireball`
+- `icon16.spells.fireball_2`
 - `icon16.spells.frost_lance`
+- `icon16.spells.frost_lance_2`
 - `icon16.spells.frost_nova`
+- `icon16.spells.frost_nova_2`
+- `icon16.spells.glacier_spike`
 - `icon16.spells.ice_shard`
+- `icon16.spells.ice_shard_2`
 - `icon16.spells.magic_missile`
+- `icon16.spells.magic_missile_2`
+- `icon16.spells.prism_spark`
+- `icon16.spells.reaper_disc`
 - `icon16.spells.rune_mine`
+- `icon16.spells.rune_mine_2`
 - `icon16.spells.spark_bolt`
+- `icon16.spells.spark_bolt_2`
+- `icon16.spells.sunburst`
+- `icon16.spells.tempest_chain`
 - `icon16.spells.thunder_orb`
+- `icon16.spells.thunder_orb_2`
 - `icon16.spells.toxic_flask`
+- `icon16.spells.toxic_flask_2`
 - `icon16.spells.venom_dart`
+- `icon16.spells.venom_dart_2`
 - `icon16.spells.vortex`
+- `icon16.spells.vortex_2`
 - `icon16.wands.apprentice_wand`
 - `icon16.wands.archmage_scepter`
 - `icon16.wands.chaos_branch`
@@ -270,23 +556,47 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `player.wizzard_m.idle.{0..3}`
 - `player.wizzard_m.run.{0..3}`
 - `spells.arcane_orbit.projectile.0`
+- `spells.arcane_orbit_2.projectile.0`
+- `spells.blight_needle.projectile.{0..5}`
 - `spells.blink_bolt.projectile.{0..5}`
+- `spells.blink_bolt_2.projectile.{0..5}`
 - `spells.boomerang_blade.projectile.0`
+- `spells.boomerang_blade_2.projectile.0`
 - `spells.bouncing_burst.projectile.0`
+- `spells.bouncing_burst_2.projectile.0`
 - `spells.chain_lightning.projectile.{0..5}`
+- `spells.chain_lightning_2.projectile.{0..5}`
 - `spells.comet.projectile.0`
+- `spells.comet_2.projectile.0`
 - `spells.fire_bolt.projectile.{0..5}`
+- `spells.fire_bolt_2.projectile.{0..5}`
 - `spells.fireball.projectile.{0..5}`
+- `spells.fireball_2.projectile.{0..5}`
 - `spells.frost_lance.projectile.{0..3}`
+- `spells.frost_lance_2.projectile.{0..3}`
 - `spells.frost_nova.projectile.0`
+- `spells.frost_nova_2.projectile.0`
+- `spells.glacier_spike.projectile.{0..1}`
 - `spells.ice_shard.projectile.0`
+- `spells.ice_shard_2.projectile.0`
 - `spells.magic_missile.projectile.{0..5}`
+- `spells.magic_missile_2.projectile.{0..5}`
+- `spells.prism_spark.projectile.{0..5}`
+- `spells.reaper_disc.projectile.0`
 - `spells.rune_mine.projectile.{0..1}`
+- `spells.rune_mine_2.projectile.{0..1}`
 - `spells.spark_bolt.projectile.{0..5}`
+- `spells.spark_bolt_2.projectile.{0..5}`
+- `spells.sunburst.projectile.0`
+- `spells.tempest_chain.projectile.{0..1}`
 - `spells.thunder_orb.projectile.{0..1}`
+- `spells.thunder_orb_2.projectile.{0..1}`
 - `spells.toxic_flask.projectile.0`
+- `spells.toxic_flask_2.projectile.0`
 - `spells.venom_dart.projectile.0`
+- `spells.venom_dart_2.projectile.0`
 - `spells.vortex.projectile.{0..12}`
+- `spells.vortex_2.projectile.{0..12}`
 - `status.burn.overlay.{0..1}`
 - `status.frozen.overlay.0`
 - `status.poison.overlay.{0..1}`
@@ -319,6 +629,7 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `tiles.wall_fountain.{0..6}`
 - `ui.badge_20`
 - `ui.badge_20_equipped`
+- `ui.card_evolved_corners_18`
 - `ui.card_modifier_18`
 - `ui.card_multicast_18`
 - `ui.card_spell_18`
@@ -351,8 +662,26 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `wands.stormcaller_staff.held.0`
 - `wands.twin_fork.drop`
 - `wands.twin_fork.held.0`
+- `world_cards.w1_sunken_crypt.emblem.0`
+- `world_cards.w2_drowned_halls.emblem.0`
+- `world_cards.w3_last_library.emblem.0`
+- `worlds.w1_sunken_crypt.props.bone_pile.0`
+- `worlds.w1_sunken_crypt.props.candles.{0..2}`
+- `worlds.w1_sunken_crypt.props.cobweb.0`
+- `worlds.w2_drowned_halls.pits.{0..2}`
+- `worlds.w2_drowned_halls.props.drain.{0..7}`
+- `worlds.w2_drowned_halls.props.drip.{0..3}`
+- `worlds.w2_drowned_halls.props.moss.{0..1}`
+- `worlds.w2_drowned_halls.water.{0..2}`
+- `worlds.w3_last_library.bookshelf.{0..1}`
+- `worlds.w3_last_library.floor.{0..2}`
+- `worlds.w3_last_library.props.book_pile.0`
+- `worlds.w3_last_library.props.candelabra.{0..2}`
+- `worlds.w3_last_library.props.lectern.0`
+- `worlds.w3_last_library.props.rune_circle.0`
+- `worlds.w3_last_library.props.scroll_pile.0`
 
-### `ui` — 1024×256 (1.0 MB RGBA8), 288 keys / 279 unique rects
+### `ui` — 1024×512 (2.0 MB RGBA8), 440 keys / 392 unique rects
 
 - `font.body`
 - `font.body_outline`
@@ -360,6 +689,13 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `font.heading_outline`
 - `font.small`
 - `font.small_outline`
+- `icon16.feature_icons.corrupted`
+- `icon16.feature_icons.daily`
+- `icon16.feature_icons.duos`
+- `icon16.feature_icons.forge`
+- `icon16.modes.daily`
+- `icon16.modes.gentle`
+- `icon16.modes.standard`
 - `icon16.modifiers.accuracy`
 - `icon16.modifiers.bounce`
 - `icon16.modifiers.chain`
@@ -386,31 +722,42 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `icon16.modifiers.trigger_timer`
 - `icon16.modifiers.triple_cast`
 - `icon16.relics.alchemist_stone`
-- `icon16.relics.arcane_whetstone`
 - `icon16.relics.blast_boots`
-- `icon16.relics.deep_well`
+- `icon16.relics.blood_ink`
+- `icon16.relics.cracked_crown`
+- `icon16.relics.crowd_reader`
+- `icon16.relics.deepening_well`
 - `icon16.relics.echo_chamber`
+- `icon16.relics.echoing_payload`
 - `icon16.relics.ember_heart`
+- `icon16.relics.endless_page`
+- `icon16.relics.first_light`
 - `icon16.relics.frost_crown`
-- `icon16.relics.glass_lens`
-- `icon16.relics.greed_ring`
-- `icon16.relics.heart_vessel`
+- `icon16.relics.full_focus`
+- `icon16.relics.hollow_runes`
+- `icon16.relics.hungry_rune`
 - `icon16.relics.kindling`
-- `icon16.relics.magnet_charm`
-- `icon16.relics.mana_font`
+- `icon16.relics.last_stand`
 - `icon16.relics.merchant_seal`
+- `icon16.relics.misers_ring`
+- `icon16.relics.overflow_cell`
 - `icon16.relics.phoenix_feather`
+- `icon16.relics.plague_bloom`
 - `icon16.relics.plague_vial`
 - `icon16.relics.prism_shard`
-- `icon16.relics.quickened_quill`
-- `icon16.relics.sand_hourglass`
 - `icon16.relics.shadow_cloak`
 - `icon16.relics.shatter_heart`
+- `icon16.relics.steam_engine`
+- `icon16.relics.still_hand`
 - `icon16.relics.storm_battery`
+- `icon16.relics.storm_furnace`
+- `icon16.relics.tally_stone`
+- `icon16.relics.thorn_blaze`
 - `icon16.relics.thorn_mantle`
+- `icon16.relics.unbroken_seal`
+- `icon16.relics.unstable_core`
 - `icon16.relics.vampiric_fang`
 - `icon16.relics.warding_sigil`
-- `icon16.relics.winged_boots`
 - `icon16.reward_kind.modifier`
 - `icon16.reward_kind.relic`
 - `icon16.reward_kind.shop`
@@ -418,23 +765,47 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `icon16.reward_kind.treasure`
 - `icon16.reward_kind.wand`
 - `icon16.spells.arcane_orbit`
+- `icon16.spells.arcane_orbit_2`
+- `icon16.spells.blight_needle`
 - `icon16.spells.blink_bolt`
+- `icon16.spells.blink_bolt_2`
 - `icon16.spells.boomerang_blade`
+- `icon16.spells.boomerang_blade_2`
 - `icon16.spells.bouncing_burst`
+- `icon16.spells.bouncing_burst_2`
 - `icon16.spells.chain_lightning`
+- `icon16.spells.chain_lightning_2`
 - `icon16.spells.comet`
+- `icon16.spells.comet_2`
 - `icon16.spells.fire_bolt`
+- `icon16.spells.fire_bolt_2`
 - `icon16.spells.fireball`
+- `icon16.spells.fireball_2`
 - `icon16.spells.frost_lance`
+- `icon16.spells.frost_lance_2`
 - `icon16.spells.frost_nova`
+- `icon16.spells.frost_nova_2`
+- `icon16.spells.glacier_spike`
 - `icon16.spells.ice_shard`
+- `icon16.spells.ice_shard_2`
 - `icon16.spells.magic_missile`
+- `icon16.spells.magic_missile_2`
+- `icon16.spells.prism_spark`
+- `icon16.spells.reaper_disc`
 - `icon16.spells.rune_mine`
+- `icon16.spells.rune_mine_2`
 - `icon16.spells.spark_bolt`
+- `icon16.spells.spark_bolt_2`
+- `icon16.spells.sunburst`
+- `icon16.spells.tempest_chain`
 - `icon16.spells.thunder_orb`
+- `icon16.spells.thunder_orb_2`
 - `icon16.spells.toxic_flask`
+- `icon16.spells.toxic_flask_2`
 - `icon16.spells.venom_dart`
+- `icon16.spells.venom_dart_2`
 - `icon16.spells.vortex`
+- `icon16.spells.vortex_2`
 - `icon16.wands.apprentice_wand`
 - `icon16.wands.archmage_scepter`
 - `icon16.wands.chaos_branch`
@@ -445,6 +816,13 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `icon16.wands.oak_staff`
 - `icon16.wands.stormcaller_staff`
 - `icon16.wands.twin_fork`
+- `icon32.feature_icons.corrupted`
+- `icon32.feature_icons.daily`
+- `icon32.feature_icons.duos`
+- `icon32.feature_icons.forge`
+- `icon32.modes.daily`
+- `icon32.modes.gentle`
+- `icon32.modes.standard`
 - `icon32.modifiers.accuracy`
 - `icon32.modifiers.bounce`
 - `icon32.modifiers.chain`
@@ -471,31 +849,42 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `icon32.modifiers.trigger_timer`
 - `icon32.modifiers.triple_cast`
 - `icon32.relics.alchemist_stone`
-- `icon32.relics.arcane_whetstone`
 - `icon32.relics.blast_boots`
-- `icon32.relics.deep_well`
+- `icon32.relics.blood_ink`
+- `icon32.relics.cracked_crown`
+- `icon32.relics.crowd_reader`
+- `icon32.relics.deepening_well`
 - `icon32.relics.echo_chamber`
+- `icon32.relics.echoing_payload`
 - `icon32.relics.ember_heart`
+- `icon32.relics.endless_page`
+- `icon32.relics.first_light`
 - `icon32.relics.frost_crown`
-- `icon32.relics.glass_lens`
-- `icon32.relics.greed_ring`
-- `icon32.relics.heart_vessel`
+- `icon32.relics.full_focus`
+- `icon32.relics.hollow_runes`
+- `icon32.relics.hungry_rune`
 - `icon32.relics.kindling`
-- `icon32.relics.magnet_charm`
-- `icon32.relics.mana_font`
+- `icon32.relics.last_stand`
 - `icon32.relics.merchant_seal`
+- `icon32.relics.misers_ring`
+- `icon32.relics.overflow_cell`
 - `icon32.relics.phoenix_feather`
+- `icon32.relics.plague_bloom`
 - `icon32.relics.plague_vial`
 - `icon32.relics.prism_shard`
-- `icon32.relics.quickened_quill`
-- `icon32.relics.sand_hourglass`
 - `icon32.relics.shadow_cloak`
 - `icon32.relics.shatter_heart`
+- `icon32.relics.steam_engine`
+- `icon32.relics.still_hand`
 - `icon32.relics.storm_battery`
+- `icon32.relics.storm_furnace`
+- `icon32.relics.tally_stone`
+- `icon32.relics.thorn_blaze`
 - `icon32.relics.thorn_mantle`
+- `icon32.relics.unbroken_seal`
+- `icon32.relics.unstable_core`
 - `icon32.relics.vampiric_fang`
 - `icon32.relics.warding_sigil`
-- `icon32.relics.winged_boots`
 - `icon32.reward_kind.modifier`
 - `icon32.reward_kind.relic`
 - `icon32.reward_kind.shop`
@@ -503,23 +892,47 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `icon32.reward_kind.treasure`
 - `icon32.reward_kind.wand`
 - `icon32.spells.arcane_orbit`
+- `icon32.spells.arcane_orbit_2`
+- `icon32.spells.blight_needle`
 - `icon32.spells.blink_bolt`
+- `icon32.spells.blink_bolt_2`
 - `icon32.spells.boomerang_blade`
+- `icon32.spells.boomerang_blade_2`
 - `icon32.spells.bouncing_burst`
+- `icon32.spells.bouncing_burst_2`
 - `icon32.spells.chain_lightning`
+- `icon32.spells.chain_lightning_2`
 - `icon32.spells.comet`
+- `icon32.spells.comet_2`
 - `icon32.spells.fire_bolt`
+- `icon32.spells.fire_bolt_2`
 - `icon32.spells.fireball`
+- `icon32.spells.fireball_2`
 - `icon32.spells.frost_lance`
+- `icon32.spells.frost_lance_2`
 - `icon32.spells.frost_nova`
+- `icon32.spells.frost_nova_2`
+- `icon32.spells.glacier_spike`
 - `icon32.spells.ice_shard`
+- `icon32.spells.ice_shard_2`
 - `icon32.spells.magic_missile`
+- `icon32.spells.magic_missile_2`
+- `icon32.spells.prism_spark`
+- `icon32.spells.reaper_disc`
 - `icon32.spells.rune_mine`
+- `icon32.spells.rune_mine_2`
 - `icon32.spells.spark_bolt`
+- `icon32.spells.spark_bolt_2`
+- `icon32.spells.sunburst`
+- `icon32.spells.tempest_chain`
 - `icon32.spells.thunder_orb`
+- `icon32.spells.thunder_orb_2`
 - `icon32.spells.toxic_flask`
+- `icon32.spells.toxic_flask_2`
 - `icon32.spells.venom_dart`
+- `icon32.spells.venom_dart_2`
 - `icon32.spells.vortex`
+- `icon32.spells.vortex_2`
 - `icon32.wands.apprentice_wand`
 - `icon32.wands.archmage_scepter`
 - `icon32.wands.chaos_branch`
@@ -550,6 +963,17 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `prompt.ps.square`
 - `prompt.ps.touchpad`
 - `prompt.ps.triangle`
+- `prompt.touch.auto`
+- `prompt.touch.back`
+- `prompt.touch.dash`
+- `prompt.touch.drag`
+- `prompt.touch.edit`
+- `prompt.touch.pause`
+- `prompt.touch.stick_l`
+- `prompt.touch.stick_r`
+- `prompt.touch.swap`
+- `prompt.touch.tap`
+- `prompt.touch.use`
 - `prompt.xbox.a`
 - `prompt.xbox.b`
 - `prompt.xbox.lb`
@@ -560,17 +984,26 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `prompt.xbox.view`
 - `prompt.xbox.x`
 - `prompt.xbox.y`
+- `ui.affix_burst`
+- `ui.affix_wing`
 - `ui.aim_pip_5x5`
 - `ui.badge_20`
 - `ui.badge_20_equipped`
 - `ui.bag_8`
 - `ui.banner.{0..2}`
 - `ui.bar_frame_6`
+- `ui.btn_round_38`
+- `ui.btn_round_38_disabled`
+- `ui.btn_round_38_pressed`
+- `ui.btn_sq_28`
+- `ui.btn_sq_28_pressed`
 - `ui.button`
 - `ui.button.hover`
 - `ui.button_primary`
 - `ui.button_primary.hover`
 - `ui.card_always_36`
+- `ui.card_evolved_corners_18`
+- `ui.card_evolved_corners_36`
 - `ui.card_modifier_18`
 - `ui.card_modifier_36`
 - `ui.card_multicast_18`
@@ -586,6 +1019,18 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `ui.cell_valid_36`
 - `ui.chip_7x7`
 - `ui.coin_icon.0`
+- `ui.def_armour`
+- `ui.def_shield`
+- `ui.def_ward`
+- `ui.door_armour`
+- `ui.door_none`
+- `ui.door_ranged`
+- `ui.door_risk`
+- `ui.door_shield`
+- `ui.door_summoner`
+- `ui.door_swarm`
+- `ui.door_unknown`
+- `ui.door_ward`
 - `ui.elem_arcane`
 - `ui.elem_fire`
 - `ui.elem_frost`
@@ -594,24 +1039,44 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `ui.focus_22`
 - `ui.focus_40`
 - `ui.g_arrow`
+- `ui.g_back_12`
 - `ui.g_chevron_5x3`
+- `ui.g_corrupt_7`
 - `ui.g_down`
+- `ui.g_goal_later`
+- `ui.g_goal_next`
+- `ui.g_goal_queued`
 - `ui.g_hand`
 - `ui.g_lock_7x7`
 - `ui.g_new_5x5`
 - `ui.g_no`
 - `ui.g_ok`
+- `ui.g_plus_7`
 - `ui.g_plus_5x5`
 - `ui.g_recharge`
+- `ui.g_star_7`
 - `ui.g_stop`
 - `ui.g_trigger`
 - `ui.g_up`
 - `ui.g_vuln_5x3`
 - `ui.g_warn`
 - `ui.g_wrap`
+- `ui.ghost_hand_16`
+- `ui.ghost_hand_tap_16`
 - `ui.hatch_4`
 - `ui.hearts.{0..2}`
+- `ui.heat_0`
+- `ui.heat_1`
+- `ui.heat_2`
+- `ui.heat_3`
+- `ui.heat_4`
+- `ui.heat_5`
 - `ui.keycap_12`
+- `ui.kw_blast`
+- `ui.kw_pierce`
+- `ui.kw_shock`
+- `ui.lvl_pips_18`
+- `ui.lvl_pips_36`
 - `ui.panel_dark`
 - `ui.panel_ornate`
 - `ui.pip3_arcane`
@@ -632,11 +1097,27 @@ Deviation from the studio default (kebab-case): keys keep the data ids' `snake_c
 - `ui.reward_kind_icons.boss.0`
 - `ui.reward_kind_icons.coins.0`
 - `ui.reward_kind_icons.heal.0`
+- `ui.rotate_32`
+- `ui.share_12`
 - `ui.shield_hex_13x12`
 - `ui.slash_18`
 - `ui.slash_36`
+- `ui.stick_knob_22`
+- `ui.stick_ring_58`
+- `ui.t_dash`
+- `ui.t_edit`
+- `ui.t_pause`
+- `ui.t_swap`
+- `ui.t_use_coin`
+- `ui.t_use_eye`
+- `ui.t_use_hand`
+- `ui.t_use_stair`
 - `ui.tab`
 - `ui.tab.selected`
+- `ui.target_tick_3`
+- `ui.ward_rune_full`
+- `ui.ward_rune_regrow`
+- `ui.ward_rune_spent`
 - `util.px2`
 
 ## Gamepad prompts (`prompt.*`, ui atlas)
@@ -677,10 +1158,21 @@ Lookup by W3C standard index is in `asset-manifest.json` → `prompts.byStdIndex
 | `pad_dpad_right` | `prompt.pad.dpad_right` | 12×12 | 15 |
 | `pad_stick_l` | `prompt.pad.stick_l` | 12×12 | — |
 | `pad_stick_r` | `prompt.pad.stick_r` | 12×12 | — |
+| `touch_stick_l` | `prompt.touch.stick_l` | 12×12 | — |
+| `touch_stick_r` | `prompt.touch.stick_r` | 12×12 | — |
+| `touch_auto` | `prompt.touch.auto` | 12×12 | — |
+| `touch_dash` | `prompt.touch.dash` | 12×12 | — |
+| `touch_swap` | `prompt.touch.swap` | 12×12 | — |
+| `touch_use` | `prompt.touch.use` | 12×12 | — |
+| `touch_edit` | `prompt.touch.edit` | 12×12 | — |
+| `touch_pause` | `prompt.touch.pause` | 12×12 | — |
+| `touch_tap` | `prompt.touch.tap` | 12×12 | — |
+| `touch_back` | `prompt.touch.back` | 12×12 | — |
+| `touch_drag` | `prompt.touch.drag` | 12×12 | — |
 
 ## Tilemap tileset (`tiles_f1`, `tiles_f2`, `tiles_f3`)
 
-Three images with an **identical layout** (floor-palette variants via `L_FLOOR_F2`/`L_FLOOR_F3`). `map.addTilesetImage(name, 'tiles_f1', 16, 16, 1, 2)`. Tile indices + wall autotile lookup: `assets/tiles/tileset-cd629cc4.json` (`index`, `wallLookup`).
+Three images with an **identical layout** (floor-palette variants via `L_FLOOR_F2`/`L_FLOOR_F3`). `map.addTilesetImage(name, 'tiles_f1', 16, 16, 1, 2)`. Tile indices + wall autotile lookup: `assets/tiles/tileset-e31334ba.json` (`index`, `wallLookup`).
 
 - Walls: 0x72 `atlas_walls_high` = Godot **3×3-minimal 47-blob** (godot-docs #3316). The mask table was decoded from the canonical reference template (47 unique masks). Bits `N=1 NE=2 E=4 SE=8 S=16 SW=32 W=64 NW=128`; `wallLookup[mask] = [bottomTileIndex, topTileIndex|-1]`. Draw bottom on layer `walls` at the cell, top on layer `wallTops` at the cell above (depth 80).
 - Floors: `floor_1..8` (weights in tileset JSON), `floor_atlas_0..48` (0x72 floor sheet; 10–13 = shadow fringe under walls).
@@ -708,7 +1200,7 @@ Glyphs: ASCII 32–126 + `…×·•` from the TTFs; `← → ↑ ↓` are TA-au
 
 ## Animations (`animation-export`)
 
-`assets/anims-bbb535dc.json` — `this.anims.fromJSON(json)`. Keys:
+`assets/anims-92bb5f19.json` — `this.anims.fromJSON(json)`. Keys:
 
 - `player_idle_f` — 4 f @ 6 fps, loop (world)
 - `player_run_f` — 4 f @ 12 fps, loop (world)
@@ -765,12 +1257,46 @@ Glyphs: ASCII 32–126 + `…×·•` from the TTFs; `← → ↑ ↓` are TA-au
 - `stone_golem_move` — 4 f @ 8 fps, loop (world)
 - `stone_golem_idle_elite` — 4 f @ 6 fps, loop (world)
 - `stone_golem_move_elite` — 4 f @ 8 fps, loop (world)
+- `tomb_sentinel_idle` — 4 f @ 6 fps, loop (world)
+- `tomb_sentinel_move` — 4 f @ 8 fps, loop (world)
+- `tomb_sentinel_idle_elite` — 4 f @ 6 fps, loop (world)
+- `tomb_sentinel_move_elite` — 4 f @ 8 fps, loop (world)
+- `lantern_acolyte_idle` — 4 f @ 6 fps, loop (world)
+- `lantern_acolyte_move` — 4 f @ 8 fps, loop (world)
+- `bone_archer_idle` — 4 f @ 6 fps, loop (world)
+- `bone_archer_move` — 4 f @ 8 fps, loop (world)
+- `bone_archer_idle_elite` — 4 f @ 6 fps, loop (world)
+- `bone_archer_move_elite` — 4 f @ 8 fps, loop (world)
+- `drowned_thrall_idle` — 4 f @ 6 fps, loop (world)
+- `drowned_thrall_move` — 4 f @ 8 fps, loop (world)
+- `drowned_thrall_idle_elite` — 4 f @ 6 fps, loop (world)
+- `drowned_thrall_move_elite` — 4 f @ 8 fps, loop (world)
+- `mire_leech_idle` — 4 f @ 6 fps, loop (world)
+- `mire_leech_move` — 4 f @ 8 fps, loop (world)
+- `animated_armor_idle` — 4 f @ 6 fps, loop (world)
+- `animated_armor_move` — 4 f @ 8 fps, loop (world)
+- `animated_armor_idle_elite` — 4 f @ 6 fps, loop (world)
+- `animated_armor_move_elite` — 4 f @ 8 fps, loop (world)
+- `bound_tome_idle` — 1 f @ 6 fps, loop (world)
+- `bound_tome_move` — 1 f @ 8 fps, loop (world)
+- `bound_tome_windup` — 1 f @ 1 fps, once (world)
+- `bound_tome_idle_elite` — 1 f @ 6 fps, loop (world)
+- `bound_tome_move_elite` — 1 f @ 8 fps, loop (world)
+- `bound_tome_windup_elite` — 1 f @ 1 fps, once (world)
+- `ink_imp_idle` — 4 f @ 6 fps, loop (world)
+- `ink_imp_move` — 4 f @ 8 fps, loop (world)
 - `ossuary_knight_idle` — 4 f @ 6 fps, loop (world)
 - `ossuary_knight_move` — 4 f @ 8 fps, loop (world)
 - `mire_queen_idle` — 4 f @ 6 fps, loop (world)
 - `mire_queen_move` — 4 f @ 8 fps, loop (world)
 - `archlich_idle` — 4 f @ 6 fps, loop (world)
 - `archlich_move` — 4 f @ 8 fps, loop (world)
+- `grave_warden_idle` — 4 f @ 6 fps, loop (world)
+- `grave_warden_move` — 4 f @ 8 fps, loop (world)
+- `lantern_matron_idle` — 4 f @ 6 fps, loop (world)
+- `lantern_matron_move` — 4 f @ 8 fps, loop (world)
+- `iron_colossus_idle` — 4 f @ 6 fps, loop (world)
+- `iron_colossus_move` — 4 f @ 8 fps, loop (world)
 - `spell_spark_bolt` — 6 f @ 15 fps, loop (world)
 - `spell_magic_missile` — 6 f @ 12 fps, loop (world)
 - `spell_fire_bolt` — 6 f @ 15 fps, loop (world)
@@ -781,6 +1307,20 @@ Glyphs: ASCII 32–126 + `…×·•` from the TTFs; `← → ↑ ↓` are TA-au
 - `spell_rune_mine` — 2 f @ 10 fps, loop (world)
 - `spell_blink_bolt` — 6 f @ 15 fps, loop (world)
 - `spell_vortex` — 13 f @ 20 fps, loop (world)
+- `spell_spark_bolt_2` — 6 f @ 15 fps, loop (world)
+- `spell_magic_missile_2` — 6 f @ 12 fps, loop (world)
+- `spell_fire_bolt_2` — 6 f @ 15 fps, loop (world)
+- `spell_fireball_2` — 6 f @ 15 fps, loop (world)
+- `spell_frost_lance_2` — 4 f @ 15 fps, loop (world)
+- `spell_chain_lightning_2` — 6 f @ 20 fps, loop (world)
+- `spell_thunder_orb_2` — 2 f @ 12 fps, loop (world)
+- `spell_rune_mine_2` — 2 f @ 10 fps, loop (world)
+- `spell_blink_bolt_2` — 6 f @ 15 fps, loop (world)
+- `spell_vortex_2` — 13 f @ 20 fps, loop (world)
+- `spell_tempest_chain` — 2 f @ 20 fps, loop (world)
+- `spell_glacier_spike` — 2 f @ 10 fps, loop (world)
+- `spell_blight_needle` — 6 f @ 15 fps, loop (world)
+- `spell_prism_spark` — 6 f @ 15 fps, loop (world)
 - `ebullet_arcane_7` — 2 f @ 8 fps, loop (world)
 - `ebullet_arcane_9` — 2 f @ 8 fps, loop (world)
 - `ebullet_arcane_13` — 2 f @ 8 fps, loop (world)
@@ -793,6 +1333,10 @@ Glyphs: ASCII 32–126 + `…×·•` from the TTFs; `← → ↑ ↓` are TA-au
 - `ebullet_fire_7` — 2 f @ 8 fps, loop (world)
 - `ebullet_fire_9` — 2 f @ 8 fps, loop (world)
 - `ebullet_fire_13` — 2 f @ 8 fps, loop (world)
+- `ebullet_arcane_11` — 2 f @ 8 fps, loop (world)
+- `ebullet_frost_11` — 2 f @ 8 fps, loop (world)
+- `ebullet_poison_11` — 2 f @ 8 fps, loop (world)
+- `ebullet_fire_11` — 2 f @ 8 fps, loop (world)
 - `fx_hit_ring` — 6 f @ 30 fps, once (world)
 - `fx_hit_ring_large` — 8 f @ 30 fps, once (world)
 - `fx_sputter_puff` — 2 f @ 12 fps, once (world)
@@ -810,6 +1354,10 @@ Glyphs: ASCII 32–126 + `…×·•` from the TTFs; `← → ↑ ↓` are TA-au
 - `fx_ebullet_pop` — 4 f @ 24 fps, once (world)
 - `fx_crate_break` — 3 f @ 16 fps, once (world)
 - `fx_cast_glyph` — 16 f @ 20 fps, loop (world)
+- `fx_ward_kindle` — 16 f @ 20 fps, loop (world)
+- `fx_forge_merge` — 13 f @ 20 fps, loop (world)
+- `fx_duo_unlock` — 13 f @ 20 fps, loop (world)
+- `fx_block_spark` — 2 f @ 20 fps, loop (world)
 - `status_burn` — 2 f @ 10 fps, loop (world)
 - `status_shocked` — 6 f @ 15 fps, loop (world)
 - `status_poison` — 2 f @ 4 fps, loop (world)
@@ -821,5 +1369,13 @@ Glyphs: ASCII 32–126 + `…×·•` from the TTFs; `← → ↑ ↓` are TA-au
 - `tiles_wall_fountain_mid` — 3 f @ 6 fps, loop (world)
 - `tiles_wall_fountain_basin` — 3 f @ 6 fps, loop (world)
 - `pickup_coin` — 4 f @ 10 fps, loop (world)
+- `world_candles` — 3 f @ 8 fps, loop (world)
+- `world_drain` — 8 f @ 8 fps, loop (world)
+- `world_drip` — 4 f @ 8 fps, loop (world)
+- `world_moss` — 2 f @ 8 fps, loop (world)
+- `world_pits_w2` — 3 f @ 4 fps, loop (world)
+- `world_water_w2` — 3 f @ 4 fps, loop (world)
+- `world_candelabra` — 3 f @ 8 fps, loop (world)
+- `world_bookshelf_burning` — 3 f @ 10 fps, loop (world)
 
 Player clips are per skin: the state-graph key `player_idle` binds to `player_idle_m` / `player_idle_f` (skin from `art-slot-map.player.skins[loadout]`). Rate scaling (run speed scale, golem ×0.75) is runtime `timeScale`.

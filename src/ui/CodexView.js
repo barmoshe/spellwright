@@ -58,9 +58,9 @@ export class CodexView {
       const x = 12 + i * tw, y = 28;
       const on = k === this.cat;
       const n = k === 'milestones' ? Save.meta.milestones.length : this.entries(k).filter((e) => this.known(k, e.id)).length, tot = this.entries(k).length;
-      const tx = txt(s, x + tw / 2, y + 1, t(`codex.cat.${k}`), 'T1', { origin: [0.5, 0], color: on ? C.text : C.dim });
+      // §2.3 #21: the count moves INTO the tab label ("Cards 12/43", T1)
+      const tx = txt(s, x + tw / 2, y + 4, `${t(`codex.cat.${k}`)} ${n}/${tot}`, 'T1', { origin: [0.5, 0], color: on ? C.text : C.dim });
       this.tabs.add(tx);
-      this.tabs.add(txt(s, x + tw / 2, y + 12, `${n}/${tot}`, 'Tsmall', { origin: [0.5, 0], color: C.dim }));
       if (on) this.tabs.add(s.add.rectangle(x + 8, y + 20, tw - 16, 2, C.gold).setOrigin(0));
       this.nav.add({ id: `cx:t:${k}`, x, y, w: tw, h: 20, onConfirm: () => this.setCat(k),
         nav: { down: 'cx:e:0', up: null } });
@@ -124,7 +124,7 @@ export class CodexView {
       d.add(richLine(s, x, y, [{ g: got ? 'ok' : 'lock' }, ' ', r.name], { role: 'T2' })); y += 16;
       line(r.desc, C.dim);
       const un = [];
-      for (const [kind, ids] of Object.entries(r.unlocks || {})) for (const id of ids) un.push(nameOf(kind, id));
+      for (const [kind, ids] of Object.entries(r.unlocks || {})) for (const id of ids) un.push(kind === 'stats' ? t(`goals.stat.${id.stat}`, { n: id.add }) : nameOf(kind, id));
       if (un.length) line(t('codex.unlocks', { list: un.join(', ') }));
       line(got ? t('codex.achieved') : t('codex.notYet'), got ? C.ok : C.dim);
       return;

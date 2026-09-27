@@ -27,7 +27,9 @@ const config = {
   scale: { mode: Phaser.Scale.NONE, width: VIEW_W, height: VIEW_H, zoom: 1 },
   pixelArt: true,                 // antialias off + roundPixels on (verified in the 4.1.0 build)
   render: { pixelArt: true, antialias: false, roundPixels: true },
-  input: { gamepad: false, keyboard: true, mouse: true, touch: false },   // pads: platform/gamepad.js (one Gamepad-API boundary)
+  // pads: platform/gamepad.js (one Gamepad-API boundary). Touch: menus tap through Phaser pointers; the in-run
+  // sticks/buttons are input/TouchSticks.js on the whole viewport (letterbox thumbs, mobile-touch-spec §1).
+  input: { gamepad: false, keyboard: true, mouse: true, touch: true, activePointers: 3 },
   disableContextMenu: true,
   physics: {
     default: 'arcade',

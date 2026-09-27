@@ -1,0 +1,156 @@
+{
+  "version": 2,
+  "$comment": "standard / gentle / daily. Heat tiers live in rules.heat.",
+  "modes": [
+    {
+      "id": "standard",
+      "nameKey": "mode.standard",
+      "descKey": "mode.standard.desc",
+      "requiresFeature": null
+    },
+    {
+      "id": "gentle",
+      "nameKey": "mode.gentle",
+      "descKey": "mode.gentle.desc",
+      "requiresFeature": null,
+      "rule": {
+        "bonusHalfHeartsPerLostRun": 1,
+        "bonusHalfHeartsCap": 4,
+        "absorbChancePerLostRun": 0.05,
+        "absorbChanceCap": 0.2,
+        "countsOnlyGentleLosses": true,
+        "neverDecreases": true
+      },
+      "excludes": [
+        "heat",
+        "daily"
+      ],
+      "goalsAllowed": true,
+      "copyRule": "Never shame: the HUD shows 'Gentle' and the bonus as a plain number; no 'easy' wording, no score penalty."
+    },
+    {
+      "id": "daily",
+      "nameKey": "mode.daily",
+      "descKey": "mode.daily.desc",
+      "requiresFeature": "daily",
+      "seed": {
+        "source": "utc_date",
+        "format": "YYYY-MM-DD",
+        "salt": "spellwright-daily-v1",
+        "hash": "fnv1a32"
+      },
+      "loadoutPool": [
+        "apprentice",
+        "pyromancer",
+        "stormcaller",
+        "hexer"
+      ],
+      "loadoutRespectsUnlocks": false,
+      "rulePool": [
+        {
+          "id": "double_elites",
+          "nameKey": "daily.double_elites",
+          "effects": [
+            {
+              "type": "run_rule",
+              "rule": "elite_rooms_extra_elite",
+              "value": 1
+            }
+          ]
+        },
+        {
+          "id": "glass",
+          "nameKey": "daily.glass",
+          "effects": [
+            {
+              "type": "player_stat",
+              "stat": "maxHp",
+              "op": "add",
+              "value": -2
+            },
+            {
+              "type": "shot_stat",
+              "stat": "critChance",
+              "op": "add",
+              "value": 0.15
+            }
+          ]
+        },
+        {
+          "id": "rich",
+          "nameKey": "daily.rich",
+          "effects": [
+            {
+              "type": "economy",
+              "field": "coinMult",
+              "op": "mult",
+              "value": 1.5
+            },
+            {
+              "type": "economy",
+              "field": "shopPriceMult",
+              "op": "mult",
+              "value": 1.25
+            }
+          ]
+        },
+        {
+          "id": "haste",
+          "nameKey": "daily.haste",
+          "effects": [
+            {
+              "type": "run_rule",
+              "rule": "enemy_speed_mult",
+              "value": 1.15
+            },
+            {
+              "type": "player_stat",
+              "stat": "moveSpeedMult",
+              "op": "mult",
+              "value": 1.1
+            }
+          ]
+        },
+        {
+          "id": "wide",
+          "nameKey": "daily.wide",
+          "effects": [
+            {
+              "type": "run_rule",
+              "rule": "wand_capacity_add",
+              "value": 1
+            },
+            {
+              "type": "player_stat",
+              "stat": "manaMaxMult",
+              "op": "mult",
+              "value": 0.8
+            }
+          ]
+        },
+        {
+          "id": "chaos",
+          "nameKey": "daily.chaos",
+          "effects": [
+            {
+              "type": "run_rule",
+              "rule": "all_wands_shuffle",
+              "value": true
+            }
+          ]
+        }
+      ],
+      "attempts": "unlimited_first_counts",
+      "excludes": [
+        "heat",
+        "gentle"
+      ],
+      "shareTemplate": "Spellwright Daily {date} | {loadout} + {rule} | {result} {floor}-{step} | {time} | {kills} kills",
+      "resultWords": {
+        "victory": "WON",
+        "death": "fell at",
+        "abandon": "left at"
+      }
+    }
+  ]
+}

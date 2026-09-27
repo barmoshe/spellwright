@@ -2,7 +2,7 @@
 
 **Owner:** UX Designer · **Status:** Wave 2, v1 · **Consumers:** Game Developer (`HudScene`, spatial UI in `RunScene`), 2D Artist (`ui-artwork`: HUD sprites at the sizes below), Animator (state-change `motion-spec` for the listed transitions), Audio Director (paired cues).
 **Built on:** `systems.md` §7 (the legibility surface: must-show / must-hide), `mechanic-spec.md` §2–§4 (HP, shield, dash, wand runtime state), `feel-spec.md` (damage-number, shake and camera tunables), `architecture.md` §3 (640×360, integer zoom), §9 (BitmapText only, HUD updates on bus events only), `scene-flow.md` §3 (HUD is non-modal and never takes input).
-**Coordinates:** internal canvas px, 640×360, origin top-left, boxes are `(x, y, w, h)`. Text roles T1 / T2 / T-small are defined in `accessibility-spec.md` §2.
+**Coordinates:** internal canvas px, 640×360, origin top-left, boxes are `(x, y, w, h)`. Text roles T1 / T2 are defined in `accessibility-spec.md` §2 (v2: T-small removed; T1 is the minimum).
 
 ---
 
@@ -42,17 +42,17 @@
 |---|---|---|---|---|---|---|
 | H1 | **Hearts** | x = 6 + 14·i, y 6; i < ⌈maxHp/2⌉ (max 6 → x 6–89) | `ui_heart_{full,half,empty}` 13×12 (0x72) | full / half / empty sprite shape. Hurt: the lost heart does a 2-frame white fill-flash (scaled by the flash setting). **Low HP** (HP ≤ 2): the remaining heart alpha-pulses 100↔55% at 1 Hz (reduced motion: static, plus the low-HP vignette, §3.4) | C1 | `player:hp` |
 | H2 | **Shield pip** | after the last heart, +2 px gap, y 6 | ward icon 13×12, **hexagon** silhouette (not a heart) | present / absent. Break: a 3-frame shatter (reduced motion: disappears) | C1 | `player:hp` (shield field) |
-| H3 | **Relic row** | x = 6 + 18·i, y 22, i < 8 (to x 149); overflow chip "+n" T-small at (150, 27) | relic mini-icon 16×16 | 100% alpha for 3 s after gain or proc, then **50%**. A proc (`on_event` relic fired): that icon flashes to 100% for 600 ms with a 1 px frame (reduced motion: frame only) | C2 | `relic:gained`, relic proc event |
+| H3 | **Relic row** | x = 6 + 18·i, y 22, i < 8 (to x 149); overflow "+n" T1 at (150, 24) (v2: T-small removed, §9.5) | relic mini-icon 16×16 | 100% alpha for 3 s after gain or proc, then **50%**. A proc (`on_event` relic fired): that icon flashes to 100% for 600 ms with a 1 px frame (reduced motion: frame only) | C2 | `relic:gained`, relic proc event |
 | H4 | **Floor track** | centred on x 320: "F1" T1 right-aligned at x 276, y 6; 10 pips at x = 280 + 9·step, y 8, 7×7 | pip glyphs 7×7 | **pip shape = room kind** of visited steps: start ○, combat ■, elite ◆, treasure ▲, shop ●, boss ☠ (9×9); future steps hollow □; **current** = 9×9 outline around its pip. 100% for 3 s on `room:enter` / `room:cleared`, then 40% | C2 | `room:enter`, `room:cleared` |
 | H5 | **Boss bar** (replaces H4 while a boss is active) | name T1 centred at y 4; bar (170, 17, 300, 6): 1 px frame, 298×4 fill | 9-slice bar from `ui-artwork` | phase-threshold **ticks** (1×8 px, white with a dark outline) at each `untilHpFrac`. Damage shows as a lighter "chip" segment that drains to the fill 400 ms after the last hit (reduced motion: instant). Phase change: the bar's frame flashes 2 frames and the name line gains "— Phase 2" for 2 s. Invulnerable windows: the fill gets a hatch pattern (not just grey) | C1 | `boss:phase`, boss hp |
 | H6 | **Coins** | number T1 right-aligned to x 634, y 6; coin icon 8×8, 2 px left of the number | coin 8×8 | +n: the number steps up (no roll-up count, which would be per-frame `setText`); the icon bobs 1 px for 120 ms (reduced motion: none). 100% for 2 s after a change, then 70% | C2 | `player:gold` |
 | H7 | **Bag fill** | "n/12" T1 right-aligned to x 634, y 20; bag icon 8×8 left of it | bag 8×8 | < 11: plain · 11: ⚠ icon added · 12: text becomes "FULL" plus ⛔ | C2 | card gained / removed |
-| H8 | **Wand badges** | 20×20 at x = 6 + 22·i, y 334 (i < wandSlots, max 4); the **equipped** badge is raised to y 330 with a 2 px bright frame | wand mini-icon 16×16 in a 20×20 frame | **Equipped**: raised plus a thick frame (position and shape, not colour). Each badge: a recharge overlay (dark 50% fill rising bottom-up in proportion to that wand's remaining recharge) and a mana line (1 px at inner y 351, width ∝ mana fraction). Key glyph (KB: "1"/"2"/"3" T-small in the badge's top-left; pad: "◂Y" / "RB▸" 8 px glyphs at y 322 over the first and last badges) | C1 (equipped) / C2 (others) | `wand:changed`, `wand:recharge`, coalesced `player:mana` |
-| H9 | **Toggle-cast indicator** | "AUTO" T-small chip at (76, 316) | text chip | shown only while toggle-cast is latched on (`settings-spec.md`) | C1 when present | input state |
-| H10 | **Slot strip** (active wand's program) | cells 18×18 at x = 76 + 19·i, y 324, i < capacity (cap 10 → x 76–265). With 4 wand badges, the strip starts at x 98 | card mini-icon 16×16 + 1 px frame; frame material + type badge per card type (`wand-editor-ux.md` §2.2) | **Drawn this cycle** → 40% alpha. **Next to draw** → 1 px bright frame + chevron (H11). **Skipped for mana** → slash overlay for 250 ms (the `sputter` twin). **Always-cast** → lock-badged cell before slot 1. **Empty wand** → the strip shows one dashed cell and "no spells" T-small | C1 | `wand:cast` (drawn indices), `wand:recharge`, `wand:changed` |
+| H8 | **Wand badges** | 20×20 at x = 6 + 22·i, y 334 (i < wandSlots, max 4); the **equipped** badge is raised to y 330 with a 2 px bright frame | wand mini-icon 16×16 in a 20×20 frame | **Equipped**: raised plus a thick frame (position and shape, not colour). Each badge: a recharge overlay (dark 50% fill rising bottom-up in proportion to that wand's remaining recharge) and a mana line (1 px at inner y 351, width ∝ mana fraction). Key glyph (v2: KB digits **dropped**, order = 1, 2, 3; pad: "◂Y" / "RB▸" in T1 at y 318 over the first and last badges, §9.5) | C1 (equipped) / C2 (others) | `wand:changed`, `wand:recharge`, coalesced `player:mana` |
+| H9 | **Toggle-cast indicator** | "AUTO" T1 chip at (76, 312) (v2, §9.5) | text chip | shown only while toggle-cast is latched on (`settings-spec.md`) | C1 when present | input state |
+| H10 | **Slot strip** (active wand's program) | cells 18×18 at x = 76 + 19·i, y 324, i < capacity (cap 10 → x 76–265). With 4 wand badges, the strip starts at x 98 | card mini-icon 16×16 + 1 px frame; frame material + type badge per card type (`wand-editor-ux.md` §2.2) | **Drawn this cycle** → 40% alpha. **Next to draw** → 1 px bright frame + chevron (H11). **Skipped for mana** → slash overlay for 250 ms (the `sputter` twin). **Always-cast** → lock-badged cell before slot 1. **Empty wand** → the strip shows one dashed cell and "no spells" T1 | C1 | `wand:cast` (drawn indices), `wand:recharge`, `wand:changed` |
 | H11 | **Next-card chevron** | 5×3 px under the next cell, y 343 | glyph | moves on each cast. Hidden during recharge (H12 uses the same row) | C1 | `wand:cast` |
 | H12 | **Recharge bar** | (76, 343, 19·cap − 1, 2) | 2 px bar | fills left → right over the effective recharge; the strip cells stay at 40%. On completion: the chevron returns to cell 1 and the strip does a 1-frame brighten (reduced motion: no brighten). **Mutually exclusive with H11** (same row, the state decides) | C1 | `wand:recharge` start/end |
-| H13 | **Mana bar** | frame (76, 348, 120, 6), fill 118×4; the value "42" in T-small at (199, 348) | 3-slice bar | fill ∝ mana/max. **Sputter** (skip): the frame flashes 90 ms (`sputterFlashMs`, flash-scaled) and the skipped cell gets its slash (H10). Low (< the cost of the next card): the fill is **hatched**, not just recoloured | C1 | coalesced `player:mana` (≤ 1 per step) |
+| H13 | **Mana bar** | frame (76, 348, 120, 6), fill 118×4; the value "42" in T1 at (199, 344) (v2, §9.5) | 3-slice bar | fill ∝ mana/max. **Sputter** (skip): the frame flashes 90 ms (`sputterFlashMs`, flash-scaled) and the skipped cell gets its slash (H10). Low (< the cost of the next card): the fill is **hatched**, not just recoloured | C1 | coalesced `player:mana` (≤ 1 per step) |
 | H14 | **Toasts** | right-aligned column (434, 300, 200, 54), stacking upward from y 354; max 2 visible, newer at the bottom, FIFO queue | panel 9-slice, 16 px icon + T1 (≤ 2 lines) | 3 s + 1 s per extra line; frozen while any modal is open. Reduced motion: fade only, no slide | C3 | §5 |
 | H15 | **Centre banners** | centred, y 70–96, no backing panel, 1 px dark text outline | T2 (floor title: T1 at ×2 integer scale) | "Room cleared" 1.2 s · floor title card "Floor 2 — The Drowned Halls" 1.8 s · boss name card during the `bossActivateDelayMs` 1200 ms. Never shown during active combat (queued until the room clears) | C3 | `room:cleared`, floor enter, boss intro |
 
@@ -116,7 +116,7 @@ H1 pulse (§2.1) plus the **single allowed camera-level filter** (architecture �
 
 ### 3.5 Device glyph swap
 
-Every glyph in the HUD (H8 keys, prompts, toasts that name inputs) swaps on the `input:device` event (architecture §8). Keycaps are 12×12 with a T-small or T1 legend. Pad glyphs are the Standard-mapping face positions (A / B / X / Y drawn as **position diamonds with a letter**, so a player on a non-Xbox pad reads the position, not a colour). **Prompt families (kbm / Xbox / PlayStation), the glyph table and the 12 px size contract are in `controller-prompts.md`**, which supersedes the pad-legend details here.
+Every glyph in the HUD (H8 keys, prompts, toasts that name inputs) swaps on the `input:device` event (architecture §8). Keycaps are 12 px tall with a T1 legend (v2: T-small removed). Pad glyphs are the Standard-mapping face positions (A / B / X / Y drawn as **position diamonds with a letter**, so a player on a non-Xbox pad reads the position, not a colour). **Prompt families (kbm / Xbox / PlayStation), the glyph table and the 12 px size contract are in `controller-prompts.md`**, which supersedes the pad-legend details here.
 
 ---
 
@@ -179,3 +179,80 @@ Toasts never announce things the player just did deliberately (e.g. "Wand switch
 - **Diegetic vs non-diegetic justified per element:** §2.1 and §3.3. Precise counts (HP, mana, program) are non-diegetic; readiness needed mid-dodge is spatial; telegraphs and statuses are diegetic (Animator/Artist). ✔
 - **Survives the smallest viewport:** 640×360 *is* the smallest internal canvas. At the minimum effective scale ×2 (objection O-UX-1), T1 text is 14 CSS px cap height. ✔
 - **Doesn't obscure the play field:** 0 px² in ≤ 32×18 rooms, ≤ 4.5% of the outer floor row in 36–40-wide rooms, plus the occlusion fade (§2.3, §3.2). ✔
+
+---
+
+## §9 v2: the layout as one reflowable object, and the touch profile
+
+**Status:** v2 Wave A1. It **supersedes** the hard-coded constants in §2.1 for implementation: every position in §2.1 becomes the `desktop` profile of the function below. The touch controls themselves are specified in `mobile-touch-spec.md`.
+
+### 9.1 One object: `layoutFor(profile, S)`
+
+`src/ui/hudLayout.js` exports a **pure** function `layoutFor(profile ∈ {desktop, touch}, S = {l, t, r, b} safe rect in game px, opts = {stickSide, wandCount, capacity})`. It returns **every** HUD rect by name: `hearts`, `shield`, `relics`, `track`, `bossBar`, `bossName`, `coins`, `bag`, `badges[]`, `strip`, `chevronRow`, `mana`, `manaText`, `counters`, `auto`, `toast`, `banner`, `clusters{…}` (for the occlusion fade), `buttons{dash, swap, use, pause, edit}` (hit and visual), and `zones{move, aim}`.
+- `HudScene` and `TouchSticks` read **only** this object. No other file holds a HUD coordinate.
+- **Rebuild** on `EV.DISPLAY_CHANGED` (a resize, rotation or safe-inset change), on a profile switch (`mobile-touch-spec.md` §5.1), on wand count or capacity changes, and on a `touchStickSide` change. A rebuild re-positions existing display objects; it never re-creates them. Pooled state (fades, timers) is kept.
+- **Desktop profile:** `S` is always the full canvas (no insets on desktop), and it returns exactly the §2.1 numbers (with the §9.5 text promotions).
+
+### 9.2 Touch profile positions (game px; `sl, st` = S.left/top, `sr = 640 − sR`, `sb = 360 − sB`)
+
+Profile A = `S (0,0,640,360)`. Profile B = `S (0,0,640,340)` (notched iPhones, `mobile-touch-spec.md` §1). **All persistent HUD moves into a top band `y ∈ [st, st + 54)`**, because the bottom corners belong to the thumbs.
+
+| Element | Touch position (formula) | Profile A | Profile B | Change from desktop |
+|---|---|---|---|---|
+| H1 hearts | `(sl + 6 + 14i, st + 6)` | (6 + 14i, 6) | same | unchanged |
+| H2 shield | after the last heart, +2 px | — | — | unchanged |
+| H8 wand badges (display only; SWAP is the input) | `(sl + 6 + 22i, st + 26)` 20×20; the equipped badge is raised to `st + 22` | (6, 26)… | same | moved from bottom-left to the top band |
+| H10 slot strip | `x = sl + 76 + 19i` (or `+ 98` with 4 wands), `y = st + 24`, cells 18×18 | 76–265, y 24–41 | same | moved |
+| H11/H12 chevron / recharge row | `y = st + 43`, 2–3 px | y 43 | same | moved |
+| H13 mana bar | `(sl + 76, st + 46, 120, 6)`; value T1 at `(sl + 199, st + 42)` | (76, 46) | same | moved; value promoted to T1 |
+| **Counter pips** (new, §9.3) | `x = sl + 224 + 9k` (k < 3), `y = st + 46`, 7×7 | 224, 233, 242 | same | new |
+| H4 floor track | label T1 right-aligned at `x = 352`; pips `x = 356 + 9·step`, `y = st + 8` | 356–447 | same | moved right (clears the strip) |
+| H5 boss bar | name T1 centred at `x = 398`, `y = st + 4`; bar `(300, st + 19, 196, 6)`. **Mini-boss:** × `rules.boss.miniBossBarScale` 0.6 → `(339, st + 19, 118, 6)` | x 300–496 | same | narrower (clears the bag and relics) |
+| **Mode badge** (new) | T1, right-aligned at `x = 334`, `y = st + 6`: "Heat 3" · "Gentle +2♥ 10%" · "Daily". Hidden while a boss bar shows. C2 (fades to 40% like the track). | 257–334 | same | new |
+| H6 coins | T1 right-aligned to `x = sr − 100`, `y = st + 6` | right edge 540 | same | moved left of the buttons |
+| H7 bag | right-aligned to `sr − 100`, `y = st + 20` | 540 | same | moved |
+| H3 relics | right-aligned row ending at `sr − 100`, `y = st + 34`, 16×16, pitch 18, **max 5**, then "+n" T1 to their left | 452–540 | same | fewer visible (Pause → Relics lists all) |
+| PAUSE / EDIT buttons | `mobile-touch-spec.md` §4.1 | 600–640 / 556–596 × 0–40 | same | new |
+| DASH / SWAP / USE | `mobile-touch-spec.md` §4.1 | (610,330) / (610,280) / (560,330) | (610,310) / (610,260) / (560,310) | new |
+| H9 AUTO chip | not shown (toggle-cast doesn't apply on touch) | — | — | hidden |
+| H14 toasts | centred on x 320, top `st + 56`, max width 280 (180–460), **1 visible** | y 56–84 | same | moved from bottom-right (DASH lives there) |
+| H15 banners | centred, `y = st + 100 … st + 126` | 100–126 | same | moved down (clears toasts) |
+| Move / aim zones | `x < 320` / `x ≥ 320`, `y ≥ st + 54`, extended into the letterbox; aim minus the button hit rects + 4 px | — | — | new |
+
+**Band audit:** the top band holds TL (x 6–288), TC (x 300–496) and TR (x 452–640, rows staggered). The relics' y 34–50 and the boss bar's y 19–25 don't intersect. The bag's x 506–540 at y 20–32 and the bar's x ≤ 496 don't intersect. Band area ≈ 640 × 54 = 34 560 px² (15%). It sits over the top wall rows in every room ≤ 32×18, and the occlusion fade (§3.2) covers larger rooms.
+
+**Desktop additions:** mode badge T1 right-aligned at `(258, 6)`, hidden during boss fights. **Mini-boss bar** desktop: `(230, 17, 180, 6)` (300 × 0.6, centred on 320). Both join the `tc` occlusion cluster.
+
+### 9.3 Counter pips (new, for the v2 defence/keyword system; both profiles)
+
+- **What:** one 7×7 pip per **defence type present in the room**: `shield` (broken by **pierce**; directional, it blocks from its front 150°), `armour` (**blast**), `ward` (**shock**) (`rules.defences` / `rules.keywords.defenceBreaking`). Each pip uses the art's defence-icon shape. **Filled** with a `#fdf7ed` rim = the equipped wand's program produces the counter keyword (from the same dry-run as the editor's Enables chips, `wand-editor-ux.md` §11). **Hollow** at α 0.5 = it doesn't.
+- **When:** only while ≥ 1 living enemy with that defence is in the room (C1 while shown). This way the pip row is quiet 90% of the time and pops when it matters.
+- **Desktop position:** `x = 222 + 9k`, `y = 347` (right of the promoted mana value). The SWAP button (touch) shows the *next* wand's pips under its icon, so switching to the counter wand is one glance and one press.
+- **Non-colour:** shape = defence type; fill vs hollow = countered. No hue is load-bearing.
+
+### 9.4 Validator and debug overlay (DOG 3 of `mobile-touch-spec.md`)
+
+`layoutFor` runs `validateLayout(L)` on every rebuild in `?debug`, and once at boot in all builds, logging only. It asserts:
+(a) every rect lies inside `S` (buttons and HUD) or inside the viewport (zones);
+(b) no two **interactive** rects intersect;
+(c) no **persistent** HUD rect intersects `zones.move` or `zones.aim`;
+(d) C3 transients (toast, banner) lie only in the zones' top strip `y < st + 130`, where thumbs don't rest;
+(e) every touch hit rect is ≥ 37 px on its smaller side (DASH/SWAP/USE 46, PAUSE/EDIT 40).
+A failed assertion prints the pair of rect names. `?debug` + **F4** draws every rect as a 1 px outline, with interactive rects dashed.
+
+### 9.5 Text promotions in the HUD (the `Tsmall` role is removed; `accessibility-spec.md` §2.3)
+
+H3 "+n" → T1 · H8 key digits → **dropped** (left-to-right order is 1, 2, 3; the Controls table lists the keys) · H8 pad shoulder glyphs → T1 at `y = 318` (desktop) · H9 "AUTO" → T1 at `(76, 312)` · H10 "no spells" → T1 · H13 mana value → T1 at `(199, 344)` desktop / `(sl + 199, st + 42)` touch. Area budget (§2.2) is recomputed: bottom-left cluster `(6, 312, 264, 42)` = 11 088 px²; total persistent **8.3%** on desktop.
+
+### 9.6 v2 in-world additions (§6 rows)
+
+| Element | Trigger | Placement | Content |
+|---|---|---|---|
+| **Door threat icon** | doors open | a **third** 16 px icon after room kind and reward kind | the defence or threat shape of the room behind the door (`design-v2.md` door `threat`). The door label (on approach) adds a line: "Threat: Shielded — needs PIERCE". "Unknown" is shown as `?` when the design hides it. |
+| **Mini-boss intro card** | a mini-boss activates (`tier: "mini"`) | centred, `y 60–110`; letterbox bars 16 px top and bottom slide in over 200 ms (reduced motion: they appear) during the activation delay | T2 name + T1 epithet + the adapt banner (T1) if a rule applied at activation (see the Adapt banner row). The HUD is dimmed to 40% for the card's duration. |
+| **Phase banner** | `boss:phase` (boss or mini-boss) | directly under the boss bar (desktop `y 26–38`; touch `st + 28 … st + 40`) | T1 "Phase 2", with the phase's new-attack name in T1 dim, for 1.5 s. The bar's frame flashes (flash-scaled). |
+| **Risk door** (`rules.risk`, max 1 per run) | doors open | a 16 px **risk** icon (the `door.risk` art) replaces the threat icon | the label adds "Risk: +1 elite · reward: choose 1 of 2 relics" (from `rules.risk`) |
+| **Twist banner** (`rules.twists`: ambush, dark) | on room entry, before wave 0 | the H15 banner slot | T1 "Ambush!" / "Darkness" + a one-line consequence ("Enemies spawn around you" / "Your light shows 4 tiles"). Once per room. Doors don't reveal twists unless the Designer's data says so. |
+| **Elite affix nameplate** (`data/affixes.json`) | an elite spawns | 3 px above the sprite | the **affix glyph** (7×7; `shield-plate`, `ward-rune`, `tower-shield`, `wing`, `burst`) stays **persistently** (with 2 affixes, two glyphs side by side). The **title** (T1, e.g. "Armoured") shows for 1.5 s on spawn and again for 1.5 s the first time the player hits it. It pairs with the Artist's outline key, so the glyph + title make it never colour-only (affixes.json `$comment`). |
+| **Adapt banner** (`bosses.json` `adapt[].bannerKey`) | a boss or mini-boss applies an adapt rule (≤ 1, `rules.boss.adaptMaxRulesApplied`) | the intro card's third line, or (for a mid-fight adapt) the phase-banner slot | T1, e.g. "The Warden's shield weakens" (a mercy rule) or "Resists fire" (a build-reading rule). This is the "reads your build" moment, so it is **always shown**, never hint-gated. |
+| **"BLOCKED" / "ARMOURED" / "WARDED" numbers** | a player hit is fully blocked, reduced, or absorbed by a defence | replaces the damage number | T1 word + the 7×7 defence icon, grey `#b6cbcf`, aggregated per enemy per **500 ms**, so shield spam never floods the screen. With a counter, the break shows "BROKEN" + icon, once. |

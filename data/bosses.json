@@ -1,13 +1,401 @@
 {
-  "version": 1,
-  "$comment": "Absolute HP (no floor mult). Phase i active while hpFrac > untilHpFrac. Patterns loop in order.",
+  "version": 2,
+  "$comment": "tier mini|boss. Absolute HP. Phase i active while hpFrac > untilHpFrac. Patterns loop in order. adapt: mechanic-spec §10.2.",
   "bosses": [
+    {
+      "id": "grave_warden",
+      "tier": "mini",
+      "name": "The Grave Warden",
+      "title": "Keeper of the Crypt Gate",
+      "floor": 1,
+      "hp": 260,
+      "radius": 10,
+      "speed": 40,
+      "kbResist": 1.0,
+      "contactDamage": 1,
+      "immune": [
+        "stun",
+        "freeze"
+      ],
+      "movement": {
+        "type": "chaser",
+        "stopRange": 36
+      },
+      "defence": {
+        "type": "shield",
+        "wearBlocks": 7
+      },
+      "attacks": [
+        {
+          "id": "shield_bash",
+          "type": "charge",
+          "windupMs": 800,
+          "recoverMs": 400,
+          "damage": 1,
+          "speed": 220,
+          "durationMs": 500,
+          "wallStunMs": 900
+        },
+        {
+          "id": "bone_toss",
+          "type": "shoot",
+          "windupMs": 600,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 3,
+          "spreadDeg": 30,
+          "speed": 105,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "raise_sentinel",
+          "type": "summon",
+          "windupMs": 900,
+          "recoverMs": 400,
+          "damage": 0,
+          "enemyId": "tomb_sentinel",
+          "count": 1,
+          "maxAlive": 1
+        }
+      ],
+      "phases": [
+        {
+          "untilHpFrac": 0.5,
+          "idleMs": 700,
+          "pattern": [
+            "shield_bash",
+            "bone_toss",
+            "bone_toss"
+          ],
+          "onEnter": null,
+          "bannerKey": "boss.grave_warden.phase1"
+        },
+        {
+          "untilHpFrac": 0.0,
+          "idleMs": 600,
+          "pattern": [
+            "raise_sentinel",
+            "shield_bash",
+            "bone_toss",
+            "shield_bash"
+          ],
+          "onEnter": {
+            "invulnMs": 800,
+            "clearProjectiles": true,
+            "shockwaveKnockback": 160,
+            "summon": null,
+            "regrowDefence": 1.0
+          },
+          "bannerKey": "boss.grave_warden.phase2"
+        }
+      ],
+      "intro": {
+        "titleKey": "boss.grave_warden.name",
+        "subtitleKey": "boss.grave_warden.subtitle"
+      },
+      "adapt": [
+        {
+          "id": "warden_mercy",
+          "when": {
+            "type": "lacks_keyword",
+            "keyword": "pierce"
+          },
+          "then": {
+            "type": "defence_param",
+            "field": "wearBlocks",
+            "value": 4
+          },
+          "bannerKey": "boss.adapt.mercy_shield"
+        }
+      ],
+      "heatAttack": "bone_toss",
+      "testKeyword": "pierce",
+      "arena": "crypt_arena",
+      "rewards": {
+        "relicDraft": 2,
+        "coins": 25,
+        "heal": 1
+      }
+    },
+    {
+      "id": "lantern_matron",
+      "tier": "mini",
+      "name": "The Lantern Matron",
+      "title": "Warden of the Drowned Choir",
+      "floor": 2,
+      "hp": 600,
+      "radius": 11,
+      "speed": 34,
+      "kbResist": 1.0,
+      "contactDamage": 1,
+      "immune": [
+        "stun",
+        "freeze"
+      ],
+      "movement": {
+        "type": "kiter",
+        "minRange": 120,
+        "maxRange": 170
+      },
+      "defence": {
+        "type": "ward",
+        "hits": 6
+      },
+      "attacks": [
+        {
+          "id": "lantern_ring",
+          "type": "ring",
+          "windupMs": 650,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 12,
+          "speed": 85,
+          "offsetDeg": 0,
+          "volleys": 1,
+          "volleyIntervalMs": 0,
+          "volleyOffsetDeg": 0,
+          "projectile": {
+            "radius": 4,
+            "element": "fire",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "kindle_choir",
+          "type": "ward_allies",
+          "windupMs": 800,
+          "recoverMs": 400,
+          "damage": 0,
+          "count": 3,
+          "hits": 3,
+          "radius": 160,
+          "self": false
+        },
+        {
+          "id": "call_acolytes",
+          "type": "summon",
+          "windupMs": 900,
+          "recoverMs": 400,
+          "damage": 0,
+          "enemyId": "lantern_acolyte",
+          "count": 2,
+          "maxAlive": 2
+        },
+        {
+          "id": "ember_fan",
+          "type": "shoot",
+          "windupMs": 550,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 5,
+          "spreadDeg": 50,
+          "speed": 115,
+          "projectile": {
+            "radius": 4,
+            "element": "fire",
+            "lifetimeMs": 3000
+          }
+        }
+      ],
+      "phases": [
+        {
+          "untilHpFrac": 0.5,
+          "idleMs": 650,
+          "pattern": [
+            "call_acolytes",
+            "lantern_ring",
+            "ember_fan",
+            "kindle_choir"
+          ],
+          "onEnter": null,
+          "bannerKey": "boss.lantern_matron.phase1"
+        },
+        {
+          "untilHpFrac": 0.0,
+          "idleMs": 550,
+          "pattern": [
+            "lantern_ring",
+            "call_acolytes",
+            "kindle_choir",
+            "ember_fan",
+            "lantern_ring"
+          ],
+          "onEnter": {
+            "invulnMs": 900,
+            "clearProjectiles": true,
+            "shockwaveKnockback": 180,
+            "summon": null,
+            "regrowDefence": 1.0
+          },
+          "bannerKey": "boss.lantern_matron.phase2"
+        }
+      ],
+      "intro": {
+        "titleKey": "boss.lantern_matron.name",
+        "subtitleKey": "boss.lantern_matron.subtitle"
+      },
+      "adapt": [
+        {
+          "id": "matron_mercy",
+          "when": {
+            "type": "lacks_keyword",
+            "keyword": "shock"
+          },
+          "then": {
+            "type": "defence_param",
+            "field": "hits",
+            "value": 3
+          },
+          "bannerKey": "boss.adapt.mercy_ward"
+        }
+      ],
+      "heatAttack": "ember_fan",
+      "testKeyword": "shock",
+      "arena": "crypt_arena",
+      "rewards": {
+        "relicDraft": 2,
+        "coins": 35,
+        "heal": 1
+      }
+    },
+    {
+      "id": "iron_colossus",
+      "tier": "mini",
+      "name": "The Iron Colossus",
+      "title": "The Library's Last Door",
+      "floor": 3,
+      "hp": 900,
+      "radius": 13,
+      "speed": 22,
+      "kbResist": 1.0,
+      "contactDamage": 1,
+      "immune": [
+        "stun",
+        "freeze"
+      ],
+      "movement": {
+        "type": "chaser",
+        "stopRange": 44
+      },
+      "defence": {
+        "type": "armour",
+        "points": 260
+      },
+      "attacks": [
+        {
+          "id": "quake",
+          "type": "slam",
+          "windupMs": 900,
+          "recoverMs": 700,
+          "damage": 2,
+          "radius": 52,
+          "at": "self",
+          "travelMs": 0,
+          "ring": {
+            "count": 10,
+            "speed": 90,
+            "projectile": {
+              "radius": 5,
+              "element": "arcane",
+              "lifetimeMs": 3000
+            }
+          }
+        },
+        {
+          "id": "rock_volley",
+          "type": "shoot",
+          "windupMs": 600,
+          "recoverMs": 400,
+          "damage": 1,
+          "count": 3,
+          "spreadDeg": 20,
+          "speed": 130,
+          "projectile": {
+            "radius": 5,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "iron_charge",
+          "type": "charge",
+          "windupMs": 950,
+          "recoverMs": 300,
+          "damage": 2,
+          "speed": 230,
+          "durationMs": 700,
+          "wallStunMs": 1300
+        }
+      ],
+      "phases": [
+        {
+          "untilHpFrac": 0.5,
+          "idleMs": 650,
+          "pattern": [
+            "rock_volley",
+            "quake",
+            "iron_charge"
+          ],
+          "onEnter": null,
+          "bannerKey": "boss.iron_colossus.phase1"
+        },
+        {
+          "untilHpFrac": 0.0,
+          "idleMs": 550,
+          "pattern": [
+            "quake",
+            "rock_volley",
+            "iron_charge",
+            "rock_volley"
+          ],
+          "onEnter": {
+            "invulnMs": 900,
+            "clearProjectiles": true,
+            "shockwaveKnockback": 200,
+            "summon": null,
+            "regrowDefence": 0.5
+          },
+          "bannerKey": "boss.iron_colossus.phase2"
+        }
+      ],
+      "intro": {
+        "titleKey": "boss.iron_colossus.name",
+        "subtitleKey": "boss.iron_colossus.subtitle"
+      },
+      "adapt": [
+        {
+          "id": "colossus_mercy",
+          "when": {
+            "type": "lacks_keyword",
+            "keyword": "blast"
+          },
+          "then": {
+            "type": "defence_param",
+            "field": "points",
+            "mult": 0.6
+          },
+          "bannerKey": "boss.adapt.mercy_armour"
+        }
+      ],
+      "heatAttack": "rock_volley",
+      "testKeyword": "blast",
+      "arena": "crypt_arena",
+      "rewards": {
+        "relicDraft": 2,
+        "coins": 45,
+        "heal": 1
+      }
+    },
     {
       "id": "ossuary_knight",
       "name": "The Ossuary Knight",
       "title": "Warden of the Sunken Crypt",
       "floor": 1,
-      "hp": 700,
+      "hp": 520,
       "radius": 12,
       "speed": 50,
       "kbResist": 1.0,
@@ -102,6 +490,30 @@
           "enemyId": "skeleton",
           "count": 2,
           "maxAlive": 3
+        },
+        {
+          "id": "shield_wall",
+          "type": "guard",
+          "windupMs": 600,
+          "recoverMs": 300,
+          "damage": 0,
+          "defence": {
+            "type": "shield"
+          },
+          "durationMs": 3000
+        },
+        {
+          "id": "bone_rain",
+          "type": "hazard",
+          "windupMs": 1000,
+          "recoverMs": 300,
+          "damage": 1,
+          "count": 6,
+          "radius": 20,
+          "durationMs": 1200,
+          "tickMs": 1200,
+          "element": "arcane",
+          "placement": "player+random"
         }
       ],
       "phases": [
@@ -115,13 +527,15 @@
             "cleave",
             "bone_fan"
           ],
-          "onEnter": null
+          "onEnter": null,
+          "bannerKey": "boss.ossuary_knight.phase1"
         },
         {
           "untilHpFrac": 0.0,
           "idleMs": 550,
           "pattern": [
             "cleave",
+            "shield_wall",
             "charge",
             "bone_ring_double",
             "raise_dead",
@@ -135,21 +549,59 @@
               "enemyId": "skeleton",
               "count": 3
             }
-          }
+          },
+          "bannerKey": "boss.ossuary_knight.phase2"
         }
       ],
       "rewards": {
         "relicDraft": 3,
         "coins": 60,
         "heal": 4
-      }
+      },
+      "tier": "boss",
+      "intro": {
+        "titleKey": "boss.ossuary_knight.name",
+        "subtitleKey": "boss.ossuary_knight.subtitle"
+      },
+      "adapt": [
+        {
+          "id": "knight_multicast",
+          "when": {
+            "type": "multicast_at_least",
+            "value": 3
+          },
+          "then": {
+            "type": "add_attack",
+            "attackId": "shield_wall",
+            "phase": 0
+          },
+          "bannerKey": "boss.adapt.shield_wall"
+        },
+        {
+          "id": "knight_fire",
+          "when": {
+            "type": "dominant_element",
+            "element": "fire",
+            "minShare": 0.5
+          },
+          "then": {
+            "type": "resist",
+            "element": "fire",
+            "mult": 0.75
+          },
+          "bannerKey": "boss.adapt.resist_fire"
+        }
+      ],
+      "heatAttack": "bone_rain",
+      "defence": null,
+      "testKeyword": null
     },
     {
       "id": "mire_queen",
       "name": "The Mire Queen",
       "title": "Mother of the Drowned Halls",
       "floor": 2,
-      "hp": 1500,
+      "hp": 1100,
       "radius": 12,
       "speed": 35,
       "kbResist": 1.0,
@@ -265,6 +717,35 @@
             "element": "poison",
             "lifetimeMs": 3000
           }
+        },
+        {
+          "id": "veil",
+          "type": "ward_allies",
+          "windupMs": 700,
+          "recoverMs": 300,
+          "damage": 0,
+          "count": 0,
+          "hits": 5,
+          "radius": 0,
+          "self": true
+        },
+        {
+          "id": "bog_surge",
+          "type": "ring",
+          "windupMs": 800,
+          "recoverMs": 500,
+          "damage": 1,
+          "count": 18,
+          "speed": 80,
+          "offsetDeg": 0,
+          "volleys": 2,
+          "volleyIntervalMs": 350,
+          "volleyOffsetDeg": 10,
+          "projectile": {
+            "radius": 4,
+            "element": "poison",
+            "lifetimeMs": 3000
+          }
         }
       ],
       "phases": [
@@ -278,13 +759,15 @@
             "brood",
             "aimed_glob"
           ],
-          "onEnter": null
+          "onEnter": null,
+          "bannerKey": "boss.mire_queen.phase1"
         },
         {
           "untilHpFrac": 0.0,
           "idleMs": 500,
           "pattern": [
             "spiral_spray_4",
+            "veil",
             "double_leap",
             "acid_pools",
             "aimed_glob",
@@ -295,21 +778,59 @@
             "clearProjectiles": true,
             "shockwaveKnockback": 200,
             "summon": null
-          }
+          },
+          "bannerKey": "boss.mire_queen.phase2"
         }
       ],
       "rewards": {
         "relicDraft": 3,
         "coins": 60,
         "heal": 4
-      }
+      },
+      "tier": "boss",
+      "intro": {
+        "titleKey": "boss.mire_queen.name",
+        "subtitleKey": "boss.mire_queen.subtitle"
+      },
+      "adapt": [
+        {
+          "id": "queen_poison",
+          "when": {
+            "type": "dominant_element",
+            "element": "poison",
+            "minShare": 0.4
+          },
+          "then": {
+            "type": "resist",
+            "element": "poison",
+            "mult": 0.6
+          },
+          "bannerKey": "boss.adapt.resist_poison"
+        },
+        {
+          "id": "queen_stream",
+          "when": {
+            "type": "cast_rate_above",
+            "value": 5
+          },
+          "then": {
+            "type": "add_attack",
+            "attackId": "veil",
+            "phase": 0
+          },
+          "bannerKey": "boss.adapt.veil"
+        }
+      ],
+      "heatAttack": "bog_surge",
+      "defence": null,
+      "testKeyword": null
     },
     {
       "id": "archlich",
       "name": "Vorn, the Archlich",
       "title": "Author of the Last Spell",
       "floor": 3,
-      "hp": 2600,
+      "hp": 2000,
       "radius": 12,
       "speed": 40,
       "kbResist": 1.0,
@@ -455,6 +976,39 @@
             "element": "arcane",
             "lifetimeMs": 3000
           }
+        },
+        {
+          "id": "mirror_volley",
+          "type": "mirror",
+          "windupMs": 650,
+          "recoverMs": 400,
+          "damage": 1,
+          "minCount": 3,
+          "maxCount": 9,
+          "spreadPerShotDeg": 8,
+          "speed": 125,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
+        },
+        {
+          "id": "grand_spiral",
+          "type": "spiral",
+          "windupMs": 900,
+          "recoverMs": 500,
+          "damage": 1,
+          "arms": 6,
+          "shotsPerArm": 12,
+          "intervalMs": 110,
+          "rotateDegPerShot": 8,
+          "speed": 90,
+          "projectile": {
+            "radius": 4,
+            "element": "arcane",
+            "lifetimeMs": 3000
+          }
         }
       ],
       "phases": [
@@ -465,10 +1019,11 @@
             "arcane_volley",
             "lich_blink",
             "frost_ring",
-            "arcane_volley",
+            "mirror_volley",
             "lich_blink"
           ],
-          "onEnter": null
+          "onEnter": null,
+          "bannerKey": "boss.archlich.phase1"
         },
         {
           "untilHpFrac": 0.33,
@@ -477,7 +1032,7 @@
             "spiral_hex",
             "fire_zones",
             "summon_wraiths",
-            "arcane_volley",
+            "mirror_volley",
             "lich_blink"
           ],
           "onEnter": {
@@ -485,7 +1040,8 @@
             "clearProjectiles": true,
             "shockwaveKnockback": 220,
             "summon": null
-          }
+          },
+          "bannerKey": "boss.archlich.phase2"
         },
         {
           "untilHpFrac": 0.0,
@@ -496,7 +1052,7 @@
             "spiral_hex_5",
             "arcane_volley_7",
             "fire_zones",
-            "frost_ring"
+            "mirror_volley"
           ],
           "onEnter": {
             "invulnMs": 1500,
@@ -504,14 +1060,51 @@
             "shockwaveKnockback": 220,
             "summon": null
           },
-          "windupMult": 0.9
+          "windupMult": 0.9,
+          "bannerKey": "boss.archlich.phase3"
         }
       ],
       "rewards": {
         "relicDraft": 0,
         "coins": 0,
         "heal": 0
-      }
+      },
+      "tier": "boss",
+      "intro": {
+        "titleKey": "boss.archlich.name",
+        "subtitleKey": "boss.archlich.subtitle"
+      },
+      "adapt": [
+        {
+          "id": "lich_element",
+          "when": {
+            "type": "dominant_element",
+            "element": "any",
+            "minShare": 0.5
+          },
+          "then": {
+            "type": "resist",
+            "element": "dominant",
+            "mult": 0.7
+          },
+          "bannerKey": "boss.adapt.resist_dominant"
+        },
+        {
+          "id": "lich_mirror",
+          "when": {
+            "type": "always"
+          },
+          "then": {
+            "type": "add_attack",
+            "attackId": "mirror_volley",
+            "phase": 0
+          },
+          "bannerKey": "boss.adapt.mirror"
+        }
+      ],
+      "heatAttack": "grand_spiral",
+      "defence": null,
+      "testKeyword": null
     }
   ]
 }

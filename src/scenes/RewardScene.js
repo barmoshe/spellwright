@@ -1,6 +1,9 @@
 // RewardScene — S4 reward draft and S4w wand offer (screen-graph §1, §3; ui-contract §5).
-// Reads run.offer (overlays never own run data). There is NO in-modal Skip: closing keeps the pedestal
-// and its exact offer; forfeiting happens only by leaving the room (D4, owned by the sim).
+// Reads run.offer (overlays never own run data). Closing keeps the pedestal and its exact offer.
+// v2 (screen-graph §9.4): drafts gain **Skip (+gold)** (economy.skip; the explicit forfeit, no confirm, never the
+// default focus) and **Reroll (cost)** (economy.draftReroll: max 2 per offer; kind never changes). Card chips:
+// "Counters: {defence}" (counter guarantee), "DUO" (+ parent icons with ✔ owned), "NEW". The fixed tutorial draft
+// and wand offers have neither Skip nor Reroll.
 //
 //   S4  kind spell|modifier → Take → flow.replace('pause', {tab:'wands', heldCard:id})  (card is HELD)
 //       kind relic|bossRelic → Take applies in takeOffer → close (HUD toasts relic:gained)
@@ -21,6 +24,7 @@ import { Save } from '../core/save.js';
 import { EV } from '../core/events.js';
 import { t } from '../core/i18n.js';
 import { cardRows, modifierLines, typeWord, rarityWord, sec2, num, cardOf, pmDeg, initSymbols } from '../ui/fmt.js';
+import { defenceFor } from '../spells/keywords.js';
 
 export class RewardScene extends Phaser.Scene {
   constructor() { super('reward'); }
@@ -45,12 +49,15 @@ export class RewardScene extends Phaser.Scene {
   }
 
   // ======================================================================================= S4
-  buildDraft(o) {
-    const s = this, p = this.p, run = this.run;
+  buildDraft(o, rebuilt = false) {
+    const s = this, run = this.run;
+    const p = this.dc = this.add.container(0, 0);
+    this.p.add(p);
     const isRelic = o.kind === 'relic' || o.kind === 'bossRelic';
+    const touch = !!(this.router && this.router.touchProfile);
     p.add(box(s, 16, 8, 608, 344, 'ornate'));
     p.add(txt(s, VIEW_W / 2, 16, t(isRelic ? 'reward.titleRelic' : 'reward.title'), 'T2', { origin: [0.5, 0] }));
-    p.add(txt(s, VIEW_W / 2, 32, t(`reward.sub.${o.kind}`), 'T1', { origin: [0.5, 0], color: C.dim }));
+    p.add(txt(s, VIEW_W / 2, 32, t(o.risk ? 'reward.sub.risk' : `reward.sub.${o.kind}`), 'T1', { origin: [0.5, 0], color: o.risk ? C.warn : C.dim }));
     const n = o.items.length, W = 176, gap = 12;
     const x0 = Math.round((VIEW_W - (n * W + (n - 1) * gap)) / 2);
     this.cards = [];
@@ -62,17 +69,42 @@ export class RewardScene extends Phaser.Scene {
       const rec = isRelic ? cat().relics[id] : cardOf(id);
       const draw = (focused) => { g.clear(); g.fillStyle(C.stroke, 1).fillRect(0, 0, W, 196).fillStyle(C.panel, 1).fillRect(1, 1, W - 2, 194);
         g.lineStyle(1, focused ? C.gold : C.slateDark, 1).strokeRect(1.5, 1.5, W - 3, 193);
-        g.fillStyle(C.rar[rec.rarity] ?? C.dim, 1).fillRect(8, 192, W - 16, 1); };
+        g.fillStyle(C.rar[rec.rarity] ?? (rec.rarity === 'corrupted' ? C.error : C.dim), 1).fillRect(8, 192, W - 16, 1); };
       draw(false);
       if (isRelic) c.add(icon(s, 26, 26, 'relics', id, 32));
       else c.add(cardCell(s, 8, 8, rec, 36, { isNew: !Save.isDiscovered('cards', id) }));
       c.add(txt(s, 50, 8, rec.name, 'T1', { wrap: W - 56 }));
       c.add(txt(s, 50, 34, isRelic ? rarityWord(rec.rarity) : `${typeWord(rec)}`, 'T1', { color: C.dim, wrap: W - 56 }));
       if (!isRelic) c.add(txt(s, 50, 46, rarityWord(rec.rarity), 'T1', { color: C.rar[rec.rarity] ?? C.dim }));
-      if (!isRelic && !Save.isDiscovered('cards', id)) c.add(richLine(s, W - 8, 8, [{ g: 'star' }, ' ', t('reward.new')], { align: 'right', role: 'Tsmall', color: C.gold }));
+      if (!isRelic && !Save.isDiscovered('cards', id)) c.add(richLine(s, W - 8, 6, [{ g: 'star' }, ' ', t('reward.new')], { align: 'right', role: 'T1', color: C.gold }));   // §2.3 #22
+      // v2 draft chips (screen-graph §9.4): a tab above the card's top-left, at most 2 (the rest live in the detail line)
+      const chips = [];
+      const kw = run.upcomingKeyword;
+      if (!isRelic && kw && (rec.keywords || []).includes(kw)) chips.push({ label: t('reward.counters', { defence: t(`kw.defence.${defenceFor(cat(), kw)}`) }), color: C.gold });
+      if (isRelic && rec.duo) chips.push({ label: t('reward.duo'), color: C.gold });
+      if (isRelic && (rec.category === 'corrupted' || rec.rarity === 'corrupted')) chips.push({ label: t('reward.corrupted'), color: C.error });
+      let cx = 8;
+      for (const ch of chips.slice(0, 2)) {
+        // a tab sitting ON the card's top edge: the card's border line stops at the tab (no line through the label)
+        const tt = txt(s, cx + 3, -5, ch.label, 'T1', { color: ch.color });
+        const cw = Math.ceil(tt.width) + 6;
+        c.add(this.add.graphics().fillStyle(C.stroke, 1).fillRect(cx - 1, -8, cw + 2, 16).fillStyle(C.panel, 1).fillRect(cx, -7, cw, 14)
+          .lineStyle(1, ch.color, 1).strokeRect(cx + 0.5, -6.5, cw - 1, 13));
+        c.add(tt); cx += cw + 4;
+      }
       let y2 = 64;
-      if (isRelic) { c.add(txt(s, 8, y2, rec.desc, 'T1', { wrap: W - 16 })); }
-      else {
+      if (isRelic) {
+        const dt = txt(s, 8, y2, rec.desc, 'T1', { wrap: W - 16 }); c.add(dt);
+        if (rec.duo) {                                   // both parents with a ✔ each (non-colour: the tick is a shape)
+          const yy = Math.max(y2 + Math.ceil(dt.height) + 8, 130);
+          c.add(txt(s, 8, yy, t('reward.duoParents'), 'T1', { color: C.dim }));
+          rec.duo.parents.forEach((pid, k) => {
+            const px = 16 + k * 76;
+            c.add(icon(s, px, yy + 22, 'relics', pid, 16));
+            c.add(richLine(s, px + 12, yy + 16, [run.hasRelic(pid) ? { g: 'check' } : { g: 'no' }, ' ', { t: cat().relics[pid].name.split(' ')[0], color: C.dim }], { role: 'T1' }));
+          });
+        }
+      } else {
         const rows = cardRows(rec).slice(0, 6);
         for (const [l, v] of rows) { c.add(txt(s, 8, y2, l, 'T1', { color: C.dim })); c.add(txt(s, W - 8, y2, v, 'T1', { origin: [1, 0] })); y2 += 12; }
         if (rec.type !== 'projectile') for (const l of modifierLines(rec).slice(0, 2)) { const tt = txt(s, 8, y2, l, 'T1', { wrap: W - 16 }); c.add(tt); y2 += Math.ceil(tt.height) + 1; }
@@ -81,7 +113,7 @@ export class RewardScene extends Phaser.Scene {
       c.add(txt(s, W / 2, 178, t('reward.take'), 'T1', { origin: [0.5, 0], color: C.gold }));
       this.cards.push({ c, draw, x, y });
       const idf = `o:${i}`;
-      this.nav.add({ id: idf, x, y, w: W, h: 196, onConfirm: () => this.take(i),
+      this.nav.add({ id: idf, x, y, w: W, h: 196, twoTap: true, onConfirm: () => this.take(i),   // touch: tap inspects, tap again takes (§5.2)
         onFocus: () => this.focusCard(i, true), onBlur: () => this.focusCard(i, false),
         nav: { up: null, down: 'strip', left: i > 0 ? `o:${i - 1}` : null, right: i < n - 1 ? `o:${i + 1}` : null } });
     });
@@ -95,14 +127,25 @@ export class RewardScene extends Phaser.Scene {
       w.state.slots.forEach((id, k) => this.strip.add(cardCell(s, x + 18 + k * 19, sy + 13, cardOf(id), 18)));
       x += 18 + w.def.capacity * 19 + 16;
     });
-    this.nav.add({ id: 'strip', x: 28, y: sy + 10, w: Math.max(40, x - 28), h: 24, onConfirm: () => this.toEditor(),
+    this.nav.add({ id: 'strip', x: 28, y: sy + 10, w: Math.max(40, Math.min(580, x - 28)), h: 24, onConfirm: () => this.toEditor(),
       nav: { up: 'o:0', down: 'f:edit', left: null, right: null } });
-    // footer: Edit wands · Close  (+ reason line)
+    // footer: Edit wands · Close  …  Reroll (cost) · Skip (+gold)   (+ reason line)
     this.detail = txt(s, 32, 292, '', 'T1', { color: C.dim, wrap: 576 });
     p.add(this.detail);
-    this.footer([{ id: 'f:edit', label: t('reward.editWands'), act: () => this.toEditor() }, { id: 'f:close', label: t('reward.close'), act: () => this.close() }], 318, 'strip');
-    this.nav.focus('o:0', { silent: true, snap: true });
-    this.focusCard(0, true);
+    const hSmall = touch ? 30 : 20;
+    const foot = [{ id: 'f:edit', label: t('reward.editWands'), x: 32, w: 116, h: hSmall, act: () => this.toEditor() },
+      { id: 'f:close', label: t('reward.close'), x: 160, w: 116, h: hSmall, act: () => this.close() }];
+    if (run.offerIsDraft) {
+      const why = run.cantRerollOffer(), cost = run.offerRerollCost;
+      foot.push({ id: 'f:reroll', label: cost == null ? t('reward.rerollNone') : t('reward.reroll', { n: cost }), x: 374, w: 110, h: 30,
+        disabled: !!why, denied: () => this.rerollDenied(), act: () => this.reroll() });
+      foot.push({ id: 'f:skip', label: t('reward.skip', { n: run.skipPay }), x: 496, w: 110, h: 30, act: () => this.skip() });   // ≥ 12 px from Take targets
+    }
+    this.footer(foot, 318, 'strip');
+    if (!rebuilt) {
+      this.nav.focus('o:0', { silent: true, snap: true });
+      this.focusCard(0, true);
+    }
     // reward-draft-deal: 200 ms, stagger 60, Back.easeOut (reduced: all fade in together, 120 ms)
     this.cards.forEach((k, i) => {
       k.c.setAlpha(0);
@@ -110,6 +153,35 @@ export class RewardScene extends Phaser.Scene {
       else { k.c.y = k.y + 16; this.tweens.add({ targets: k.c, alpha: 1, y: k.y, duration: 200, delay: 60 * i, ease: 'Back.easeOut', onUpdate: () => { k.c.y = Math.round(k.c.y); } }); }
     });
     this.mixer.fire('ui_card_deal');
+  }
+
+  /** Draft reroll (economy.draftReroll): a new roll of the same kind; focus stays on Reroll. */
+  reroll() {
+    if (this.closing) return;
+    if (!this.run.rerollOffer()) { this.rerollDenied(); return; }
+    this.mixer.fire('ui_reroll');
+    this.bus.emit(EV.FTUE, 'reward-rerolled');
+    const o = this.run.offer;
+    this.nav.clear();
+    this.dc.destroy();
+    this.buildDraft(o, true);
+    this.nav.raise();
+    this.nav.focus(this.nav.has('f:reroll') ? 'f:reroll' : 'o:0', { silent: true, snap: true });
+    this.onMove(this.nav.cur());
+  }
+  rerollDenied() {
+    const why = this.run.cantRerollOffer();
+    this.mixer.fire('ui_denied');
+    if (why) this.detail.setText(why.reason === 'coins' ? t('reward.rerollNeed', { n: why.need }) : t('reward.rerollNoneHint'));
+  }
+  /** Skip (economy.skip): take the gold, forfeit the offer, close. No confirm: the label states the trade. */
+  skip() {
+    if (this.closing) return;
+    if (!this.run.offerIsDraft) return;
+    this.run.skipOffer();
+    this.mixer.fire('reward_skip');
+    this.closing = true;
+    this.m.close(() => this.flow.close('reward'));
   }
 
   focusCard(i, on) {
@@ -123,9 +195,12 @@ export class RewardScene extends Phaser.Scene {
     let x = VIEW_W / 2 - (items.length * 124 - 8) / 2;
     const ids = [];
     for (const it of items) {
-      const b = button(this, x, y, 116, 20, it.label, { kind: it.kind });
-      this.p.add(b);
-      this.nav.add({ id: it.id, x, y, w: 116, h: 20, onFocus: () => b.setFocused(true), onBlur: () => b.setFocused(false),
+      // explicit x/w/h (v2 draft footer) or the v1 centred 116×20 row
+      const bx = it.x ?? x, bw = it.w ?? 116, bh = it.h ?? 20, by = y + (30 - bh) / 2 * (it.h != null ? 1 : 0);
+      const b = button(this, bx, by, bw, bh, it.label, { kind: it.kind, disabled: !!it.disabled });
+      (this.dc || this.p).add(b);
+      this.nav.add({ id: it.id, x: bx, y: by, w: bw, h: bh, disabled: !!it.disabled, onDenied: it.denied,
+        onFocus: () => b.setFocused(true), onBlur: () => b.setFocused(false),
         onConfirm: () => { b.press(); it.act(); }, nav: { up: upId, down: null } });
       ids.push(it.id); x += 124;
     }
@@ -138,7 +213,22 @@ export class RewardScene extends Phaser.Scene {
     if (it.id === 'strip') s = t('reward.stripHint');
     else if (it.id === 'f:edit') s = t('reward.editHint');
     else if (it.id === 'f:close') s = t('reward.closeHint');
+    else if (it.id === 'f:skip') s = t('reward.skipHint', { n: this.run.skipPay });
+    else if (it.id === 'f:reroll') { const why = this.run.cantRerollOffer(); s = !why ? t('reward.rerollHint') : why.reason === 'coins' ? t('reward.rerollNeed', { n: why.need }) : t('reward.rerollNoneHint'); }
+    else if (it.id && it.id.startsWith('o:')) s = this.chipDetail(+it.id.slice(2));
     this.detail.setText(s);
+  }
+
+  /** The detail line for a focused draft card: its chips in full (counter reason, duo parents). */
+  chipDetail(i) {
+    const o = this.run.offer; if (!o) return '';
+    const id = o.items[i]; if (!id) return '';
+    const kw = this.run.upcomingKeyword;
+    const rec = cat().cards[id] || cat().relics[id];
+    if (rec && rec.duo) return t('reward.duoHint', { a: cat().relics[rec.duo.parents[0]].name, b: cat().relics[rec.duo.parents[1]].name });
+    if (rec && (rec.category === 'corrupted')) return t('reward.corruptedHint');
+    if (kw && rec && (rec.keywords || []).includes(kw)) return t('reward.countersHint', { kw: t(`kw.${kw}`), defence: t(`kw.defence.${defenceFor(cat(), kw)}`) });
+    return '';
   }
 
   take(i) {
@@ -147,7 +237,9 @@ export class RewardScene extends Phaser.Scene {
     const kind = o.kind;
     const id = this.run.takeOffer(i);
     if (!id) return;
-    this.mixer.fire('pickup_card');
+    const rel = cat().relics[id];
+    // cue-spec v1.2: duo_unlock / corrupted_take play for those relics (relic_gain routing stays with audio.js)
+    this.mixer.fire(rel && rel.duo ? 'duo_unlock' : rel && rel.category === 'corrupted' ? 'corrupted_take' : 'pickup_card');
     // reward-take: 2-frame flash on the chosen, others drop 8 px and fade (120 ms)
     const chosen = this.cards[i];
     const fl = this.add.rectangle(chosen.x, chosen.c.y, 176, 196, 0xffffff, 0.8).setOrigin(0);
@@ -218,7 +310,7 @@ export class RewardScene extends Phaser.Scene {
       w.state.slots.forEach((cid, k) => p.add(cardCell(s, x + 6 + (k % 8) * 20, yy + 30 + Math.floor(k / 8) * 20, cardOf(cid), 18)));
       p.add(txt(s, x + cw / 2, yy + 70, t('reward.swapFor'), 'T1', { origin: [0.5, 0], color: C.warn }));
       const id = `c:${i}`; ids.push(id);
-      this.nav.add({ id, x, y: yy, w: cw, h: 84, onConfirm: () => this.askSwap(i), onFocus: () => draw(true), onBlur: () => draw(false) });
+      this.nav.add({ id, x, y: yy, w: cw, h: 84, twoTap: true, onConfirm: () => this.askSwap(i), onFocus: () => draw(true), onBlur: () => draw(false) });
     });
     this.nav.linkList(ids, 'h', false);
     this.detail = txt(s, 32, 272, '', 'T1', { color: C.dim, wrap: 576 });

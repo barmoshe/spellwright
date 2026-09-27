@@ -195,8 +195,7 @@ defineEffect('attack', 'charge', {
     const trav = Math.hypot(e.x - ai.sx0, e.y - ai.sy0);
     if (d) d.s0 = Math.min(d.len, trav);             // the path empties from the enemy's end
     if (!ai.hit) {
-      const dx = pl.coreX - e.x, dy = pl.coreY - e.y, rr = e.r + pl.hurtR;
-      if (dx * dx + dy * dy <= rr * rr && sys.hurtPlayer(e, atk.damage, 'charge')) ai.hit = true;   // once per charge
+      if (pl.hurtOverlap(e.x, e.y, e.r) && sys.hurtPlayer(e, atk.damage, 'charge')) ai.hit = true;   // once per charge (body vs hurt capsule)
     }
     // a wall, pillar, crate or pit edge stops it and stuns self
     const b = e.body;
@@ -204,7 +203,7 @@ defineEffect('attack', 'charge', {
     if (blocked && ai.actT > 30) {
       ai.wallStunMs = atk.wallStunMs;
       const T = sys.T;
-      sys.ctx.fx.shake(T('heavyImpactShakePx'), T('heavyImpactShakeMs'));
+      sys.ctx.fx.addTrauma(T('traumaHeavyImpact', 0.9));
       sys.ctx.fx.particles('dust', e.x + ca * e.r, e.y + sa * e.r, 8, { speed: 45 });
       sys.fire('heavy_impact');
       return 'stun';
@@ -219,7 +218,7 @@ function slamLand(sys, e, atk, x, y) {
   const pl = sys.ctx.player, T = sys.T, R = atk.radius;
   const dx = pl.coreX - x, dy = pl.coreY - y;
   if (dx * dx + dy * dy <= R * R) sys.hurtPlayer(e, atk.damage, 'slam');
-  sys.ctx.fx.shake(T('heavyImpactShakePx'), T('heavyImpactShakeMs'));
+  sys.ctx.fx.addTrauma(T('traumaHeavyImpact', 0.9));
   sys.tl.ring(x, y, 0, R, 200, 0x8a7a70, 0.6, 1);                // dust ring to R over 200 ms
   sys.ctx.fx.explosion(x, y, R, { hostile: true });             // ring at exactly R (WYSIWYH)
   sys.ctx.fx.particles('dust', x, y, 10, { speed: 60 });
@@ -351,11 +350,11 @@ function explode(sys, e, atk) {
   const dx = pl.coreX - e.x, dy = pl.coreY - e.y;
   if (dx * dx + dy * dy <= R * R) sys.hurtPlayer(e, atk.damage, 'explosion');
   const dmg = atk.enemyDamage * sys.ctx.floor.hpMult;           // absolute damage × floor hpMult (mechanic §0)
-  sys.system.queryCircle(e.x, e.y, R, (o) => { if (o !== e) sys.ctx.combat.damageEnemy(o, dmg, { element: null, source: 'enemy', canCrit: false, canReact: false, canStatus: false, knock: null }); });
+  sys.system.queryCircle(e.x, e.y, R, (o) => { if (o !== e) sys.ctx.combat.damageEnemy(o, dmg, { element: null, source: 'enemy', canCrit: false, canReact: false, canStatus: false, knock: null, blast: true, fromX: e.x, fromY: e.y }); });
   sys.ctx.fx.explosion(e.x, e.y, R, { hostile: true, element: 'fire' });
   const big = R >= T('bigExplosionRadiusPx');
-  sys.ctx.fx.shake(big ? T('bigExplosionShakePx') : T('explosionShakePx'), big ? T('bigExplosionShakeMs') : T('explosionShakeMs'));
-  sys.fire(big ? 'explode_big' : 'explode_small');
+  sys.ctx.fx.explosionTrauma(R);
+  sys.fire(big ? 'explode_big' : e.id === 'ink_imp' ? 'explode_ink' : 'explode_small');   // cue-spec: ink_imp → explode_ink
   sys.flashDecals(e);
 }
 defineEffect('attack', 'self_destruct', {
@@ -428,6 +427,87 @@ defineEffect('attack', 'hazard', {
 defineEffect('attack', 'sequence', {
   isSequence: true,
   begin() {}, release() { return 0; },
+});
+
+// ------------------------------------------------------------------ ward_allies (v2; mechanic-spec §9.3, telegraphs §2.14)
+// Recipients are picked at windup step 0 (the `count` nearest allies within `radius` with no active ward —
+// and, since e.defence holds ONE defence, no other active defence either), reused at release. `self` wards
+// the caster (with count 0: only itself). Ward size: `hits`, capped at rules.defences.ward.wardAlliesMaxHits
+// for allies (the caster's own veil is not capped). An interrupt fizzles the tethers and grants nothing.
+defineEffect('attack', 'ward_allies', {
+  begin(sys, e, atk) {
+    const ai = e.ai, list = ai.wardTargets || (ai.wardTargets = []);
+    list.length = 0;
+    const R = atk.radius || 0, n = atk.count || 0;
+    if (n > 0 && R > 0) {
+      const cand = [];
+      sys.system.queryCircle(e.x, e.y, R, (o) => { if (o !== e && !o.isBoss && o.ai.state !== 'spawning' && !o.defence) cand.push(o); });
+      cand.sort((a, b) => ((a.x - e.x) ** 2 + (a.y - e.y) ** 2) - ((b.x - e.x) ** 2 + (b.y - e.y) ** 2));
+      for (let i = 0; i < cand.length && list.length < n; i++) list.push(cand[i]);
+    }
+    ai.wardSelf = !!atk.self && (!e.defence || e.defence.type === 'ward');
+  },
+  update() { /* tethers (caster → each recipient, α ∝ p, solid at lock) are drawn by EnemyView from ai.wardTargets */ },
+  release(sys, e, atk) {
+    const ai = e.ai, D = sys.ctx.combat.defences, cap = sys.rules.defences.ward.wardAlliesMaxHits || Infinity;
+    const list = ai.wardTargets || [];
+    for (let i = 0; i < list.length; i++) {
+      const o = list[i];
+      if (o.alive && !o.defence) { D.grantWard(o, Math.min(atk.hits || 1, cap)); if (o.view && o.view.wardArrive) o.view.wardArrive(e); }
+    }
+    if (ai.wardSelf && e.alive) D.grantWard(e, atk.hits || 1);
+    list.length = 0;
+    return 0;
+  },
+  cancel(sys, e) { if (e.ai.wardTargets) e.ai.wardTargets.length = 0; e.ai.wardSelf = false; },
+});
+
+// ------------------------------------------------------------------ guard (v2; telegraphs §2.13)
+// At windup end raise `defence` (a frontal shield) for durationMs with the same break and wear rules. The
+// act lasts the guard (the boss plants its shield wall); a pierce break ends it early; phase aborts drop it.
+defineEffect('attack', 'guard', {
+  release(sys, e, atk) {
+    sys.ctx.combat.defences.guard(e, atk.defence, atk.durationMs || 0);
+    return atk.durationMs || 0;
+  },
+  act(sys, e) { return e.guardBroken || !(e.defence && e.defence.temp) ? 'done' : undefined; },
+  end(sys, e) { sys.ctx.combat.defences.endGuard(e); sys.removeDecals(e); },
+  cancel(sys, e) { sys.ctx.combat.defences.endGuard(e); },
+});
+
+// ------------------------------------------------------------------ mirror (v2; build-reading volley, telegraphs §2.15)
+// n = clamp(the player's max shots in one cast of the ACTIVE wand's preview cycle, minCount, maxCount), read at
+// windup start; n aim lines (boss channel) tracking until the lock; release fires n shots spreadPerShotDeg apart.
+function mirrorCount(sys, atk) {
+  const run = sys.ctx.run;
+  let n = 0;
+  try {
+    const pv = run && run.wands && run.wands.length ? run.preview(run.activeWand) : null;
+    if (pv) for (const c of pv.casts) n = Math.max(n, c.shots ? c.shots.length : 0);
+  } catch (err) { n = 0; }
+  return Math.max(atk.minCount || 1, Math.min(atk.maxCount || n || 1, n));
+}
+defineEffect('attack', 'mirror', {
+  begin(sys, e, atk) {
+    const ai = e.ai, m = ai.mirror || (ai.mirror = { count: 1, spreadDeg: 0 });
+    m.count = mirrorCount(sys, atk);
+    m.spreadDeg = (m.count - 1) * (atk.spreadPerShotDeg || 0);
+    const d = sys.decal(e, 'aimLines', true);
+    if (d) { d.len = 48; d.color = COL.rim; }
+  },
+  update(sys, e) {
+    const ai = e.ai, m = ai.mirror, lines = ai.dec[0];
+    if (lines) { lines.x = e.x; lines.y = e.y; lines.r0 = e.r + 2; spreadAngles(lines, ai.aim, m); lines.locked = ai.locked; }
+    if (ai.locked && !ai.ticks) { const t = sys.decal(e, 'aimTicks', true); if (t) { t.len = 4; t.color = COL.rim; ai.ticks = t; } }
+    if (ai.ticks) { const t = ai.ticks; t.x = e.x; t.y = e.y; t.r0 = e.r + 4; spreadAngles(t, ai.aim, m); t.locked = true; }
+  },
+  release(sys, e, atk) {
+    const m = e.ai.mirror, n = m.count, sp = m.spreadDeg, aimDeg = e.ai.aim / DEG;
+    for (let i = 0; i < n; i++) sys.bullet(e, e.x, e.y, n > 1 ? aimDeg - sp / 2 + (sp * i) / (n - 1) : aimDeg, atk.speed, atk.projectile, atk.damage);
+    sys.removeDecals(e);
+    if (e.view && e.view.mirrorFlash) e.view.mirrorFlash();
+    return 0;
+  },
 });
 
 export const ELEMENT_HUE = EL_HUE;

@@ -11,8 +11,19 @@
 //   bossDeathUnravelMs (700 under reduced motion) with a burst every bossDeathBurstIntervalMs, final big
 //   burst, 300 ms dissolve, THEN EV.BOSS_DEAD (the rewards/room-clear beat, telegraphs §4.4 ≈ 1.9 s).
 
+//
+// v2 (Wave D, mechanic-spec §10.1–10.2): tier "mini" rides the same brain — miniBossActivateDelayMs, no camera
+// pan, miniBossDeathHitstopMs + a short unravel, EV.BOSS_DEAD {id, tier} (the director keeps the floor going).
+// Defences (bosses[].defence) are built at init AFTER the build-reading `adapt` (≤ adaptMaxRulesApplied, first
+// matching rule; mercy rules soften a mini's defence for a player lacking its test keyword), announced on the
+// intro card (EV.BOSS_ADAPT + EV.BOSS_INTRO) so the counter is never hidden. Phase onEnter.regrowDefence
+// restores that fraction of the boss's own defence inside the invulnerable window. Patterns are per-instance
+// copies (data is frozen) so `add_attack` can insert. `heatAttack` is Wave E: read-safe, never scheduled here.
+
 import { EV } from '../../core/ev.js';
 import { track } from '../../core/log.js';
+import { t } from '../../core/i18n.js';
+import { keywordsOf } from '../../data/catalog.js';
 import { COL, TAU } from './tokens.js';
 
 export class BossBrain {
@@ -23,21 +34,128 @@ export class BossBrain {
   get ctx() { return this.sys.ctx; }
   get T() { return this.sys.T; }
 
-  init(e, def) {
+  init(e, def, tierOverride) {
     const ctx = this.ctx, ai = e.ai, er = this.sys.rules.enemies;
+    const mini = (tierOverride || def.tier) === 'mini';
+    e.tier = mini ? 'mini' : 'boss';
     e.maxHp = e.hp = def.hp * ((ctx.curse && ctx.curse.enemyHpMult) || 1);   // absolute hp × curse only
     e.kbResist = 1;
     ai.state = 'intro'; ai.t = 0; ai.phase = 0; ai.pi = 0; ai.idleMs = 0; ai.roseCue = false;
     e.hittable = false; e.invuln = true;
-    e.introMs = er.bossActivateDelayMs;          // RoomDirector/HUD read this: counts down to 0 at activation
-    this.activateMs = er.bossActivateDelayMs;
+    e.activateMs = mini ? (er.miniBossActivateDelayMs ?? er.bossActivateDelayMs) : er.bossActivateDelayMs;
+    e.introMs = e.activateMs;                    // RoomDirector/HUD read this: counts down to 0 at activation
+    e.patterns = def.phases.map((p) => p.pattern.slice());
+    e.resist = null;
+    // build-reading adapt (§10.2), then the (possibly softened) defence
+    const spec = def.defence ? { ...def.defence } : null;
+    const applied = this._adapt(e, def, spec);
+    if (spec) ctx.combat.defences.set(e, spec, {}, 'spawn');
+    const name = def.intro && def.intro.titleKey ? t(def.intro.titleKey) : def.name;
+    const subtitle = def.intro && def.intro.subtitleKey ? t(def.intro.subtitleKey) : (def.title || '');
     ctx.bus.emit(EV.BOSS_START, {
-      id: def.id, name: def.name, title: def.title, hp: e.hp, maxHp: e.maxHp,
+      id: def.id, name, title: def.title, hp: e.hp, maxHp: e.maxHp,
       thresholds: def.phases.map((p) => p.untilHpFrac).filter((f) => f > 0),
+      tier: e.tier, defence: spec ? spec.type : null,
     });
     ctx.bus.emit(EV.BOSS_HP, e.hp, e.maxHp);
-    if (ctx.cam && ctx.cam.panTo) ctx.cam.panTo(e.x, e.y, this.T('bossIntroPanMs'));
-    track('boss_start', { id: def.id });
+    if (applied) ctx.bus.emit(EV.BOSS_ADAPT, { id: def.id, tier: e.tier, rule: applied.rule.id, bannerKey: applied.rule.bannerKey || null, params: applied.params, mercy: applied.mercy });
+    ctx.bus.emit(EV.BOSS_INTRO, {
+      id: def.id, tier: e.tier, name, subtitle, nameKey: (def.intro && def.intro.titleKey) || null, subtitleKey: (def.intro && def.intro.subtitleKey) || null,
+      adaptKey: applied ? applied.rule.bannerKey || null : null, adaptParams: applied ? applied.params : null, activateMs: e.activateMs,
+    });
+    if (!mini && ctx.cam && ctx.cam.panTo) ctx.cam.panTo(e.x, e.y, this.T('bossIntroPanMs'));    // minis: one-screen arena, no pan
+    track('boss_start', { id: def.id, tier: e.tier, adapt: applied ? applied.rule.id : null });
+  }
+
+  // ------------------------------------------------------------------ adapt (mechanic-spec §10.2)
+  /** The player's build as the boss reads it: all carried wands' slots + the active wand's preview. */
+  readBuild() {
+    const ctx = this.ctx, run = ctx.run, cat = ctx.cat;
+    const out = { maxShots: 0, castRate: 0, elements: {}, topElement: null, topShare: 0, keywords: new Set() };
+    if (!run || !run.wands || !run.wands.length) return out;
+    try {
+      const pv = run.preview(run.activeWand);
+      for (const c of pv.casts) out.maxShots = Math.max(out.maxShots, c.shots ? c.shots.length : 0);
+      out.castRate = pv.cycleMs > 0 ? pv.casts.length / (pv.cycleMs / 1000) : 0;
+    } catch (err) { /* a broken preview reads as an empty build: no multicast / cast-rate rule fires */ }
+    let total = 0;
+    for (const w of run.wands) {
+      const ids = [...(w.state.slots || []), ...((w.def && w.def.alwaysCast) || [])];
+      for (const id of ids) {
+        if (!id) continue;
+        const c = cat.cards[id];
+        if (!c) continue;
+        for (const k of keywordsOf(cat, id)) out.keywords.add(k);
+        if (c.type === 'projectile' && c.element) { out.elements[c.element] = (out.elements[c.element] || 0) + 1; total++; }
+      }
+    }
+    for (const [el, n] of Object.entries(out.elements)) { const sh = n / Math.max(1, total); if (sh > out.topShare) { out.topShare = sh; out.topElement = el; } }
+    out.total = total;
+    return out;
+  }
+
+  _when(w, b) {
+    switch (w && w.type) {
+      case 'multicast_at_least': return b.maxShots >= w.value;
+      case 'dominant_element': {
+        if (!b.total) return false;
+        if (w.element === 'any') return b.topShare >= w.minShare;
+        return ((b.elements[w.element] || 0) / b.total) >= w.minShare;
+      }
+      case 'cast_rate_above': return b.castRate > w.value;
+      case 'has_keyword': return b.keywords.has(w.keyword);
+      case 'lacks_keyword': return !b.keywords.has(w.keyword);
+      case 'always': return true;
+      default: return false;
+    }
+  }
+
+  /** Apply the first matching adapt rule (≤ rules.boss.adaptMaxRulesApplied). Returns {rule, params, mercy} or null. */
+  _adapt(e, def, spec) {
+    const rules = def.adapt || [];
+    const RB = this.ctx.rules.boss || {};
+    const max = RB.adaptMaxRulesApplied ?? 1;
+    if (!rules.length || max <= 0) return null;
+    const heat = this.ctx.heat || null;                        // Wave E: Heat ≥ 4 skips mini mercy rules
+    const b = this.readBuild();
+    for (const r of rules) {
+      const th = r.then || {};
+      const mercy = e.tier === 'mini' && th.type === 'defence_param';
+      if (mercy && heat && heat.bossAdaptAlways) continue;
+      if (!this._when(r.when, b)) continue;
+      const params = {};
+      switch (th.type) {
+        case 'resist': {
+          const el = th.element === 'dominant' ? b.topElement : th.element;
+          if (!el) continue;
+          const mult = Math.max(th.mult ?? 1, RB.adaptResistFloor ?? 0.6);             // never a hard counter
+          e.resist = e.resist || {};
+          e.resist[el] = mult;
+          params.element = t(`boss.adapt.element.${el}`);
+          params.Element = params.element.charAt(0).toUpperCase() + params.element.slice(1);
+          params.mult = mult; params.elementId = el;
+          break;
+        }
+        case 'add_attack': {
+          const pi = Math.min(th.phase || 0, e.patterns.length - 1);
+          const pat = e.patterns[pi];
+          if (!this._atk(e, th.attackId)) continue;
+          if (!pat.includes(th.attackId)) pat.splice(Math.min(1, pat.length), 0, th.attackId);   // after its first entry (idempotent)
+          params.attackId = th.attackId; params.phase = pi;
+          break;
+        }
+        case 'defence_param': {
+          if (!spec || !th.field) continue;
+          if (th.value != null) spec[th.field] = th.value;
+          else if (th.mult != null && typeof spec[th.field] === 'number') spec[th.field] = spec[th.field] * th.mult;
+          params.field = th.field; params.value = spec[th.field];
+          break;
+        }
+        default: continue;
+      }
+      return { rule: r, params, mercy };
+    }
+    return null;
   }
 
   phaseDef(e) { return e.def.phases[Math.min(e.ai.phase, e.def.phases.length - 1)]; }
@@ -65,14 +183,15 @@ export class BossBrain {
     }
     if (ai.state === 'intro') {
       ai.mvx = 0; ai.mvy = 0;
-      if (!ai.roseCue && ai.t >= this.T('bossIntroPanMs') / 2) { ai.roseCue = true; this.sys.fire('boss_intro_rise'); }
-      e.introMs = Math.max(0, this.activateMs - ai.t);
-      if (ai.t >= this.activateMs) {
+      const riseAt = e.tier === 'mini' ? 0 : this.T('bossIntroPanMs') / 2;              // minis rise at 0 (state-graph §8.3)
+      if (!ai.roseCue && ai.t >= riseAt) { ai.roseCue = true; this.sys.fire('boss_intro_rise'); }
+      e.introMs = Math.max(0, e.activateMs - ai.t);
+      if (ai.t >= e.activateMs) {
         e.introMs = 0;
         ai.state = 'move'; ai.t = 0; e.invuln = false; e.hittable = true;
         ai.idleMs = this.phaseDef(e).idleMs; ai.pi = 0;
-        if (ctx.cam && ctx.cam.release) ctx.cam.release(this.T('bossIntroPanMs'));
-        track('boss_active', { id: e.id });
+        if (e.tier !== 'mini' && ctx.cam && ctx.cam.release) ctx.cam.release(this.T('bossIntroPanMs'));
+        track('boss_active', { id: e.id, tier: e.tier });
       }
       return true;
     }
@@ -100,8 +219,10 @@ export class BossBrain {
     ai.seq = null;
     ai.phase = idx;
     const ph = this.phaseDef(e), on = ph.onEnter || {};
+    if (on.regrowDefence > 0) ctx.combat.defences.regrow(e, on.regrowDefence);   // plays inside the invulnerable window
     if (on.clearProjectiles !== false) ctx.shots.clearEnemyBullets({ pop: true });
     ctx.fx.hitstop(this.T('bossPhaseHitstopMs'));
+    ctx.fx.addTrauma(this.T('traumaBossPhase', 1));
     ai.state = 'phase'; ai.t = 0;
     ai.invulnMs = on.invulnMs || 0;
     ai.knockPending = on.shockwaveKnockback || 0;
@@ -125,7 +246,8 @@ export class BossBrain {
     const ai = e.ai, sys = this.sys, p = this.ctx.player;
     if (!p.alive) return;
     const ph = this.phaseDef(e);
-    const atkId = ph.pattern[ai.pi % ph.pattern.length];
+    const pat = (e.patterns && e.patterns[Math.min(ai.phase, e.patterns.length - 1)]) || ph.pattern;
+    const atkId = pat[ai.pi % pat.length];
     const atk = this._atk(e, atkId);
     if (!atk) { ai.pi++; return; }
     if (ai.state === 'approach') {                     // melee close-in before the windup, max approachMs
@@ -168,10 +290,15 @@ export class BossBrain {
     sys.killAll('cleanup', e.x, e.y, 40);             // every other enemy: §4.1, staggered 40 ms by distance
     ctx.shots.clearEnemyBullets({ pop: true });
     sys.clearHazards();
-    ctx.fx.hitstop(this.T('bossDeathHitstopMs'));
-    // boss_death cue: the lead's mixer (EV.ENEMY_KILLED {boss:true}) — frame 0 of the death stop
-    const unravel = ctx.flags.reducedMotion ? Math.round(this.T('bossDeathUnravelMs') / 2) : this.T('bossDeathUnravelMs');
-    this.deaths.push({ e, id: e.id, uid: e.uid, x: e.x, y: e.y, t: 0, nextBurst: 0, unravel, final: false, done: false });
+    const mini = e.tier === 'mini';
+    // minis: the shorter stop (the 300 ms boss stop stays the run's biggest freeze), traumaBigExplosion, short unravel
+    ctx.fx.hitstop(mini ? this.T('miniBossDeathHitstopMs', 160) : this.T('bossDeathHitstopMs'));
+    ctx.fx.addTrauma(mini ? this.T('traumaBigExplosion', 0.71) : this.T('traumaBossKill', 1));
+    // boss_death / miniboss_death cue: the mixer (EV.ENEMY_KILLED {boss:true, tier}) — frame 0 of the death stop
+    const U = mini ? this.T('miniBossDeathUnravelMs', 700) : this.T('bossDeathUnravelMs');
+    const unravel = ctx.flags.reducedMotion ? Math.round(U / 2) : U;
+    e.defence = null; e.defenceStash = null; e.defenceRegrowMs = 0;    // the overlay falls with the corpse (no break read)
+    this.deaths.push({ e, id: e.id, uid: e.uid, tier: e.tier, x: e.x, y: e.y, t: 0, nextBurst: 0, unravel, final: false, done: false });
     track('boss_dead', { id: e.id });
   }
 
@@ -191,14 +318,15 @@ export class BossBrain {
       if (!d.final && d.t >= d.unravel) {              // final burst at core
         d.final = true; d.finalAt = d.t;
         const cy = e.feetY + box.core;
-        ctx.fx.explosion(d.x, cy, T('bigExplosionRadiusPx'), { hostile: false, element: 'fire' });
-        ctx.fx.shake(T('bigExplosionShakePx'), T('bigExplosionShakeMs'));
-        this.sys.fire('explode_big');
+        const R = d.tier === 'mini' ? Math.round(T('bigExplosionRadiusPx') * 0.5) : T('bigExplosionRadiusPx');   // mini: a medium burst
+        ctx.fx.explosion(d.x, cy, R, { hostile: false, element: 'fire' });
+        ctx.fx.explosionTrauma(R);
+        this.sys.fire(d.tier === 'mini' ? 'explode_small' : 'explode_big');
         if (e.id === 'archlich') ctx.fx.particles('soul', d.x, cy, 16, { speed: 30, lifeMs: 1200, gravity: -60 });
       }
       if (d.final && d.t >= d.finalAt + 300) {
         this.deaths.splice(i, 1);
-        ctx.bus.emit(EV.BOSS_DEAD, { id: d.id });
+        ctx.bus.emit(EV.BOSS_DEAD, { id: d.id, tier: d.tier || 'boss' });
       }
     }
   }

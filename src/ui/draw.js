@@ -96,7 +96,7 @@ export function richLine(scene, x, y, parts, opts = {}) {
   const list = typeof parts === 'string' ? splitTokens(parts) : parts;
   const c = scene.add.container(x, y);
   let cx = 0;
-  const h = role === 'Tsmall' ? 6 : 10;
+  const h = 10;
   for (const p of list) {
     if (p == null || p === '') continue;
     if (typeof p === 'object' && p.g) {

@@ -45,7 +45,7 @@ Sub-verbs, ranked by expected frequency per minute of combat:
 | Property | Value / key | Notes |
 |---|---|---|
 | Max HP | `rules.player.maxHp` = 6 | Shown as 3 hearts × 2 halves. Every normal enemy hit = 1 (half a heart); heavy attacks = 2. Cap `maxHpCap` 12. |
-| Hurtbox | `feel: playerHurtboxRadius` 4 px | Deliberately smaller than the sprite (bullet-hell convention). |
+| Hurt zone (v2) | **capsule**: segment from `feel: playerHurtCapsuleBottomPx` 6 (waist) to `playerHurtCapsuleTopPx` 12 (head) above the feet, radius `playerHurtboxRadius` 3 | Covers the torso and head the player reads as themselves, not the legs or shadow. Area ≈ 2 × 3 × 6 + π × 3² ≈ 64 px² vs the v1 circle's 50 px². About the same forgiveness, placed where the eye is. Enemy bullets and contact test circle-vs-capsule. The body for walls stays a 6 px circle. |
 | Body (walls/enemies) | `feel: playerBodyRadius` 6 px | Arcade circle body. |
 | Invulnerability after hurt | `feel: hurtIframesMs` 1000 | Blocks all damage. The player can still act. |
 | Shield | `rules.player.shieldMaxCharges` 1 | From `warding_sigil`. Absorbs one damage instance fully, then starts `hurtIframesMs`. |
@@ -55,7 +55,7 @@ Sub-verbs, ranked by expected frequency per minute of combat:
 | Bag | `rules.player.bagCapacity` 12 | Unslotted cards. A full bag means you must discard or salvage before you can take a card. |
 | Death | HP ≤ 0 and no `revive` relic | → `run-end {death}`. |
 
-**Hurt resolution (per damage instance to the player):** if dashing and inside `dashIframesMs`, or inside `hurtIframesMs` → ignore. Else if shield > 0 → shield−1, start i-frames (no HP loss, `shieldBreakHitstopMs`). Else HP −= damage; if HP ≤ 0 → emit `lethal` (relics may revive; revive sets HP = `hp` and grants i-frames), else death. Emit `hurt` → i-frames, knockback, hit-stop and shake per feel-spec §hurt.
+**Hurt resolution (per damage instance to the player):** if dashing and inside `dashIframesMs`, or inside `hurtIframesMs` → ignore. **v2 Gentle mode** (`modes.json#gentle`): next, roll the Gentle absorb chance (`min(absorbChancePerLostRun × gentleLosses, absorbChanceCap)`, run stream); on success the hit is shrugged off like a shield block (i-frames, no HP loss, no shame text). Gentle's bonus half-hearts are applied to max HP at run start. Else if shield > 0 → shield−1, start i-frames (no HP loss, `shieldBreakHitstopMs`). Else HP −= damage; if HP ≤ 0 → emit `lethal` (relics may revive; revive sets HP = `hp` and grants i-frames), else death. Emit `hurt` → i-frames, knockback, hit-stop and shake per feel-spec §hurt.
 
 **Player statuses:** only `playerSlow` (from frost enemy projectiles): move speed × (1 − `rules.status.playerSlow.slowFrac` 0.4) for `durationMs` 1500, refreshed on reapply. Enemy fire and poison projectiles are cosmetic for the player. No player DoT exists, which keeps the half-heart HP model legible.
 
@@ -67,8 +67,8 @@ Sub-verbs, ranked by expected frequency per minute of combat:
 
 | Field | Meaning | Range in content |
 |---|---|---|
-| `capacity` | slot count | 3–10 |
-| `manaMax` / `manaRegen` | mana pool / regen per second (always regenerating, all wands, even inactive) | 50–320 / 25–70 |
+| `capacity` | slot count. **v2 growth 3 → 5 → 7+:** starter 3, floor-1 finds 4–5, floor-2 finds 5–8, floor-3 finds up to 10 (`tier` 0–3); the forge sells +1 slot (`forge.json#slot`) | 3–10 |
+| `manaMax` / `manaRegen` | mana pool / regen per second (always regenerating, all wands, even inactive). **v2 scarcity:** the starter sustains its own two sparks but *not* its first modifier (Ex 1) | 45–260 / 18–55 |
 | `castDelayMs` | base wait between casts | 90–450 |
 | `rechargeMs` | base wait after the deck is exhausted | 280–900 |
 | `spreadDeg` | random ± deviation added to every shot | 0–10 |
@@ -76,7 +76,7 @@ Sub-verbs, ranked by expected frequency per minute of combat:
 | `spellsPerCast` | groups evaluated per trigger pull (see §4) | 1–2 |
 | `shuffle` | deck order randomized (spell stream) on every recharge, on pickup and after edit | bool |
 | `alwaysCast` | non-projectile card ids injected free at the start of every cast | 0–1 cards |
-| `presetCards` | cards the wand is found with, slotted from slot 0 | ≤ capacity |
+| `presetCards` | cards the wand is found with, slotted from slot 0. **v2:** only the wand's identity card(s), leaving the rest to the player | ≤ capacity |
 
 Starter wand `apprentice_wand` (rarity `starter`) never appears in loot.
 
@@ -265,6 +265,20 @@ Relics are passive, unique per run (an owned relic leaves the pool), and apply f
 **Events** (bus): `kill` (payload: enemy, position, statuses at death, elite flag), `hurt`, `lethal`, `room_enter`, `room_clear`, `dash_start`, `wand_recharge`, `crit`. `filter` supports `{status: burn|frozen|poison|shocked|chilled}` and `{elite: true}`. `every: N` keeps a per-relic counter and fires on every Nth qualifying event. It is deterministic, not a random chance.
 **Actions:** `heal {amount}` · `mana {amount}` (to the wand that raised the event, else the active wand) · `explode {radius, damage, element}` (absolute damage × floor `hpMult`; rolls status at statusChance 1.0 for its element; no knockback) · `spawn_spell {spellId, pattern}` (spawns that spell's **base** shot(s) at the event position with relic `shot_stat`s only, no wand and no modifiers; damage × floor `hpMult`; a `ring` pattern spreads evenly, otherwise the shot aims at the nearest enemy) · `shield {charges}` (sets shield to max(current, charges), capped at `rules.player.shieldMaxCharges`) · `revive {hp}` · `coins {amount}`.
 
+### 7.1 v2 relic vocabulary (design-v2 §5)
+
+Every relic now carries `category` ∈ `conditional | scaling | rule | status | duo | corrupted` and `tags[]` (the tag-lean seam, `systems.md` §9). Flat-stat relics are **cut** (the list is in `content-inventory.md` §0). Three optional fields extend the existing types, plus one new type:
+
+| Addition | Shape | Semantics |
+|---|---|---|
+| `condition` on a `shot_stat` / `player_stat` / `effect_param` entry | `{type, value?}`, type ∈ `hp_at_most` (HP ≤ value) · `hp_full` · `standing_ms_at_least` (no move input for ≥ value ms) · `enemies_alive_at_least` · `first_cast_after_recharge` (the first cast of a wand's cycle) | The entry applies only while the condition holds. It is evaluated at shot spawn (shot stats), or live each step (player stats, effect params). |
+| `scaling` on a `shot_stat` / `player_stat` entry | `{per, every, add, cap, resetOn?}`, per ∈ `kills` · `clean_rooms` (cleared without taking a hit) · `coins_held` · `rooms_cleared` | Bonus = min(cap, floor(count / every) × add). For a `mult` op the effective value is `1 + bonus`; for an `add` op it is `value + bonus`. `resetOn: "hurt"` zeroes the count when the player loses HP (a shield block is not a hurt). |
+| **new type `rule`** | `{rule, …params}` | Changes one engine rule while the relic is owned: `modifier_mana_zero {castDelayAddMs}` (modifiers cost 0 mana, each adds that cast delay) · `payload_repeat {count, damageMult}` (each payload release fires `count` extra times) · `wrap_no_recharge {perCycle}` (up to `perCycle` times per wand cycle, a cast that wrapped does **not** force a recharge: the cast delay applies instead and the cursor stays where the wrap left it; the counter resets when a recharge completes; §11 Ex 7) · `free_cast_after_full_recharge` (a wand that reaches the end of its recharge at full mana pays 0 for its next cast) · `melt_boost {damageMult, chillSplashRadius}` · `overload_chain {jumps, range, fallbackDamage}` (arcs deal the Overload instance's damage; `fallbackDamage` × floor hpMult only if that is unknown) · `blight_spread {radius, stackFrac, fallbackStacks}` (`fallbackStacks` only if the consumed stack count is unknown) · `spells_per_cast_add {value}` · `cast_toll {every, damage, neverLethal}` · `self_blast {damage, cooldownMs}`. |
+| `duo` block | `{parents: [a, b], offerWeightMult}` | Rarity `duo`. It is offered **only** while both parents are owned (and the `duos` feature is unlocked), with weight × `offerWeightMult` (3) in relic drafts. |
+| rarity `corrupted` | effects carry an upside **and** a downside | Offered only by the **risk door** (`floors.*.steps` option `risk: true`; `rules.risk`), and only after the `corrupted` feature is unlocked. `self_blast` (Unstable Core) is the **only** way the player can damage themselves, and they opt into it. |
+
+**Stacking (unchanged principle):** mults multiply, adds sum, and several `rule` relics of different kinds compose. `wrap_no_recharge` takes the max `perCycle`. (v2.1: it replaces the earlier `wrap_limit`, which could never draw a card, because a first wrap already draws every remaining card; developer objection, accepted.) A relic's `condition` never gates its `on_event` (use `filter` for events).
+
 ---
 
 ## §8 Damage, knockback, statuses, reactions
@@ -348,20 +362,55 @@ Contact damage applies on body overlap unless the enemy is spawning, frozen or s
 | `ring` | `count`, `speed`, `offsetDeg`, `volleys`, `volleyIntervalMs`, `volleyOffsetDeg`, `projectile`, `damage` | `volleys` rings, each rotated by a further `volleyOffsetDeg`, `volleyIntervalMs` apart (only the first volley has the windup). |
 | `spiral` | `arms`, `shotsPerArm`, `intervalMs`, `rotateDegPerShot`, `speed`, `projectile`, `damage` | Every `intervalMs` fire one shot per arm (arms evenly spaced), the base angle advancing `rotateDegPerShot`. Lasts `shotsPerArm × intervalMs`. The emitter can't move meanwhile. |
 | `charge` | `speed`, `durationMs`, `damage`, `wallStunMs` | Dash along the locked aim. Damages the player once per charge. A wall, pillar, crate or pit edge stops it and **stuns self** `wallStunMs` (normal damage taken). |
-| `slam` | `radius`, `at` (`self`\|`target`), `travelMs`, `damage`, opt `ring{count,speed,projectile}` | Circle AoE. `target`: the position locks at windup start, the body is airborne and **untargetable, no contact** for `travelMs` after the windup, then lands. The circle telegraph is visible for `windupMs + travelMs`. The optional ring fires from the impact point. Shake per feel `heavyImpactShakePx`. |
+| `slam` | `radius`, `at` (`self`\|`target`), `travelMs`, `damage`, opt `ring{count,speed,projectile}` | Circle AoE. `target`: the position locks at windup start, the body is airborne and **untargetable, no contact** for `travelMs` after the windup, then lands. The circle telegraph is visible for `windupMs + travelMs`. The optional ring fires from the impact point. Shake: trauma + feel `traumaHeavyImpact`. |
 | `summon` | `enemyId`, `count`, `maxAlive` | Spawn up to `count` (never exceeding `maxAlive` alive for this summoner) on a ring of `rules.enemies.summonRingRadiusPx` 24 with the normal spawn portal. If already at `maxAlive` → the attack is skipped (cooldown still applies). Summons die with their summoner (`summonsDieWithSummoner`). Summons give no coins unless their data says so. |
 | `blink` | `minDist`, `maxDist` | At windup end, vanish and reappear at a random walkable point `minDist..maxDist` from the player and ≥ `blinkWallClearTiles` 2 tiles from walls (ai stream). |
 | `self_destruct` | `radius`, `damage`, `enemyDamage`, `explodeIfKilledDuringWindup` | At windup end: explode (player `damage`; other enemies take `enemyDamage` × floor `hpMult`), then die with **no coins** (`selfDestructDropsCoins` false). Killed mid-windup with the flag → explodes immediately **and** drops coins. Killed before the windup → no explosion. |
 | `hazard` | `count`, `radius`, `durationMs`, `tickMs`, `damage`, `element`, `placement` | Marks appear at windup start and activate at windup end for `durationMs`. While active, a player inside takes `damage` on entry and every `tickMs`. `player+random`: 1 at the player's position plus (count−1) random walkable points ≥ `hazardMinSpacingPx` 48 apart. `cross`: the player's position ± `hazardCrossOffsetPx` 64 on both axes (5). |
 | `sequence` | `steps[]`, `gapMs` | Runs the named attacks back to back, each with its own windup. |
+| `ward_allies` (v2) | `count`, `hits`, `radius`, `self` | At windup end, give a ward of `hits` to the `count` nearest allies within `radius` that have no active ward (never itself unless `self: true`; with `self` and `count` 0 it wards only itself). Ward rules: §9.6. |
+| `guard` (v2) | `defence{type}`, `durationMs` | At windup end, raise the given defence (usually a frontal shield) for `durationMs`, with the same break and wear rules as a permanent defence. |
+| `mirror` (v2) | `minCount`, `maxCount`, `spreadPerShotDeg`, `speed`, `projectile`, `damage` | **Build-reading volley.** Count = clamp(the player's shots per cast from the active wand's preview cycle (the max over casts), `minCount`, `maxCount`). Fires that many enemy shots in a fan `spreadPerShotDeg` apart at the locked aim. The more shots your wand fires, the wider the answer. |
 
 Enemy projectiles: circles vs the player hurtbox. Walls, pillars and crates stop them; pits don't. `frost` element → `playerSlow`. Player projectiles never cancel enemy projectiles (and vice versa). Boss phase changes clear enemy projectiles.
 
-### 9.4 Elites (`rules.enemies.elite`)
-HP × 2.5, coins × 3, `kbResist` + 0.3 (cap 1). **Sprite scale and collision radius stay ×1.0.** Fractional nearest-neighbour scaling breaks the 1-pixel outline (style-guide §3.3), and a body bigger than the sprite would deal contact damage from undrawn pixels. Elites are marked instead by a baked 1 px gold outline (`#facb3e`) and a gold ground ring (2D Artist / TA). Same attacks and windups (elites are tankier, not less readable). They cost `threat × eliteThreatMult` (2) of the wave budget. Elite kill → `eliteKillHitstopMs`.
+### 9.4 Elites (`rules.enemies.elite`, `data/affixes.json`)
+HP × 2.5, coins × 3, `kbResist` + 0.3 (cap 1). **Sprite scale and collision radius stay ×1.0.** Fractional nearest-neighbour scaling breaks the 1-pixel outline (style-guide §3.3), and a body bigger than the sprite would deal contact damage from undrawn pixels. Elites are marked by a gold ground ring (2D Artist / TA). Same attacks and windups (elites are tankier, not less readable). They cost `threat × eliteThreatMult` (2) of the wave budget. Elite kill → `eliteKillHitstopMs`.
+**v2 affixes:** every elite rolls **one** affix from `affixes.json` (ai stream), or two from Heat 2 (`rules.heat.levels[].eliteAffixes`). Affixes that grant a defence (`excludesDefence: true`) are skipped when the base enemy already has one. Each affix is shown by an outline key **plus** a title and glyph (never colour-only). `hasted` never shortens windups.
 
-### 9.5 Spawning
-A wave's enemies appear at `x` markers (flyers may use any floor tile) at least `minSpawnDistPx` 64 from the player, else the farthest marker. Each shows a portal for `spawnPortalMs` 700 during which it is inert and invulnerable. `maxAlive` 14 per room; overflow queues. Wave generation: `progression-and-pacing.md` §3.
+### 9.5 Spawning (v2)
+- **Placement:** a wave's enemies appear at `x` markers (flyers may use any floor tile) at least `minSpawnDistPx` **104** from the player and **not inside the player's aim cone** (±`spawnAimConeDeg` 35 within `spawnAimConeRangePx` 220). If no marker qualifies, use the farthest one.
+- **Portal:** each spawn shows a portal for `spawnPortalMs` **850**, during which it is inert and invulnerable.
+- **Caps:** `maxAlive` 14 per room (overflow queues). Normal enemies may have at most `enemyShotCap` **36** projectiles in the air; an attack that would exceed it fires only up to the cap. Bosses are exempt.
+- **Wave pacing:** the next wave comes when `nextWaveKilledFrac` 0.65 of the current wave is dead, or when ≤ 1 enemy is alive, after ≥ 3 s.
+- **Wave grammar** (anchor + pressure, door threats): `progression-and-pacing.md` §3.
+
+### 9.6 Defences (v2; `rules.defences`, `enemies[].defence`, `bosses[].defence`)
+
+A defence answers **one** keyword (§9.7). Every defence also **erodes without its keyword**, so nothing is ever unkillable. The design rule is "the right keyword makes it fast; anything makes it possible."
+
+| Defence | Data | Rule | Breaks on | Erodes without it |
+|---|---|---|---|---|
+| **Shield** | `{type: "shield", wearBlocks?}` | Blocks every damage instance whose source point lies within the enemy's **front arc** (`frontArcDeg` 150, centred on its facing = toward the player while moving or winding up). A blocked hit deals 0, applies no status, and shows BLOCKED. Hits from behind or the flanks land normally. | Any **pierce** hit from the front: the shield shatters (stays broken). | After `wearBlocks` (default 7) blocked hits. |
+| **Armour** | `{type: "armour", points}` | An armour bar of `points` × floor `hpMult` sits over HP and soaks damage first. Damage into armour: **blast** × `blastMult` 2.5, direct hits × `directMult` 0.4, status ticks × `dotMult` 0.25, other (chain, zap, zone) × `otherMult` 0.4. Overflow past 0 carries into HP at full value. | — (blast shreds it) | Always depletes. |
+| **Ward** | `{type: "ward", hits}` | Swallows the next `hits` damage instances **whole** (0 damage, no status; status ticks are blocked without consuming hits). | A **shock** hit strips the whole ward **and lands** at full damage. | Each swallowed hit uses up a charge. |
+
+- **Sources:** enemy data (`tomb_sentinel` shield, `brute`/`stone_golem` armour, `wraith`/`lantern_acolyte` ward), elite affixes, `ward_allies` and `guard` attacks, mini-bosses and bosses.
+- **Ward regrowth:** only `warded` elites regrow their ward, after `eliteRegrowMs` 7000. Boss phase `onEnter.regrowDefence` restores that fraction of the boss's own defence.
+- **Feedback:** emit `EV.DEFENCE` `{type, event: block|wear|break, enemyId}` → FX/cue (throttled by the Audio Director), counter-pip UI, and the **first-block tip** once per defence type per save (`firstBlockTipOncePerType`). Lifetime `defencesBroken` counts toward goal `g_breaker`.
+
+### 9.7 Keyword glossary (player-facing, one word each; `rules.keywords`)
+
+**Defence-breakers** (the three words the whole v2 counter game is built on):
+- **pierce**: a direct hit from a shot with pierce ≥ 1 (after modifiers), or any boomerang or orbit hit. Breaks **shields**.
+- **blast**: any `explode` damage (spell, modifier or relic), an Overload, or a self-destruct. Tears **armour** (× 2.5).
+- **shock**: any damage whose element is shock, or a `chain` or `zap` hit. Strips **wards**.
+
+**Descriptive keywords** (card chips and draft reasons): burn · chill · poison · homing · bounce · split · chain · multicast · trigger · crit · zone · orbit · mine · mobility.
+
+- **Carriage:** every damage instance carries its keywords to the defence check. Keywords are derived at **hit time** from the composed shot, so a `pierce` or `explosive` modifier on a Spark Bolt makes it a shield or armour answer.
+- **Card data:** each card's `keywords[]` is generated from its behaviour (a card can't claim a keyword it doesn't deliver) and drives UI chips, the counter guarantee and "Enables" chips.
+- **Player text:** uses these words and never engine terms (payload, carrier, cycle, instance).
 
 ---
 
@@ -374,6 +423,31 @@ A wave's enemies appear at `x` markers (flyers may use any floor tile) at least 
 - `windupMult` (final phase only): windups × 0.9, floored at `rules.enemies.bossTelegraphMinMs` 450 and at 600 for damage-2 attacks.
 - Death: kill all other enemies, clear projectiles, award `rewards` (relic draft, coins, heal). Floor 3 → `run-end {victory}`.
 
+### 10.1 Tiers, intros, banners (v2)
+- `tier: "mini"`: one per floor at step 4 (`floors.*.miniBoss`). HP 260/600/900. Intro `rules.enemies.miniBossActivateDelayMs` 800. HP bar × `rules.boss.miniBossBarScale` 0.6. **No floor end:** death awards `rewards` (relic draft of 2, coins, heal 1), then the step-5 doors open. Each mini carries a **defence that tests its floor's keyword** (`testKeyword`): Warden = shield/pierce, Matron = ward/shock, Colossus = armour/blast.
+- `tier: "boss"`: unchanged flow. Bosses scale by **new attacks, not HP** (520/1100/2000; the final boss is still the longest fight).
+- `intro {titleKey, subtitleKey}` feeds the intro card. Each phase has a `bannerKey` shown on entry. English text is proposed in `design-v2.md` §7 (UX owns the strings).
+- At Heat ≥ 4 each boss adds its `heatAttack` to its last phase's pattern.
+
+### 10.2 `adapt`: build-reading rules
+When the boss activates, it reads the player's build: all carried wands' slots plus the active wand's preview. It applies the **first** rule in its `adapt[]` whose `when` holds (at most `rules.boss.adaptMaxRulesApplied` 1), and shows its `bannerKey` on the intro card so the counter is **announced, never hidden**.
+
+| `when.type` | Test |
+|---|---|
+| `multicast_at_least {value}` | Max shots in one cast of the active wand's preview ≥ value |
+| `dominant_element {element, minShare}` | Share of slotted projectile cards (all wands) of that element ≥ minShare; `element: "any"` picks the top element |
+| `cast_rate_above {value}` | Active wand casts per second (preview) > value |
+| `has_keyword` / `lacks_keyword {keyword}` | Any slotted card (all wands) carries / none carries it |
+| `always` | — |
+
+| `then.type` | Effect |
+|---|---|
+| `resist {element, mult}` | Damage of that element × mult (`dominant` = the element read). **Floor `rules.boss.adaptResistFloor` 0.6: never a hard counter.** |
+| `add_attack {attackId, phase}` | Inserts the attack into that phase's pattern (after its first entry). |
+| `defence_param {field, value \| mult}` | Adjusts the boss's own defence. Mini-bosses use this as a **mercy** rule: a player lacking the test keyword gets a softer defence, so a mini is always winnable. |
+
+**Design intent:** mini-boss adapts *help* the player who lacks the answer (teaching). Boss adapts *push back* on the dominant strategies of `systems.md` §5 (mega-multicast, mono-element stream), announced so the player can re-slot before the next boss. At Heat ≥ 4 (`rules.heat.levels[].bossAdaptAlways`), mini-boss **mercy** rules are skipped (the defence stays at full strength) and bosses always apply their first matching pressure rule.
+
 Full per-attack tables, including windup ms: `progression-and-pacing.md` §5.
 
 ---
@@ -382,24 +456,34 @@ Full per-attack tables, including windup ms: `progression-and-pacing.md` §5.
 
 All examples use the wand's own stats, no relics, from a full mana bar. Deck = non-empty slots in slot order.
 
-### Ex 1 — Starter: `apprentice_wand` [spark_bolt, spark_bolt, —, —] (cd 250, rc 400, mana 60, regen 25)
+### Ex 1 — Starter (v2): `apprentice_wand` [spark_bolt, spark_bolt, —] (3 slots, cd 250, rc 400, mana 50, regen 18)
 | t (ms) | Draws | Shots | Timer set |
 |---|---|---|---|
 | 0 | spark (−5) | 1 spark: 5 dmg, 300 px/s, 700 ms (210 px), ±5° (2 card + 3 wand) | cursor 1 < 2 → castTimer = 250 |
 | 250 | spark (−5) | 1 spark | cursor 2 = end → exhausted → recharge = max(250, 400+0) = **400** |
 | 650 | cycle repeats | | |
 
-2 shots / 650 ms = **3.08 shots/s → 15.4 DPS**. Mana: 10 per 650 ms = 15.4/s < 25 regen → sustainable indefinitely.
+2 shots / 650 ms = **3.08 shots/s → 15.4 DPS**. Mana: 10 per 650 ms = 15.4/s < **18** regen → the bare starter is sustainable indefinitely.
+
+**v2 mana lesson (checked by `scripts/check-spells.mjs`):** the starter's **first modifier overspends**, so the mana bar teaches itself in room 1.
+
+| Layout | Cycle | Drain vs regen | Runs dry after (from 50 mana) |
+|---|---|---|---|
+| [spark, spark, —] | 650 ms | 15.4/s < 18/s | never |
+| [double_cast, spark, spark] | 400 ms | 25/s > 18/s | **7 s** |
+| [damage_up, spark, spark] | 300 + 400 = 700 ms | 28.6/s > 18/s | **4 s** |
+
+After running dry the wand still fires, because unaffordable cards are skipped (§4). [double_cast, spark, spark] settles at 18 mana/s ÷ 5 per shot = 3.6 shots/s = 18 DPS, still better than the bare 15.4. So a modifier is never a trap. It is a trade the preview shows as "runs dry after N s".
 
 ### Ex 2 — The FTUE modifier: [double_cast, spark, spark, —]
 Cast 1: draw double_cast (0 mana) → sub-group A draws spark (−5) → shot at −6°; sub-group B draws spark (−5) → shot at +6° (fan 12°). Cursor 3 = end → recharge max(250, 400) = 400.
-→ 2 sparks every 400 ms = **25 DPS** (+62%). Mana 10/400 ms = 25/s = regen → exactly sustainable.
+→ 2 sparks every 400 ms = **25 DPS** (+62%) while mana lasts. Mana 10/400 ms = 25/s > 18/s regen → runs dry after 7 s (Ex 1 table), then ≈ 18 DPS.
 **Placement doesn't matter:** [spark, spark, double_cast] gives cast 1 = spark, cast 2 = spark, cast 3 = double → A: cursor at end → **wrap** → slot 0 spark (not drawn this cast) → B: slot 1 spark → 2 shots, wrapped → recharge. Every order yields a working wand, so the first modifier can't be a dead card. This is the teaching guarantee behind `wrap_once_skip_drawn`.
 
-### Ex 3 — Trigger delivery: `oak_staff` [trigger_hit, spark_bolt, fireball] (cd 380, rc 900, speed ×0.9, mana 180, regen 28)
+### Ex 3 — Trigger delivery: `oak_staff` [trigger_hit, spark_bolt, fireball] (cd 380, rc 900, speed ×0.9, mana 150, regen 24)
 Cast 1: trigger_hit (−10) → carrier group draws spark (−5) → carrier S (270 px/s, 189 px range). The payload group (depth 1, no inherited mods) draws fireball (−22) → P stored on S. Cursor 3 = end → recharge = max(380 + 150, 900) = **900**.
 S flies. On its first collision at point X, P spawns at X − 2 px along S's heading and flies on (for an enemy hit it immediately overlaps the enemy): fireball direct 10 + `explode` r32 ×1.0 = 10 to all in radius, burn at 100%. If S hits nothing, P releases at S's end point (≈189 px out).
-Result: a fireball that arrives at spark speed. 37 mana / 900 ms ≈ 41/s vs 28 regen → about 14 s of continuous fire from full.
+Result: a fireball that arrives at spark speed. 37 mana / 900 ms ≈ 41/s vs 24 regen → about 8 s of continuous fire from full. (v2: the Oak Staff is *found* with only [trigger_hit, spark_bolt]; the player supplies the payload.)
 
 ### Ex 4 — Wrap and skip inside a multi-group cast: `twin_fork` [fire_bolt, ice_shard, double_cast] (spellsPerCast 2, cd 300, rc 650)
 - Cast 1: group 1 draws fire_bolt (−9) → shot; group 2 draws ice_shard (−8) → shot. No fan between groups (spread only, ±7° wand + card). Cursor 2 < 3 → castTimer = 300 + 40 + 20 = **360**.
@@ -407,11 +491,21 @@ Result: a fireball that arrives at spark speed. 37 mana / 900 ms ≈ 41/s vs 28 
 - Totals per cycle: 4 shots in 1010 ms.
 
 ### Ex 5 — Mana failure (skip, never stall): `apprentice_wand` [comet, spark_bolt] with 30 mana left
-Cast: draw comet (needs 40, has 30) → **skipped** (sputter cue and flash; the cursor moved on; no cost; no cast delay). Keep drawing → spark (−5) → 1 spark fires. Cursor at end → recharge max(250 + 0, 400 + 300 (comet's static `rechargeAddMs`)) = 700. The next cycle starts again at comet with 25 + 0.7 × 25 = 42.5 mana → comet fires.
+Cast: draw comet (needs 40, has 30) → **skipped** (sputter cue and flash; the cursor moved on; no cost; no cast delay). Keep drawing → spark (−5) → 1 spark fires. Cursor at end → recharge max(250 + 0, 400 + 300 (comet's static `rechargeAddMs`)) = 700. With v2 regen 18/s the next cycle starts with 25 + 0.7 × 18 = 37.6 mana → comet is skipped again and spark fires (32.6 → +12.6 = 45.2). Comet fires on the **third** cycle. The skip rule never stalls the wand; it only delays the big card.
 
 ### Ex 6 — Always-cast plus modifier scope: `echo_wand` (alwaysCast [double_cast]) [damage_up, spark_bolt, magic_missile]
 Cast 1: virtual double_cast (free, drawn first) → A: draw damage_up (−10) → pending [damage_up] → draw spark (−5) → spark ×1.4 = 7 dmg. B: draw magic_missile (−12) → 8 dmg. damage_up does **not** reach B, because it was drawn *inside* sub-group A, after the multicast had already split. Cursor end → recharge.
 Contrast on a normal wand, [damage_up, double_cast, spark_bolt, magic_missile]: damage_up is pending *before* the multicast, so both sub-groups inherit it (7 + 11.2 dmg). **Rule of thumb for players: a modifier affects everything that splits off after it.** Because order matters this much, the wand editor must preview each cast's shot list (UX seam, `systems.md` §6).
+
+### Ex 7 — Rule relic `wrap_no_recharge` (Endless Page): `apprentice_wand` [spark_bolt, spark_bolt, double_cast] (cd 250, rc 400)
+| Cast | Draws | Shots | Without the relic | **With Endless Page (perCycle 1)** |
+|---|---|---|---|---|
+| 1 | spark (slot 0) | 1 | delay 250 | delay 250 |
+| 2 | spark (slot 1) | 1 | delay 250 | delay 250 |
+| 3 | double → A: end → **wrap** → spark (0); B: spark (1) | 2 | wrapped → **recharge 400**, cycle ends (4 shots / 900 ms) | wrapped, free wrap used → **delay 250**, cursor stays at 2 |
+| 4 | — | — | (next cycle) | double (2) → A: wrap → spark (0); B: spark (1) → 2 shots; wrapped again, no free wraps left → **recharge 400** |
+
+With the relic: 6 shots per 1150 ms (5.2 shots/s) vs 4 per 900 ms (4.4 shots/s), about +17% throughput for wands whose multicast sits at the end. Mana per second is unchanged per shot. Checked by `scripts/check-spells.mjs` (Ex7).
 
 ---
 
@@ -445,6 +539,8 @@ Contrast on a normal wand, [damage_up, double_cast, spark_bolt, magic_missile]: 
 | E10 | Farming (infinite coins or re-entering rooms) | Rooms never respawn. Salvage = 30% of price < any buy price, so there is no arbitrage. Reroll cost escalates. |
 | E11 | Teleport out of bounds or into pits | Walkable-tile search within 2 tiles, else no-op. Shots can't leave room bounds (walls). |
 | E12 | Self-kill with own explosions | No self-damage exists. |
+| E14 | Unkillable defended enemy (a player without the keyword) | Shields wear after 7 blocks, armour takes × 0.4 from anything, wards cost a charge per hit; mini-boss `defence_param` mercy adapts. |
+| E15 | Ward chain-lock (acolytes re-warding each other forever) | `ward_allies` skips allies that already have a ward; acolytes have 5.5 s cooldowns; shock strips it instantly; killing the acolyte ends it. |
 | E13 | Enemy cheap shots | Every attack windup ≥ 350 ms (≥ 600 ms for 2-damage, ≥ 450 ms on bosses). Aim locks 150 ms before release. Spawns ≥ 64 px away behind a 700 ms portal. **A windup may only begin while the attacker is on-screen** (`attackRequiresOnScreen`, §9.2), so no telegraph plays off-camera in scrolling rooms. |
 
 ---
@@ -455,7 +551,7 @@ Contrast on a normal wand, [damage_up, double_cast, spark_bolt, magic_missile]: 
 |---|---|---|---|---|---|---|---|---|
 | **Keyboard + mouse** (primary) | WASD / arrows | mouse cursor (pixel-precise) | hold LMB | **Space or RMB** (RMB mirrors Enter the Gungeon's dodge; the engine's `altCast` intent is **unused** by this design) | 1–3, Q (cycle), wheel | Tab / I | 2-frame input→effect target (feel §0) | Low: genre-standard twin-stick on KB+M. |
 | **Gamepad** (twin-stick) | left stick (deadzone feel `moveStickDeadzone`) | right stick + pad-only aim assist (feel §aim) | hold RT | A or LB | RB (next) / Y (prev) | Back/View | +2 frames of buffer (`padBufferBonusMs`) | Medium: aim assist compensates for stick precision; HUD glyph swap (UX). |
-| Touch | **deferred** (README) | | | | | | | |
+| **Touch** (v2) | floating left stick (`feel: touch-aim`) | **auto-fire at the nearest valid target** (crates as fallback) + right-stick override | automatic (auto mode) / aim stick past `touchAimOverride` | DASH button (UX `mobile-touch-spec.md` §4) | SWAP button | tap-pick / drag-place (UX `wand-editor-ux.md` §10) | +1 frame move/aim budget (feel §audit-latency) | Low: auto-fire removes the aim-and-hold skill from the first minute; override is discovered by touching the right half. |
 
 Binding conflict flagged to the developer: `architecture.md` §8 lists **E** as both interact and wand-cycle. This design uses **E = interact** and **Q / wheel = cycle wands**.
 

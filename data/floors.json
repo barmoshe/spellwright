@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "$comment": "Door-choice run graph. Budget per wave = floor(budgetBase + budgetPerStep*stepIndex) * (1 + waveGrowth*waveIndex).",
+  "version": 2,
+  "$comment": "v2 run graph: start + 6 rooms + mini-boss mid-floor + puzzle + boss. Option threat:'roll' draws from floor.threats. Budget per wave = floor(floor(base + perStep*step) * (1 + waveGrowth*waveIndex)).",
   "floors": [
     {
       "id": "f1",
@@ -14,6 +14,12 @@
       "treasureRoom": "vault",
       "bossRoom": "arena_ossuary",
       "boss": "ossuary_knight",
+      "miniBoss": "grave_warden",
+      "miniBossRoom": "crypt_arena",
+      "puzzleRooms": [
+        "sentinel_gate"
+      ],
+      "testKeyword": "pierce",
       "combatRooms": [
         "crypt_small_a",
         "crypt_small_b",
@@ -26,79 +32,141 @@
       ],
       "enemyPool": [
         {
-          "id": "bat",
-          "weight": 3,
-          "minStep": 1
-        },
-        {
           "id": "skeleton",
           "weight": 4,
           "minStep": 1
         },
         {
-          "id": "slime",
+          "id": "bat",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "bone_archer",
           "weight": 3,
           "minStep": 2
         },
         {
-          "id": "cultist",
+          "id": "tomb_sentinel",
           "weight": 3,
+          "minStep": 3
+        },
+        {
+          "id": "slime",
+          "weight": 1,
           "minStep": 2
         },
         {
           "id": "brute",
-          "weight": 2,
-          "minStep": 4
+          "weight": 1,
+          "minStep": 5
         },
         {
           "id": "fire_imp",
-          "weight": 2,
-          "minStep": 6
+          "weight": 1,
+          "minStep": 5
         }
       ],
       "eliteCandidates": [
         "skeleton",
-        "brute",
-        "cultist",
-        "slime"
+        "bone_archer",
+        "tomb_sentinel",
+        "brute"
+      ],
+      "threats": [
+        {
+          "id": "none",
+          "weight": 4,
+          "minStep": 1,
+          "anchors": [],
+          "keyword": null,
+          "iconKey": "threat.none"
+        },
+        {
+          "id": "swarm",
+          "weight": 2,
+          "minStep": 3,
+          "anchors": [],
+          "keyword": null,
+          "iconKey": "threat.swarm",
+          "pressureOnly": [
+            "bat",
+            "skeleton",
+            "slime",
+            "fire_imp",
+            "bone_archer"
+          ],
+          "budgetMult": 1.2
+        },
+        {
+          "id": "shield",
+          "weight": 3,
+          "minStep": 3,
+          "anchors": [
+            "tomb_sentinel"
+          ],
+          "keyword": "pierce",
+          "iconKey": "threat.shield"
+        },
+        {
+          "id": "armour",
+          "weight": 1,
+          "minStep": 5,
+          "anchors": [
+            "brute"
+          ],
+          "keyword": "blast",
+          "iconKey": "threat.armour"
+        }
       ],
       "waves": {
         "combat": {
           "count": 2,
           "budgetBase": 5,
-          "budgetPerStep": 0.8
+          "budgetPerStep": 0.9
         },
         "elite": {
           "count": 2,
-          "budgetBase": 10,
-          "budgetPerStep": 0.6,
+          "budgetBase": 11,
+          "budgetPerStep": 0.7,
           "elites": 1
         }
       },
       "limits": {
         "heal": 1,
-        "wand": 1
+        "wand": 1,
+        "corrupted": 1
       },
+      "twists": [
+        {
+          "id": "ambush",
+          "chance": 0.15,
+          "minStep": 3
+        }
+      ],
       "steps": [
         {
           "fixed": {
             "room": "start",
             "reward": null
-          }
+          },
+          "timeBudgetS": 10
         },
         {
           "fixed": {
             "room": "combat",
             "reward": "modifier"
           },
-          "tutorialTemplate": "tut_first_blood"
+          "tutorialTemplate": "tut_first_blood",
+          "timeBudgetS": 40
         },
         {
           "fixed": {
             "room": "combat",
             "reward": "spell"
           },
-          "tutorialTemplate": "tut_gauntlet"
+          "tutorialTemplate": "tut_gauntlet",
+          "timeBudgetS": 40
         },
         {
           "choose": 2,
@@ -106,141 +174,145 @@
             {
               "room": "combat",
               "reward": "spell",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "combat",
               "reward": "modifier",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "coins",
-              "weight": 2
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "treasure",
               "reward": "wand",
               "weight": 2
+            },
+            {
+              "room": "combat",
+              "reward": "coins",
+              "weight": 1,
+              "threat": "roll"
             }
-          ]
+          ],
+          "timeBudgetS": 40
+        },
+        {
+          "fixed": {
+            "room": "miniboss",
+            "reward": "miniboss"
+          },
+          "timeBudgetS": 50
         },
         {
           "choose": 2,
           "from": [
             {
               "room": "combat",
-              "reward": "spell",
-              "weight": 3
-            },
-            {
-              "room": "combat",
               "reward": "modifier",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "elite",
               "reward": "relic",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
+            },
+            {
+              "room": "combat",
+              "reward": "heal",
+              "weight": 2,
+              "threat": "roll"
+            },
+            {
+              "room": "elite",
+              "reward": "corrupted",
+              "weight": 1,
+              "threat": "roll",
+              "risk": true,
+              "requiresFeature": "corrupted"
             }
-          ]
+          ],
+          "timeBudgetS": 40
         },
         {
           "fixed": {
             "room": "shop",
             "reward": null
-          }
+          },
+          "timeBudgetS": 25
         },
         {
-          "choose": 2,
-          "from": [
-            {
-              "room": "combat",
-              "reward": "modifier",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "heal",
-              "weight": 2
-            },
-            {
-              "room": "elite",
-              "reward": "relic",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "coins",
-              "weight": 2
-            }
-          ]
-        },
-        {
-          "choose": 2,
-          "from": [
-            {
-              "room": "combat",
-              "reward": "spell",
-              "weight": 3
-            },
-            {
-              "room": "treasure",
-              "reward": "relic",
-              "weight": 2
-            },
-            {
-              "room": "combat",
-              "reward": "modifier",
-              "weight": 3
-            },
-            {
-              "room": "treasure",
-              "reward": "wand",
-              "weight": 1
-            }
-          ]
-        },
-        {
-          "choose": 2,
-          "from": [
-            {
-              "room": "elite",
-              "reward": "relic",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "heal",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "spell",
-              "weight": 2
-            }
-          ]
+          "fixed": {
+            "room": "combat",
+            "reward": "spell",
+            "puzzle": true
+          },
+          "timeBudgetS": 40
         },
         {
           "fixed": {
             "room": "boss",
             "reward": "boss"
-          }
+          },
+          "timeBudgetS": 60
         }
-      ]
+      ],
+      "world": {
+        "id": "w1_sunken_crypt",
+        "name": "The Sunken Crypt",
+        "fantasy": "A candlelit ossuary where the dead still stand guard behind their shields.",
+        "tileset": "tiles_f1",
+        "music": "music.w1",
+        "ambience": "amb.w1",
+        "cardKey": "world.w1.card",
+        "counterEmphasis": "pierce",
+        "natives": [
+          "skeleton",
+          "bat",
+          "bone_archer",
+          "tomb_sentinel"
+        ],
+        "twist": {
+          "id": "candlelight",
+          "newBehaviour": false,
+          "ambientLight": 0.55,
+          "candlesPerRoom": [
+            3,
+            6
+          ],
+          "candleLightRadiusPx": 56,
+          "spellLightRadiusPx": 28,
+          "enemyOutline": true,
+          "telegraphsFullBright": true,
+          "appliesTo": [
+            "combat",
+            "elite",
+            "puzzle"
+          ],
+          "note": "Reuses the `dark` twist renderer at a milder ambient level; candle props are decorative light sources (2D Artist)."
+        }
+      }
     },
     {
       "id": "f2",
       "index": 2,
       "name": "The Drowned Halls",
-      "hpMult": 1.75,
-      "enemyProjSpeedMult": 1.08,
+      "hpMult": 1.65,
+      "enemyProjSpeedMult": 1.06,
       "coinMult": 1.3,
       "startRoom": "landing",
       "shopRoom": "shop",
       "treasureRoom": "vault",
       "bossRoom": "arena_mire",
       "boss": "mire_queen",
+      "miniBoss": "lantern_matron",
+      "miniBossRoom": "crypt_arena",
+      "puzzleRooms": [
+        "choir_of_wards"
+      ],
+      "testKeyword": "shock",
       "combatRooms": [
         "crypt_small_a",
         "crypt_small_b",
@@ -257,19 +329,24 @@
       ],
       "enemyPool": [
         {
-          "id": "bat",
+          "id": "drowned_thrall",
+          "weight": 4,
+          "minStep": 1
+        },
+        {
+          "id": "mire_leech",
+          "weight": 3,
+          "minStep": 1
+        },
+        {
+          "id": "lantern_acolyte",
           "weight": 2,
-          "minStep": 1
+          "minStep": 2
         },
         {
-          "id": "skeleton",
+          "id": "wraith",
           "weight": 3,
-          "minStep": 1
-        },
-        {
-          "id": "cultist",
-          "weight": 3,
-          "minStep": 1
+          "minStep": 2
         },
         {
           "id": "frost_mage",
@@ -282,24 +359,14 @@
           "minStep": 1
         },
         {
-          "id": "brute",
-          "weight": 2,
-          "minStep": 1
-        },
-        {
-          "id": "fire_imp",
-          "weight": 3,
-          "minStep": 1
-        },
-        {
           "id": "eye_turret",
-          "weight": 2,
+          "weight": 1,
           "minStep": 2
         },
         {
-          "id": "wraith",
-          "weight": 2,
-          "minStep": 3
+          "id": "tomb_sentinel",
+          "weight": 1,
+          "minStep": 1
         },
         {
           "id": "necromancer",
@@ -308,75 +375,148 @@
         }
       ],
       "eliteCandidates": [
-        "brute",
-        "cultist",
-        "frost_mage",
+        "drowned_thrall",
         "wraith",
-        "eye_turret"
+        "frost_mage",
+        "eye_turret",
+        "tomb_sentinel"
+      ],
+      "threats": [
+        {
+          "id": "none",
+          "weight": 2,
+          "minStep": 1,
+          "anchors": [],
+          "keyword": null,
+          "iconKey": "threat.none"
+        },
+        {
+          "id": "swarm",
+          "weight": 2,
+          "minStep": 1,
+          "anchors": [],
+          "keyword": null,
+          "iconKey": "threat.swarm",
+          "pressureOnly": [
+            "slime",
+            "mire_leech",
+            "drowned_thrall"
+          ],
+          "budgetMult": 1.2
+        },
+        {
+          "id": "shield",
+          "weight": 2,
+          "minStep": 1,
+          "anchors": [
+            "tomb_sentinel"
+          ],
+          "keyword": "pierce",
+          "iconKey": "threat.shield"
+        },
+        {
+          "id": "ward",
+          "weight": 3,
+          "minStep": 2,
+          "anchors": [
+            "wraith",
+            "lantern_acolyte",
+            "drowned_thrall"
+          ],
+          "keyword": "shock",
+          "iconKey": "threat.ward"
+        },
+        {
+          "id": "ranged",
+          "weight": 2,
+          "minStep": 1,
+          "anchors": [
+            "eye_turret",
+            "frost_mage"
+          ],
+          "keyword": null,
+          "iconKey": "threat.ranged"
+        },
+        {
+          "id": "summoner",
+          "weight": 1,
+          "minStep": 5,
+          "anchors": [
+            "necromancer"
+          ],
+          "keyword": null,
+          "iconKey": "threat.summoner"
+        }
       ],
       "waves": {
         "combat": {
-          "count": 3,
-          "budgetBase": 8,
-          "budgetPerStep": 1.0
+          "count": 2,
+          "budgetBase": 10,
+          "budgetPerStep": 1.1
         },
         "elite": {
           "count": 2,
-          "budgetBase": 16,
-          "budgetPerStep": 0.8,
+          "budgetBase": 17,
+          "budgetPerStep": 0.9,
           "elites": 1
         }
       },
       "limits": {
         "heal": 1,
-        "wand": 1
+        "wand": 1,
+        "corrupted": 1
       },
+      "twists": [
+        {
+          "id": "ambush",
+          "chance": 0.15,
+          "minStep": 1
+        }
+      ],
       "steps": [
         {
           "fixed": {
             "room": "start",
             "reward": null
-          }
+          },
+          "timeBudgetS": 10
+        },
+        {
+          "fixed": {
+            "room": "combat",
+            "reward": "spell",
+            "threat": "roll"
+          },
+          "timeBudgetS": 40
         },
         {
           "choose": 2,
           "from": [
             {
               "room": "combat",
-              "reward": "spell",
-              "weight": 3
-            },
-            {
-              "room": "combat",
               "reward": "modifier",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "treasure",
               "reward": "wand",
               "weight": 2
-            }
-          ]
-        },
-        {
-          "choose": 2,
-          "from": [
-            {
-              "room": "combat",
-              "reward": "modifier",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "coins",
-              "weight": 2
             },
             {
               "room": "elite",
               "reward": "relic",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
+            },
+            {
+              "room": "combat",
+              "reward": "coins",
+              "weight": 1,
+              "threat": "roll"
             }
-          ]
+          ],
+          "timeBudgetS": 40
         },
         {
           "choose": 2,
@@ -384,19 +524,29 @@
             {
               "room": "combat",
               "reward": "spell",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "combat",
               "reward": "modifier",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "treasure",
               "reward": "relic",
               "weight": 2
             }
-          ]
+          ],
+          "timeBudgetS": 40
+        },
+        {
+          "fixed": {
+            "room": "miniboss",
+            "reward": "miniboss"
+          },
+          "timeBudgetS": 50
         },
         {
           "choose": 2,
@@ -404,111 +554,122 @@
             {
               "room": "elite",
               "reward": "relic",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "combat",
               "reward": "heal",
-              "weight": 2
+              "weight": 2,
+              "threat": "roll"
             },
             {
               "room": "combat",
               "reward": "spell",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
+            },
+            {
+              "room": "elite",
+              "reward": "corrupted",
+              "weight": 1,
+              "threat": "roll",
+              "risk": true,
+              "requiresFeature": "corrupted"
             }
-          ]
+          ],
+          "timeBudgetS": 40
         },
         {
           "fixed": {
             "room": "shop",
             "reward": null
-          }
+          },
+          "timeBudgetS": 25
         },
         {
-          "choose": 2,
-          "from": [
-            {
-              "room": "combat",
-              "reward": "modifier",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "spell",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "coins",
-              "weight": 2
-            },
-            {
-              "room": "treasure",
-              "reward": "wand",
-              "weight": 1
-            }
-          ]
-        },
-        {
-          "choose": 2,
-          "from": [
-            {
-              "room": "elite",
-              "reward": "relic",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "modifier",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "heal",
-              "weight": 2
-            }
-          ]
-        },
-        {
-          "choose": 2,
-          "from": [
-            {
-              "room": "combat",
-              "reward": "heal",
-              "weight": 3
-            },
-            {
-              "room": "elite",
-              "reward": "relic",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "spell",
-              "weight": 2
-            }
-          ]
+          "fixed": {
+            "room": "combat",
+            "reward": "spell",
+            "puzzle": true
+          },
+          "timeBudgetS": 40
         },
         {
           "fixed": {
             "room": "boss",
             "reward": "boss"
-          }
+          },
+          "timeBudgetS": 65
         }
-      ]
+      ],
+      "world": {
+        "id": "w2_drowned_halls",
+        "name": "The Drowned Halls",
+        "fantasy": "Flooded cloisters where lantern-bearers keep the drowned wrapped in wards.",
+        "tileset": "tiles_f2",
+        "music": "music.w2",
+        "ambience": "amb.w2",
+        "cardKey": "world.w2.card",
+        "counterEmphasis": "shock",
+        "natives": [
+          "drowned_thrall",
+          "mire_leech",
+          "lantern_acolyte",
+          "wraith",
+          "frost_mage"
+        ],
+        "twist": {
+          "id": "flooded",
+          "newBehaviour": true,
+          "waterFromPitsTiles": 1,
+          "puddlesPerRoom": [
+            1,
+            3
+          ],
+          "puddleRadiusTiles": 2,
+          "moveMult": 0.8,
+          "flyersIgnore": true,
+          "shockArcRadiusPx": 40,
+          "shockArcDamageMult": 0.5,
+          "waterQuenchesBurn": true,
+          "neverOn": [
+            "P",
+            "d",
+            "D",
+            "c",
+            "B",
+            "x"
+          ],
+          "appliesTo": [
+            "combat",
+            "elite",
+            "puzzle",
+            "miniboss",
+            "boss"
+          ],
+          "note": "NEW tile `water`: slows walkers (player and ground enemies) ×0.8; a shock hit on an enemy standing in water arcs to others in water within 40 px at ×0.5 (no player damage); enemies in water can't burn."
+        }
+      }
     },
     {
       "id": "f3",
       "index": 3,
       "name": "The Last Library",
-      "hpMult": 2.8,
-      "enemyProjSpeedMult": 1.15,
+      "hpMult": 2.5,
+      "enemyProjSpeedMult": 1.12,
       "coinMult": 1.6,
       "startRoom": "landing",
       "shopRoom": "shop",
       "treasureRoom": "vault",
       "bossRoom": "arena_lich",
       "boss": "archlich",
+      "miniBoss": "iron_colossus",
+      "miniBossRoom": "crypt_arena",
+      "puzzleRooms": [
+        "iron_hall"
+      ],
+      "testKeyword": "blast",
       "combatRooms": [
         "hall_pillars",
         "pit_cross",
@@ -524,49 +685,19 @@
       ],
       "enemyPool": [
         {
-          "id": "bat",
-          "weight": 2,
+          "id": "animated_armor",
+          "weight": 5,
           "minStep": 1
         },
         {
-          "id": "skeleton",
-          "weight": 2,
+          "id": "bound_tome",
+          "weight": 4,
           "minStep": 1
         },
         {
-          "id": "cultist",
-          "weight": 2,
-          "minStep": 1
-        },
-        {
-          "id": "frost_mage",
+          "id": "ink_imp",
           "weight": 3,
           "minStep": 1
-        },
-        {
-          "id": "brute",
-          "weight": 3,
-          "minStep": 1
-        },
-        {
-          "id": "fire_imp",
-          "weight": 3,
-          "minStep": 1
-        },
-        {
-          "id": "eye_turret",
-          "weight": 3,
-          "minStep": 1
-        },
-        {
-          "id": "wraith",
-          "weight": 3,
-          "minStep": 1
-        },
-        {
-          "id": "necromancer",
-          "weight": 2,
-          "minStep": 2
         },
         {
           "id": "stone_golem",
@@ -574,23 +705,112 @@
           "minStep": 3
         },
         {
-          "id": "slime",
+          "id": "brute",
+          "weight": 1,
+          "minStep": 1
+        },
+        {
+          "id": "necromancer",
+          "weight": 1,
+          "minStep": 2
+        },
+        {
+          "id": "wraith",
+          "weight": 1,
+          "minStep": 1
+        },
+        {
+          "id": "tomb_sentinel",
           "weight": 1,
           "minStep": 1
         }
       ],
       "eliteCandidates": [
-        "brute",
-        "wraith",
-        "necromancer",
+        "animated_armor",
+        "bound_tome",
         "stone_golem",
-        "frost_mage"
+        "brute",
+        "necromancer"
+      ],
+      "threats": [
+        {
+          "id": "none",
+          "weight": 1,
+          "minStep": 1,
+          "anchors": [],
+          "keyword": null,
+          "iconKey": "threat.none"
+        },
+        {
+          "id": "swarm",
+          "weight": 2,
+          "minStep": 1,
+          "anchors": [],
+          "keyword": null,
+          "iconKey": "threat.swarm",
+          "pressureOnly": [
+            "ink_imp"
+          ],
+          "budgetMult": 1.2
+        },
+        {
+          "id": "shield",
+          "weight": 2,
+          "minStep": 1,
+          "anchors": [
+            "tomb_sentinel"
+          ],
+          "keyword": "pierce",
+          "iconKey": "threat.shield"
+        },
+        {
+          "id": "ward",
+          "weight": 2,
+          "minStep": 1,
+          "anchors": [
+            "wraith"
+          ],
+          "keyword": "shock",
+          "iconKey": "threat.ward"
+        },
+        {
+          "id": "armour",
+          "weight": 3,
+          "minStep": 1,
+          "anchors": [
+            "brute",
+            "stone_golem",
+            "animated_armor"
+          ],
+          "keyword": "blast",
+          "iconKey": "threat.armour"
+        },
+        {
+          "id": "ranged",
+          "weight": 2,
+          "minStep": 1,
+          "anchors": [
+            "bound_tome"
+          ],
+          "keyword": null,
+          "iconKey": "threat.ranged"
+        },
+        {
+          "id": "summoner",
+          "weight": 2,
+          "minStep": 2,
+          "anchors": [
+            "necromancer"
+          ],
+          "keyword": null,
+          "iconKey": "threat.summoner"
+        }
       ],
       "waves": {
         "combat": {
           "count": 3,
-          "budgetBase": 11,
-          "budgetPerStep": 1.2
+          "budgetBase": 10,
+          "budgetPerStep": 1.1
         },
         "elite": {
           "count": 2,
@@ -601,54 +821,65 @@
       },
       "limits": {
         "heal": 1,
-        "wand": 1
+        "wand": 1,
+        "corrupted": 1
       },
+      "twists": [
+        {
+          "id": "ambush",
+          "chance": 0.2,
+          "minStep": 1
+        },
+        {
+          "id": "dark",
+          "chance": 0.15,
+          "minStep": 1
+        }
+      ],
       "steps": [
         {
           "fixed": {
             "room": "start",
             "reward": null
-          }
+          },
+          "timeBudgetS": 10
+        },
+        {
+          "fixed": {
+            "room": "combat",
+            "reward": "spell",
+            "threat": "roll"
+          },
+          "timeBudgetS": 45
         },
         {
           "choose": 2,
           "from": [
             {
-              "room": "combat",
-              "reward": "spell",
-              "weight": 3
+              "room": "elite",
+              "reward": "relic",
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "combat",
               "reward": "modifier",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "treasure",
               "reward": "wand",
               "weight": 2
-            }
-          ]
-        },
-        {
-          "choose": 2,
-          "from": [
-            {
-              "room": "elite",
-              "reward": "relic",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "modifier",
-              "weight": 3
             },
             {
               "room": "combat",
               "reward": "coins",
-              "weight": 2
+              "weight": 1,
+              "threat": "roll"
             }
-          ]
+          ],
+          "timeBudgetS": 45
         },
         {
           "choose": 2,
@@ -656,19 +887,29 @@
             {
               "room": "combat",
               "reward": "spell",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "combat",
               "reward": "modifier",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "treasure",
               "reward": "relic",
               "weight": 2
             }
-          ]
+          ],
+          "timeBudgetS": 45
+        },
+        {
+          "fixed": {
+            "room": "miniboss",
+            "reward": "miniboss"
+          },
+          "timeBudgetS": 50
         },
         {
           "choose": 2,
@@ -676,98 +917,89 @@
             {
               "room": "elite",
               "reward": "relic",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "combat",
               "reward": "heal",
-              "weight": 2
+              "weight": 2,
+              "threat": "roll"
             },
-            {
-              "room": "combat",
-              "reward": "spell",
-              "weight": 3
-            }
-          ]
-        },
-        {
-          "choose": 2,
-          "from": [
-            {
-              "room": "combat",
-              "reward": "spell",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "heal",
-              "weight": 2
-            },
-            {
-              "room": "elite",
-              "reward": "relic",
-              "weight": 3
-            }
-          ]
-        },
-        {
-          "choose": 2,
-          "from": [
             {
               "room": "combat",
               "reward": "modifier",
-              "weight": 3
+              "weight": 3,
+              "threat": "roll"
             },
             {
               "room": "elite",
-              "reward": "relic",
-              "weight": 3
-            },
-            {
-              "room": "treasure",
-              "reward": "wand",
-              "weight": 1
-            },
-            {
-              "room": "combat",
-              "reward": "coins",
-              "weight": 2
+              "reward": "corrupted",
+              "weight": 1,
+              "threat": "roll",
+              "risk": true,
+              "requiresFeature": "corrupted"
             }
-          ]
+          ],
+          "timeBudgetS": 45
         },
         {
           "fixed": {
             "room": "shop",
             "reward": null
-          }
+          },
+          "timeBudgetS": 25
         },
         {
-          "choose": 2,
-          "from": [
-            {
-              "room": "combat",
-              "reward": "heal",
-              "weight": 3
-            },
-            {
-              "room": "elite",
-              "reward": "relic",
-              "weight": 3
-            },
-            {
-              "room": "combat",
-              "reward": "modifier",
-              "weight": 2
-            }
-          ]
+          "fixed": {
+            "room": "combat",
+            "reward": "spell",
+            "puzzle": true
+          },
+          "timeBudgetS": 40
         },
         {
           "fixed": {
             "room": "boss",
             "reward": "victory"
-          }
+          },
+          "timeBudgetS": 80
         }
-      ]
+      ],
+      "world": {
+        "id": "w3_last_library",
+        "name": "The Last Library",
+        "fantasy": "Endless shelves of forbidden books, guarded by armour that walks and tomes that bite.",
+        "tileset": "tiles_f3",
+        "music": "music.w3",
+        "ambience": "amb.w3",
+        "cardKey": "world.w3.card",
+        "counterEmphasis": "blast",
+        "natives": [
+          "animated_armor",
+          "bound_tome",
+          "ink_imp",
+          "stone_golem"
+        ],
+        "twist": {
+          "id": "bookshelves",
+          "newBehaviour": true,
+          "pillarToShelfChance": 0.5,
+          "shelfHp": 12,
+          "fireIgnitesAfterMs": 0,
+          "burnDurationMs": 2500,
+          "blastDestroys": true,
+          "burnAuraRadiusPx": 24,
+          "burnAuraTickMs": 250,
+          "burnAuraAppliesTo": "enemies",
+          "appliesTo": [
+            "combat",
+            "elite",
+            "puzzle"
+          ],
+          "note": "NEW tile `bookshelf` (pillar variant): blocks movement and shots like a pillar; a fire hit sets it burning for 2.5 s (applies burn to ENEMIES within 24 px), then it collapses to floor; a blast destroys it at once. Never hurts the player."
+        }
+      }
     }
   ]
 }

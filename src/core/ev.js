@@ -54,6 +54,19 @@ export const EV = Object.freeze({
   INTERACT_PROMPT: 'ui:interact',         // ({text, x, y} | null)   world coordinates; null hides
   TOAST: 'ui:toast',                      // ({text, icon?, kind?:'relic'|'reaction'|'info'|'unlock'})
   INPUT_DEVICE: 'input:device',           // (device 'kbm'|'pad', promptFamily 'kbm'|'xbox'|'ps') — on prompt-family change
+  DISPLAY_CHANGED: 'display:changed',     // ({safe:{l,t,r,b}, zoom, isPhone, portrait}) — resize/rotation/safe-inset change (mobile-touch-spec §1)
+  WELCOME_BACK: 'ui:welcome-back',        // () — the page/landscape returned while a run was held (mobile-touch-spec §7.3)
+  TOUCH_PROFILE: 'input:touch-profile',   // (on:boolean) — the touch HUD profile switched (mobile-touch-spec §5.1)
+  TOUCH_TAP: 'input:touch-tap',           // (button) — a thumb/HUD button press (haptic tick + touch_ui_tap)
+  // ---- v2 Wave D contract (crafting pressure). Producers/consumers noted per event. ----
+  DEFENCE: 'combat:defence',              // ({uid, id, defence:'shield'|'armour'|'ward', result:'blocked'|'reduced'|'absorbed'|'wear'|'break', keyword, x, y, boss:bool}) — sim/Combat → FX, audio, first-block tip, haptics, stats
+  BOSS_ADAPT: 'boss:adapt',               // ({id, tier, rule, bannerKey, params}) — bosses.js → HUD intro card / phase banner line
+  BOSS_INTRO: 'boss:intro',               // ({id, tier, name, subtitle, adaptKey|null}) — bosses.js → HUD intro card (mini-boss) / banner (boss)
+  AFFIX_SHOWN: 'enemy:affix',             // ({uid, affixes:[id], x, y, first:'spawn'|'hit'}) — EnemySystem → WorldHud nameplate title
+  TWIST: 'room:twist',                    // ({kind:'ambush'|'dark'}) — RoomDirector → HUD banner
+  FORGE: 'forge:done',                    // ({kind:'merge'|'evolve'|'slot', cardId?, result?}) — ShopScene forge → audio, goals
+  DUO_OFFERED: 'relic:duo-offered',       // ({id}) — economy → audio duo_unlock
+  REWARD_SKIPPED: 'reward:skipped',       // ({kind, coins, roomKey}) — RunState.skipOffer → director may remove the (now inert) pedestal
   FX_EXPLOSION: 'fx:explosion',           // ({x, y, r, hostile}) — every explosion ring (rumble, controller-prompts §6)
   SETTINGS_CHANGED: 'settings:changed',   // (key, value)
   FTUE: 'ftue:event',                     // (name, data) — generic FTUE signal

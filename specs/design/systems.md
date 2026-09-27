@@ -58,6 +58,8 @@ Every positive loop has at least one named negative counter-pressure, or ends wi
 
 ## §3 Economy steady-state (spreadsheet pass, typical path)
 
+> **v1 numbers. Superseded for v2 by §10**, which reflects the 9-step floors, mini-boss coins, skip pay and the forge.
+
 Assumption: the player takes combat doors mostly, 1 elite per floor, no coin door, and spends at each shop. Threat totals are computed from `floors.json` budgets (budget = ⌊base + perStep·step⌋ × (1 + 0.25·waveIndex), floored per wave). The pool-weighted coin yield is computed from `enemies.json` (≈ 0.47 / 0.49 / 0.53 coins per threat).
 
 | | F1 | F2 | F3 |
@@ -157,3 +159,81 @@ Pairs where one combination could be strictly better at every skill level:
 - **Draft rules:** N distinct ids of the reward kind, each rarity rolled from `economy.rarity.weightsByFloor[floor]` (loot stream), filtered to *unlocked* ids with `minFloor ≤ floor`. If a rarity bucket is empty, fall back to the next lower rarity. Duplicate cards in the bag are allowed; relics never repeat in a run.
 - **Shop:** 6 pedestals per `economy.shopStock` (3 cards, 1 relic, 1 wand from floor 2 on (else a card), 1 heal potion). Price = base × `floorPriceMult[floor-1]` × relic mults, rounded to an integer. Reroll replaces all unsold card, relic and wand slots (heal stays). Cost 10, +10 per reroll in that shop; `merchant_seal` makes the first one free.
 - **Salvage:** from the bag, any time: + ⌊0.3 × price at the current floor⌋.
+
+---
+
+# v2 additions (design-v2.md; Wave A1)
+
+## §9 Counter matrix (archetype × question)
+
+Each defence punishes a **different** archetype, so no single build shape is safe everywhere and re-slotting between floors pays. This is the systems core of v2. Ratings: ++ natural answer · + fine · − struggles · −− hard counter (still winnable: every defence erodes, `mechanic-spec.md` §9.6).
+
+| Archetype (mechanic-spec §15) → | Shield (tomb_sentinel, Warden) | Armour (brute, golem, Colossus) | Ward (wraith, acolyte, Matron) | Swarm | Ranged anchor | Summoner | Boss adapt it triggers |
+|---|---|---|---|---|---|---|---|
+| **Stream** (spark / venom / rapid_cast, glass_needle) | − frontal volume is all blocked; + with one `pierce` modifier | −− direct × 0.4, poison DoT × 0.25 | **++ many small hits burn ward charges fast, with no shock needed** | ++ | + | + | Queen `veil` (cast rate > 5/s) |
+| **Burst artillery** (fireball, comet, trigger payloads) | − blasts detonate on the shield face; ++ comet (pierce + blast) | **++ blast × 2.5** | −− each big hit wastes on one ward charge | + (AoE) | + | ++ (one-shot the source) | Knight `shield_wall` (≥ 3 shots/cast) |
+| **Zone control** (mines, flask, vortex, orbit) | ++ orbit (pierce); − pools | ++ mines (blast); − pools (DoT × 0.25) | −− wards block DoT outright | ++ | − turrets outrange zones | + | — |
+| **Elemental alchemist** (two-wand reactions) | − (no pierce by default) | + Overload counts as blast | ++ shock element strips wards | + | + | + | element resist (Knight fire, Queen poison, Lich dominant) |
+| **Mobility** (boomerang, blink, dash relics) | ++ boomerang pierces; + flanking | − | + chain modifier = shock | + | ++ | + | — |
+
+**Reading the matrix:**
+- **Every archetype has at least one `−−`, and every column has at least one `++`.** The floor's door threats, mini-boss and puzzle each target one column, so the player sees the question and re-slots. The counter guarantee makes an answer reachable.
+- **The hit-count ward** is a deliberate asymmetry: it is the one defence that *rewards* stream and punishes burst. Without it, burst would dominate every defended fight.
+- **Flanking** is the skill answer to shields for any archetype (shields are frontal only). Kiting is the skill answer to armour. Target priority is the skill answer to acolyte wards.
+
+## §10 v2 economy steady-state (computed from data, typical path)
+
+Threat per room = the `floors.json` budgets. Coin yield per threat point is pool-weighted from `enemies.json`: 0.47 / 0.50 / 0.53. Combat rooms at steps 1, 2, 3, 5 and 7 (the puzzle uses fixed waves), with 1 elite per floor.
+
+| | F1 | F2 | F3 |
+|---|---|---|---|
+| Room HP totals (combat) | 79 → 172 | 250 → 396 | 698 → 1,100 |
+| Threat before the shop | 59 | 113 | 188 |
+| + mini-boss coins | 25 | 35 | 45 |
+| **Coins at the shop** (with carry) | **≈ 53** | **≈ 187** | **≈ 366** |
+| What that buys | 1 common card + skip coins, **or** 1 forge slot (45) | ≈ 3 items, or 2 + a merge | cash-out before the final boss (stock ≈ 570) |
+| Skip pay per skipped draft | 10 | 14 | 18 |
+| Draft reroll | 8 → 16 | 8 → 16 | 8 → 16 |
+
+- **Equilibrium:** solvent (a heal or a slot is always affordable at the F1 shop) but never saturated before the F3 cash-out.
+- **Rate cliffs:** skip pay above ≈ 25% of a common card price would make skipping the dominant choice. Reroll below 6 would make pity and the counter guarantee redundant.
+- **Forge pressure:** 3 slot buys (45 + 70 + 95 = 210) compete with cards and relics. A slot is the *long* investment, a card the *short* one.
+
+## §11 Duo and evolution graph
+
+```text
+DUOS (relic A + relic B → duo; offered only with both owned, weight x3, needs goal g_breaker)
+  ember_heart   + frost_crown      ──► STEAM ENGINE   (Melt x3 + chill splash)
+  storm_battery + kindling         ──► STORM FURNACE  (Overload arcs to 2)
+  plague_vial   + alchemist_stone  ──► PLAGUE BLOOM   (Blight spreads half the stacks)
+  thorn_mantle  + blast_boots      ──► THORN BLAZE    (hurt → explode r48)
+  (kindling, storm_battery, frost_crown, plague_vial, thorn_mantle are also evolution catalysts ↓)
+
+EVOLUTIONS (card x2 → level II at the forge; level II + catalyst relic → evolved card; relic kept)
+  fireball ×2 → Fireball II ──+ kindling ──────► SUNBURST
+  chain_lightning ×2 → II ────+ storm_battery ─► TEMPEST CHAIN
+  ice_shard ×2 → II ──────────+ frost_crown ───► GLACIER SPIKE
+  venom_dart ×2 → II ─────────+ plague_vial ───► BLIGHT NEEDLE
+  spark_bolt ×2 → II ─────────+ prism_shard ───► PRISM SPARK
+  boomerang_blade ×2 → II ────+ thorn_mantle ──► REAPER DISC
+```
+
+**Design properties:**
+- **Every catalyst relic is also a duo parent or a status relic,** so a player walking toward an evolution is also walking toward a duo. Two payoffs compete for the same investment, which is a real choice.
+- **The level-2 base must be a *slotted* card.** Evolutions and level-2 cards are `pool: false`: they come only from the forge, never from drafts (ADR 0014's principle).
+- **Reachability in an 18-minute run:**
+  - A merge needs 2 copies. Duplicates appear through drafts plus tag lean, so about one merge by F2 is typical.
+  - An evolution additionally needs a specific relic. About one per 3 runs is expected, and the goal `g_forgewright` rewards the first.
+
+## §12 v2 loops and dominance (additions to §2 and §6)
+
+| Loop / pair | Type | Counter-pressure |
+|---|---|---|
+| **Tag lean** (owned tags → more of the same) | positive | Capped at × 2.25. The counter guarantee injects the *missing* keyword regardless of tags. Defences punish mono-archetypes (§9). |
+| **Rarity pity** | negative (streak breaker) | resets on rare |
+| **Counter guarantee** | negative (rescues a build lacking the answer) | one slot only; the player must still slot the card |
+| **Mercy adapts** (mini-bosses) | negative | off at Heat ≥ 4 |
+| `hollow_runes` + mega-multicast | risk of dominance | +40 ms per modifier; Knight `shield_wall` adapt; mana still pays for spells |
+| `echoing_payload` + trigger artillery | **declared intended optimum** for trigger builds | rare relic; payloads still wasted on wards (§9); Archlich `mirror_volley` scales with shots |
+| `hungry_rune` (corrupted) | positive-with-cost | × 1.5 recharge; only from the risk door |
+| `unstable_core` | the only self-damage | opt-in; capped at half a heart per 2 s |

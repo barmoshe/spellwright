@@ -21,14 +21,14 @@ export const C = {
 export const hex = (n) => '#' + n.toString(16).padStart(6, '0');
 
 // ---- text roles (accessibility-spec §2.1) ----
-// cap heights: T1 7 px (Kenney Pixel 16 em), T2 9 px (Kenney High 16), Tsmall 5 px (Kenney Mini 8); display = T1 ×2
+// T1 7 px, T2 9 px, display = T1 ×2; no smaller role (accessibility-spec §2.3: Tsmall removed in v2)
 const ROLE = {
   T1: { font: 'body', size: 16, fallbackPx: 11, pitch: 12 },
   T2: { font: 'heading', size: 16, fallbackPx: 13, pitch: 14 },
-  Tsmall: { font: 'small', size: 8, fallbackPx: 8, pitch: 8 },
+  Tsmall: { font: 'body', size: 16, fallbackPx: 11, pitch: 12 },   // v2 alias → T1 metrics for one wave; no caller uses it
   display: { font: 'body', size: 16, scale: 2, fallbackPx: 22, pitch: 24 },
 };
-export const PITCH = { T1: 12, T2: 14, Tsmall: 8, display: 24 };
+export const PITCH = { T1: 12, T2: 14, display: 24 };
 
 const FONT = { body: null, heading: null, small: null };   // resolved bitmap-font cache keys
 /**
@@ -47,7 +47,6 @@ export function resolveFonts(scene) {
   const has = (k) => scene.cache.bitmapFont.exists(k);
   FONT.body = has('font.body_outline') ? 'font.body_outline' : has('font.body') ? 'font.body' : null;
   FONT.heading = has('font.heading_outline') ? 'font.heading_outline' : FONT.body;
-  FONT.small = has('font.small_outline') ? 'font.small_outline' : FONT.body;
   return { ...FONT };
 }
 export const fontsLoaded = () => !!FONT.body;
@@ -124,8 +123,8 @@ export function icon(scene, x, y, kind, id, size = 32) {
   const s = size - 2;
   g.fillStyle(C.stroke, 1).fillRect(-s / 2, -s / 2, s, s).fillStyle(0x3b3550, 1).fillRect(-s / 2 + 1, -s / 2 + 1, s - 2, s - 2);
   c.add(g);
-  const label = (id || '?').split('_').map((p) => p[0]).join('').slice(0, 2).toUpperCase();
-  c.add(txt(scene, 0, 0, label, size >= 32 ? 'T1' : 'Tsmall', { origin: [0.5, 0.5], color: C.dim }));
+  const label = (id || '?').split('_').map((p) => p[0]).join('').slice(0, size >= 32 ? 2 : 1).toUpperCase();   // §2.3 #5
+  c.add(txt(scene, 0, 0, label, 'T1', { origin: [0.5, 0.5], color: C.dim }));
   return c;
 }
 
@@ -161,9 +160,9 @@ export function cardCell(scene, x, y, card, size = 36, opts = {}) {
   if (card && size === 36) {
     if (kind === 'spell') drawElementBadge(fg, size - 9, size - 9, card.element || 'arcane');
     if (kind === 'modifier') { fg.fillStyle(C.stroke).fillRect(size - 9, 2, 7, 7).fillStyle(C.text).fillRect(size - 7, 5, 3, 1).fillRect(size - 6, 4, 1, 3); }
-    if (kind === 'multicast') { chip(scene, c, size - 9, 2, `×${card.count}`); }
-    if (kind === 'trigger') { chip(scene, c, size - 9, 2, TRIGGER_LETTER[card.event] || 'T'); }
-    if (opts.showMana !== false) chip(scene, c, 2, size - 9, String(card.mana ?? 0));
+    if (kind === 'multicast') { chip(scene, c, size - 2, 2, `×${card.count}`, C.text, true); }
+    if (kind === 'trigger') { chip(scene, c, size - 2, 2, TRIGGER_LETTER[card.event] || 'T', C.text, true); }
+    if (opts.showMana !== false) chip(scene, c, 2, size - 14, String(card.mana ?? 0));
     if (opts.isNew) chip(scene, c, 2, 2, 'N', C.gold);
   } else if (card && size === 18 && kind === 'spell') {
     fg.fillStyle(C.element[card.element] || C.text, 1).fillRect(14, 14, 3, 3);
@@ -183,11 +182,14 @@ export function cardCell(scene, x, y, card, size = 36, opts = {}) {
   return c;
 }
 
-function chip(scene, c, x, y, s, color = C.text) {
+function chip(scene, c, x, y, s, color = C.text, right = false) {
+  // §2.3 #6: T1 chip, 12 px tall, width = text + 4 (stays inside the 32 px cell's bottom-left)
   const g = scene.add.graphics();
-  g.fillStyle(C.stroke, 1).fillRect(x, y, Math.max(7, s.length * 4 + 3), 7);
-  c.add(g);
-  c.add(txt(scene, x + 1, y, s, 'Tsmall', { color }));
+  const tx = txt(scene, x + 2, y, s, 'T1', { color });
+  const w = Math.max(7, Math.ceil(tx.width) + 4);
+  if (right) { x -= w; tx.x = x + 2; }                                      // right-aligned at x
+  g.fillStyle(C.stroke, 1).fillRect(x, y, w, 12);
+  c.add(g); c.add(tx);
 }
 
 /** Silhouette per type: spell rounded · modifier chamfered · multicast double line · trigger arrow notch. */
@@ -236,11 +238,13 @@ export function drawElementBadge(g, x, y, element) {
 // ---- keycaps / device glyphs (hud-layout §3.5) ----
 export function keycap(scene, x, y, label) {
   const c = scene.add.container(x, y);
-  const w = Math.max(12, label.length * 5 + 5);
+  const tx = txt(scene, 0, 6, label, 'T1', { origin: [0.5, 0.5] });
+  const w = Math.max(12, Math.ceil(tx.width) + 6);                          // §2.3 #7
+  tx.x = Math.round(w / 2);
   const g = scene.add.graphics();
   g.fillStyle(C.stroke, 1).fillRect(0, 0, w, 12).fillStyle(0x4b5468, 1).fillRect(1, 1, w - 2, 10).fillStyle(0x6a7590, 1).fillRect(1, 1, w - 2, 1);
   c.add(g);
-  c.add(txt(scene, w / 2, 6, label, 'Tsmall', { origin: [0.5, 0.5] }));
+  c.add(tx);
   c.setSize(w, 12);
   return c;
 }

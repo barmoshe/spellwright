@@ -1,0 +1,302 @@
+{
+  "version": 2,
+  "$comment": "Forge (shop tab): merge 2 copies -> level-2 card; evolve level-2 + catalyst -> evolved card (relic catalysts are kept); +1 slot.",
+  "forge": [
+    {
+      "id": "merge_spark_bolt",
+      "type": "merge",
+      "from": "spark_bolt",
+      "count": 2,
+      "to": "spark_bolt_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_magic_missile",
+      "type": "merge",
+      "from": "magic_missile",
+      "count": 2,
+      "to": "magic_missile_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_bouncing_burst",
+      "type": "merge",
+      "from": "bouncing_burst",
+      "count": 2,
+      "to": "bouncing_burst_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_fire_bolt",
+      "type": "merge",
+      "from": "fire_bolt",
+      "count": 2,
+      "to": "fire_bolt_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_fireball",
+      "type": "merge",
+      "from": "fireball",
+      "count": 2,
+      "to": "fireball_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_ice_shard",
+      "type": "merge",
+      "from": "ice_shard",
+      "count": 2,
+      "to": "ice_shard_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_frost_nova",
+      "type": "merge",
+      "from": "frost_nova",
+      "count": 2,
+      "to": "frost_nova_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_frost_lance",
+      "type": "merge",
+      "from": "frost_lance",
+      "count": 2,
+      "to": "frost_lance_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_chain_lightning",
+      "type": "merge",
+      "from": "chain_lightning",
+      "count": 2,
+      "to": "chain_lightning_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_thunder_orb",
+      "type": "merge",
+      "from": "thunder_orb",
+      "count": 2,
+      "to": "thunder_orb_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_venom_dart",
+      "type": "merge",
+      "from": "venom_dart",
+      "count": 2,
+      "to": "venom_dart_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_toxic_flask",
+      "type": "merge",
+      "from": "toxic_flask",
+      "count": 2,
+      "to": "toxic_flask_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_boomerang_blade",
+      "type": "merge",
+      "from": "boomerang_blade",
+      "count": 2,
+      "to": "boomerang_blade_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_arcane_orbit",
+      "type": "merge",
+      "from": "arcane_orbit",
+      "count": 2,
+      "to": "arcane_orbit_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_rune_mine",
+      "type": "merge",
+      "from": "rune_mine",
+      "count": 2,
+      "to": "rune_mine_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_blink_bolt",
+      "type": "merge",
+      "from": "blink_bolt",
+      "count": 2,
+      "to": "blink_bolt_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_comet",
+      "type": "merge",
+      "from": "comet",
+      "count": 2,
+      "to": "comet_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "merge_vortex",
+      "type": "merge",
+      "from": "vortex",
+      "count": 2,
+      "to": "vortex_2",
+      "cost": {
+        "base": 10,
+        "perFloor": 5
+      }
+    },
+    {
+      "id": "evolve_sunburst",
+      "type": "evolve",
+      "base": "fireball_2",
+      "catalyst": {
+        "kind": "relic",
+        "id": "kindling",
+        "consumed": false
+      },
+      "to": "sunburst",
+      "cost": {
+        "base": 0,
+        "perFloor": 0
+      }
+    },
+    {
+      "id": "evolve_tempest_chain",
+      "type": "evolve",
+      "base": "chain_lightning_2",
+      "catalyst": {
+        "kind": "relic",
+        "id": "storm_battery",
+        "consumed": false
+      },
+      "to": "tempest_chain",
+      "cost": {
+        "base": 0,
+        "perFloor": 0
+      }
+    },
+    {
+      "id": "evolve_glacier_spike",
+      "type": "evolve",
+      "base": "ice_shard_2",
+      "catalyst": {
+        "kind": "relic",
+        "id": "frost_crown",
+        "consumed": false
+      },
+      "to": "glacier_spike",
+      "cost": {
+        "base": 0,
+        "perFloor": 0
+      }
+    },
+    {
+      "id": "evolve_blight_needle",
+      "type": "evolve",
+      "base": "venom_dart_2",
+      "catalyst": {
+        "kind": "relic",
+        "id": "plague_vial",
+        "consumed": false
+      },
+      "to": "blight_needle",
+      "cost": {
+        "base": 0,
+        "perFloor": 0
+      }
+    },
+    {
+      "id": "evolve_prism_spark",
+      "type": "evolve",
+      "base": "spark_bolt_2",
+      "catalyst": {
+        "kind": "relic",
+        "id": "prism_shard",
+        "consumed": false
+      },
+      "to": "prism_spark",
+      "cost": {
+        "base": 0,
+        "perFloor": 0
+      }
+    },
+    {
+      "id": "evolve_reaper_disc",
+      "type": "evolve",
+      "base": "boomerang_blade_2",
+      "catalyst": {
+        "kind": "relic",
+        "id": "thorn_mantle",
+        "consumed": false
+      },
+      "to": "reaper_disc",
+      "cost": {
+        "base": 0,
+        "perFloor": 0
+      }
+    },
+    {
+      "id": "slot",
+      "type": "slot",
+      "costBase": 45,
+      "costStep": 25,
+      "maxCapacity": 10,
+      "maxBuysPerRun": 3
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import { VIEW_W, VIEW_H } from '../config.js';
 import { reduced } from '../ui/draw.js';
 import { txt, C } from '../ui/kit.js';
 import { initSymbols } from '../ui/fmt.js';
+import { T } from '../core/tunables.js';
 
 export function services(scene) {
   initSymbols(scene);
@@ -41,7 +42,33 @@ export function modalChrome(scene, opts = {}) {
     if (!reduced()) scene.tweens.add({ targets: panel, y: 4, duration: 90, ease: 'Quad.easeIn' });
     scene.time.delayedCall(90, () => then && then());
   };
-  return { ...s, backdrop: bd, panel, close, isClosing: () => closing };
+  const back = s.router && s.router.touchProfile ? touchBackButton(scene, s.router, panel) : null;
+  return { ...s, backdrop: bd, panel, close, isClosing: () => closing, back };
+}
+
+/**
+ * mobile-touch-spec §5.2: every modal draws a Back button (‹, 28 px visual, 40×40 hit) at (sL + 20, sT + 20) in the
+ * touch profile — there is no Esc on a phone. Release-over-same + the open-guard (§6); its action is the screen's
+ * own `back` (pushed into the router's UI channel, so each screen keeps one back path).
+ */
+export function touchBackButton(scene, router, layer) {
+  const disp = scene.registry.get('display');
+  const S = disp ? disp.safe : { l: 0, t: 0 };
+  const cx = S.l + 20, cy = S.t + 20;
+  const c = scene.add.container(0, 0).setDepth(2000);
+  const g = scene.add.graphics();
+  g.fillStyle(0x222222, 0.9).fillRect(cx - 15, cy - 15, 30, 30).fillStyle(0x2a2a3a, 0.9).fillRect(cx - 14, cy - 14, 28, 28);
+  g.fillStyle(C.text, 1);
+  for (let i = 0; i < 5; i++) { g.fillRect(cx + 1 - i, cy - 4 + i, 2, 1); g.fillRect(cx + 1 - i, cy + 4 - i, 2, 1); }   // ‹ chevron
+  const hit = scene.add.rectangle(cx - 20, cy - 20, 40, 40, 0, 0).setOrigin(0).setInteractive();
+  const openAt = performance.now();
+  let down = false;
+  hit.on('pointerdown', () => { down = performance.now() - openAt >= T('uiOpenGuardMs', 180); });
+  hit.on('pointerout', () => { down = false; });
+  hit.on('pointerup', () => { if (down) router._pushUI('back'); down = false; });
+  c.add([g, hit]);
+  void layer;                 // scene-level at depth 2000 (not in the panel), so screen content built later never covers it
+  return c;
 }
 
 /** Back-compat for any caller of the Wave-1 helper. */

@@ -23,12 +23,16 @@ export class Caster {
 
   step(it, dt) {
     const ctx = this.ctx, run = ctx.run, p = ctx.player, T = this.T;
+    // ---- relic live inputs (mechanic-spec §7.1 conditions / scaling): standing = no move input this step
+    const en = ctx.enemies;
+    run.tickLive(dt, !!(it.moveX || it.moveY), en && typeof en.aliveCount === 'function' ? en.aliveCount() : 0);
     // ---- tick every wand
     for (let i = 0; i < run.wands.length; i++) {
       const w = run.wands[i];
       const wasRecharging = w.state.rechargeTimerMs > 0;
-      const r = tickWand(w.def, w.state, dt, run.spellEnv(), ctx.cat.cards, run.rng.spell);
+      const r = tickWand(w.def, w.state, dt, run.spellEnv(), run.cards, run.rng.spell);
       if (r === 'recharged') {
+        ctx.relics.onWandRecharged(i);                       // relic rule: free_cast_after_full_recharge
         ctx.bus.emit(EV.WAND_RECHARGE, i);
         if (i === run.activeWand) { ctx.mixer.fire('wand_recharge'); p.onRechargeEnd(); }
         ctx.relics.onEvent('wand_recharge', { wandIndex: i, x: p.x, y: p.y });
@@ -67,7 +71,7 @@ export class Caster {
     if (!want || p.isDashing || !canCast(w.state)) return;
 
     const cursorBefore = w.state.cursor;
-    const plan = castWand(w.def, w.state, ctx.cat.cards, run.spellEnv());
+    const plan = castWand(w.def, w.state, run.cards, run.spellEnv(undefined, run.activeWand));
     if (!plan) {
       // empty wand (no spells, no always-cast): sputter feedback, rate-limited
       this._sputter('empty');
@@ -75,8 +79,14 @@ export class Caster {
     }
     this.bufferMs = 0;
     run.stats.casts++;
+    // relic rule hooks (sim/Relics.js): free cast refund · payload echoes · cast toll
+    ctx.relics.applyFreeCast(run.activeWand, plan);
+    ctx.relics.echoPayloads(plan.shots, T('echoPayloadFanDeg', 8));
+    ctx.relics.onCast();
     const aimDeg = Math.atan2(it.aimY, it.aimX) * 180 / Math.PI;
-    const tipX = p.tipX, tipY = p.tipY;
+    // shot origin = the wand grip, falling back to the body centre when the grip is inside a wall (plan Addendum 3)
+    let tipX = p.tipX, tipY = p.tipY;
+    if (ctx.world && ctx.world.raycast(p.coreX, p.coreY, tipX, tipY, 'all') < Math.hypot(tipX - p.coreX, tipY - p.coreY) - 0.5) { tipX = p.coreX; tipY = p.coreY; }
     for (const s of plan.shots) ctx.shots.spawnSpec(s, tipX, tipY, aimDeg, {});
     const el = plan.shots.length ? plan.shots[0].element : null;
     if (el) {
@@ -112,15 +122,19 @@ export class Caster {
 }
 
 /**
- * Pad-only aim assist (feel-spec §aim): if a living, non-spawning enemy lies within aimAssistConeDeg of the stick
+ * Pad + touch-override aim assist (feel-spec §aim, §verb-2b): if a living, non-spawning enemy lies within aimAssistConeDeg of the stick
  * direction and within aimAssistRangePx, rotate the aim toward the closest such enemy by strength × the angular
  * difference, each step. Never overrides the stick by more than the cone half-angle. Strength ×= Settings aimAssist/100.
  */
 export function applyAimAssist(ctx, it) {
-  if (it.device !== 'pad') return;
+  // pad, and (v2) the touch aim-stick override with the wider touch values (feel-spec §verb-2b); never mouse, never auto
+  // v2: plus a tiny MOUSE assist (feel-spec §verb-2: only when the cursor is already within the 5° cone)
+  const touch = it.device === 'touch' && it.aimSource === 'stick' && it.castHeld;
+  const mouse = it.device === 'kbm';
+  if (it.device !== 'pad' && !touch && !mouse) return;
   const T = ctx.T, p = ctx.player;
-  const strength = T('aimAssistStrength') * (Save.settings.aimAssist / 100);
-  const cone = T('aimAssistConeDeg'), range = T('aimAssistRangePx');
+  const strength = (touch ? T('touchAimAssistStrength', 0.6) : mouse ? T('mouseAimAssistStrength', 0.35) : T('aimAssistStrength')) * (Save.settings.aimAssist / 100);
+  const cone = touch ? T('touchAimAssistConeDeg', 14) : mouse ? T('mouseAimAssistConeDeg', 5) : T('aimAssistConeDeg'), range = T('aimAssistRangePx');
   if (strength <= 0) return;
   const aim = Math.atan2(it.aimY, it.aimX) * 180 / Math.PI;
   let best = null, bestD = Infinity, bestDiff = 0;

@@ -9,14 +9,19 @@
 // (Cubic.easeOut), fade over the last 150 ms; 1-step 2 px spawn pop instead of a scale overshoot.
 // Reduced motion: no rise and no pop; appear, hold, fade. No numbers for damage the player takes.
 // Zero allocation after warm-up: 24 pooled text objects, setText only on spawn/aggregate.
+// v2 (hud-layout §9.6): a defended hit shows a WORD instead of a number — "BLOCKED" / "ARMOURED" / "WARDED"
+// (T1 grey #b6cbcf + the 7×7 defence icon), "BROKEN" once when the counter keyword breaks it — aggregated
+// per enemy per 500 ms so shield spam never floods the screen. Words ride combat:dmg ({word, defence}).
 
 import { C, txt, setColor } from './kit.js';
 import { T } from '../core/tunables.js';
 import { Save } from '../core/save.js';
 import { t } from '../core/i18n.js';
 import { reducedMotion, SPATIAL } from './HudKit.js';
+import { Art } from '../core/art.js';
 
-const CAP = 24, AGG_MS = 200, FADE_MS = 150, POP_MS = 17, AGG_RADIUS = 20;
+const CAP = 24, AGG_MS = 200, FADE_MS = 150, POP_MS = 17, AGG_RADIUS = 20, WORD_AGG_MS = 500;
+const WORD_RANK = { blocked: 1, armoured: 1, warded: 1, broken: 2 };
 export const REACTION_TINT = { melt: C.element.fire, overload: C.element.shock, blight: C.element.poison, superconduct: C.element.frost, quench: C.dim };
 
 const easeOutCubic = (p) => 1 - Math.pow(1 - p, 3);
@@ -63,15 +68,35 @@ export class DamageNumbers {
     e.tint = REACTION_TINT[name] ?? null;
   }
 
-  /** combat:dmg payload {x, y, amount, crit, element, target, id?} */
+  /** v2 defence word (always shown: it's information, not a damage number). */
+  _word(d) {
+    const rank = WORD_RANK[d.word] || 1;
+    for (const e of this.pool) {
+      if (!e.active || !e.isWord || e.id !== d.id || e.sinceHit > WORD_AGG_MS) continue;
+      if (e.word === 'broken' && rank < 2) { e.sinceHit = 0; return; }        // BROKEN shows once; later blocks fold into it
+      e.sinceHit = 0; e.age = 0; e.y0 = e.o.y;
+      if (e.word !== d.word) { e.word = d.word; e.defence = d.defence; this._render(e); }
+      return;
+    }
+    const e = this._slot();
+    e.active = true; e.seq = ++this.seq; e.id = d.id ?? null; e.isWord = true; e.word = d.word; e.defence = d.defence;
+    e.value = 0; e.crit = false; e.prefix = ''; e.tint = null;
+    e.x = Math.round(d.x); e.baseY = Math.round(d.y); e.y0 = e.baseY; e.age = 0; e.sinceHit = 0;
+    this._render(e);
+    e.o.setVisible(true).setAlpha(1);
+    this._place(e);
+  }
+
+  /** combat:dmg payload {x, y, amount, crit, element, target, id?, word?, defence?} */
   spawn(d) {
     if (!d || d.target === 'player') return;
+    if (d.word) { this._word(d); return; }
     if (Save.settings.damageNumbers === false) return;
     const amount = Math.ceil(d.amount || 0);
     if (amount <= 0) return;
     // aggregation: same enemy id (or, without an id, the same spot) within 200 ms of its last hit
     for (const e of this.pool) {
-      if (!e.active || e.sinceHit > AGG_MS) continue;
+      if (!e.active || e.isWord || e.sinceHit > AGG_MS) continue;
       const same = d.id != null ? e.id === d.id : (Math.abs(e.x - d.x) <= AGG_RADIUS && Math.abs(e.baseY - d.y) <= AGG_RADIUS + this.risePx);
       if (!same) continue;
       e.value += amount;
@@ -85,7 +110,7 @@ export class DamageNumbers {
     }
     const e = this._slot();
     e.active = true; e.seq = ++this.seq;
-    e.id = d.id ?? null;
+    e.id = d.id ?? null; e.isWord = false; e.word = null;
     e.value = amount; e.crit = !!d.crit; e.prefix = ''; e.tint = null;
     const jitter = this.run && this.run.rng && this.run.rng.fx ? Math.round(this.run.rng.fx.float(-3, 3)) : 0;
     e.x = Math.round(d.x + jitter); e.baseY = Math.round(d.y);
@@ -106,6 +131,19 @@ export class DamageNumbers {
   }
 
   _render(e) {
+    if (e.isWord) {
+      e.o.setText(t(`world.defence.${e.word}`));
+      e.o.setScale(1);
+      setColor(e.o, e.word === 'broken' ? C.text : C.dim);
+      const a = e.defence ? Art.getQuiet(`ui.def_${e.defence}`) : null;
+      if (a) {
+        if (!e.icon) e.icon = this.scene.add.image(0, 0, a.key, a.frame).setDepth(95).setOrigin(1, 1);
+        else e.icon.setTexture(a.key, a.frame);
+        e.icon.setVisible(true);
+      } else if (e.icon) e.icon.setVisible(false);
+      return;
+    }
+    if (e.icon) e.icon.setVisible(false);
     const s = `${e.prefix ? e.prefix + ' ' : ''}${e.value}${e.crit ? '!' : ''}`;
     e.o.setText(s);
     e.o.setScale(e.crit ? this.critScale : 1);
@@ -126,6 +164,7 @@ export class DamageNumbers {
     e.o.setPosition(Math.round(cx + cam.scrollX), Math.round(cy + cam.scrollY));
     const fadeAt = this.riseMs - FADE_MS;
     e.o.setAlpha(e.age <= fadeAt ? 1 : Math.max(0, 1 - (e.age - fadeAt) / FADE_MS));
+    if (e.isWord && e.icon && e.icon.visible) e.icon.setPosition(Math.round(e.o.x - hw - 1), Math.round(e.o.y - 1)).setAlpha(e.o.alpha);
   }
 
   update(dt) {
@@ -134,11 +173,11 @@ export class DamageNumbers {
     for (const e of this.pool) {
       if (!e.active) continue;
       e.age += dt; e.sinceHit += dt;
-      if (e.age >= this.riseMs) { e.active = false; e.o.setVisible(false); continue; }
+      if (e.age >= this.riseMs) { e.active = false; e.o.setVisible(false); if (e.icon) e.icon.setVisible(false); continue; }
       this._place(e);
     }
   }
 
-  clear() { for (const e of this.pool) { e.active = false; e.o.setVisible(false); } this.pending.length = 0; }
-  destroy() { for (const e of this.pool) e.o.destroy(); this.pool.length = 0; }
+  clear() { for (const e of this.pool) { e.active = false; e.o.setVisible(false); if (e.icon) e.icon.setVisible(false); } this.pending.length = 0; }
+  destroy() { for (const e of this.pool) { e.o.destroy(); if (e.icon) e.icon.destroy(); } this.pool.length = 0; }
 }

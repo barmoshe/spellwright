@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "$comment": "Starting loadouts. cards[] override the wand's presetCards.",
   "loadouts": [
     {

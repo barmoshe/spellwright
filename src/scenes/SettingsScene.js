@@ -18,6 +18,8 @@ import { t } from '../core/i18n.js';
 import { KBM_DEFAULTS } from '../input/bindings.js';
 import { promptListText } from '../input/prompts.js';
 import { hintLine } from '../ui/HudKit.js';
+import { canTouch } from '../platform/display.js';
+import { canVibrate } from '../input/Rumble.js';
 
 // Defaults are settings-spec §1 (the save module owns validation; this table owns the "Reset group" values).
 const GROUPS = [
@@ -39,6 +41,7 @@ const GROUPS = [
     { k: 'screenShake', type: 'slider', step: 10, def: 100, pct: true },
     { k: 'flashIntensity', type: 'slider', step: 10, def: 100, pct: true },
     { k: 'vibration', type: 'enum', values: ['off', 'low', 'high'], def: 'low', noPreview: true },   // controller-prompts §7
+    { k: 'haptics', type: 'enum', values: ['off', 'low', 'high'], def: 'low', noPreview: true, touchOnly: true },   // settings-spec §6
     { k: 'enemyShotEmphasis', type: 'enum', values: ['standard', 'high'], def: 'standard' },
     { k: 'damageNumbers', type: 'toggle', def: true },
     { k: 'showHitbox', type: 'toggle', def: false },
@@ -51,6 +54,13 @@ const GROUPS = [
     { k: 'tutorialHints', type: 'toggle', def: true },
     { k: '__resetTutorial', type: 'button' },
   ] },
+  // settings-spec §6 touch rows. DEVIATION (documented): a "Touch" rail group instead of a sub-heading above the
+  // Controls table — the 15-row bindings table fills the Controls group at 640×360 and it has no scroller yet.
+  { k: 'touch', touchOnly: true, rows: [
+    { k: 'touchControls', type: 'enum', values: ['auto', 'on', 'off'], def: 'auto', descPer: true, noPreview: true },
+    { k: 'touchFire', type: 'enum', values: ['auto', 'stick'], def: 'auto', descPer: true, noPreview: true },
+    { k: 'touchStickSide', type: 'enum', values: ['standard', 'swapped'], def: 'standard', descPer: true, noPreview: true },
+  ] },
   { k: 'controls', controls: true, rows: [] },
   { k: 'data', rows: [
     { k: 'language', type: 'enum', values: ['en'], def: 'en', disabled: true },
@@ -60,7 +70,8 @@ const GROUPS = [
 // Controls table (settings-spec §2). Esc (pause) and mouse aim are locked.
 const ACTIONS = ['moveUp', 'moveDown', 'moveLeft', 'moveRight', 'cast', 'dash', 'interact', 'wandNext', 'wandPrev', 'wand1', 'wand2', 'wand3', 'inventory', 'pause'];
 
-const ROW_Y = 30, ROW_H = 18, LABEL_X = 160, CTRL_R = 616;
+const ROW_Y = 30, LABEL_X = 160, CTRL_R = 616;
+let ROW_H = 18, RAIL_H = 20, RAIL_Y = 30;          // settings-spec §6: 24 px pitch (rows and rail) in the touch profile
 
 export function codeName(code) {
   if (!code) return '-';
@@ -77,21 +88,28 @@ export class SettingsScene extends Phaser.Scene {
   init(data) { this.args = data || {}; }
 
   create() {
+    // settings-spec §6: touch rows only on a touch-capable device or once a touch was seen this session
+    const rt = this.registry.get('router');
+    this.touchCapable = canTouch() || !!(rt && rt.touch && rt.touch.seen);
+    this.G = GROUPS.filter((g) => !g.touchOnly || this.touchCapable);
+    this.touchUi = !!(rt && rt.touchProfile);
+    ROW_H = this.touchUi ? 24 : 18; RAIL_H = this.touchUi ? 24 : 20; RAIL_Y = this.touchUi ? 44 : 30;   // rail clears the Back button
     this.m = modalChrome(this, {});
     Object.assign(this, { router: this.m.router, flow: this.m.flow, bus: this.m.bus, mixer: this.m.mixer, display: this.m.display });
     this.__dialog = null; this.capture = null; this.closing = false;
     const top = () => this.flow.top() === 'settings' && !this.__dialog && !this.capture && !this.closing;
     const p = this.p = this.m.panel;
     p.add(box(this, 8, 4, 624, 354, 'ornate'));
-    p.add(txt(this, 16, 8, t('settings.title'), 'T2'));
-    p.add(txt(this, 16 + 70, 12, t(this.args.from === 'pause' ? 'settings.crumbPause' : 'settings.crumbTitle'), 'Tsmall', { color: C.dim }));
+    const hx = this.touchUi ? 44 : 16;                 // touch: the modal Back button owns the top-left 40×40
+    p.add(txt(this, hx, 8, t('settings.title'), 'T2'));
+    p.add(txt(this, hx + 70, 10, t(this.args.from === 'pause' ? 'settings.crumbPause' : 'settings.crumbTitle'), 'T1', { color: C.dim }));   // §2.3 #23
     this.nav = new FocusNav(this, { layer: p, isActive: top, onMove: (it) => this.onMove(it) });
     this.railC = this.add.container(0, 0); this.contentC = this.add.container(0, 0);
     this.previewC = this.add.container(0, 0); this.descC = this.add.container(0, 0); this.footC = this.add.container(0, 0);
     p.add([this.railC, this.contentC, this.previewC, this.descC, this.footC]);
     p.add(box(this, 152, 314, 472, 28, 'dark'));
     p.bringToTop(this.descC);
-    this.group = GROUPS.findIndex((g) => g.k === this.args.group);
+    this.group = this.G.findIndex((g) => g.k === this.args.group);
     const startInGroup = this.group >= 0;
     if (this.group < 0) this.group = 0;
     this.buildRail();
@@ -107,23 +125,23 @@ export class SettingsScene extends Phaser.Scene {
   // ---------------------------------------------------------------------------------------- rail
   paintRail() {
     const c = this.railC; c.removeAll(true);
-    GROUPS.forEach((g, i) => {
-      const y = 30 + i * 20, on = i === this.group;
-      if (on) c.add(this.add.rectangle(16, y + 2, 2, 16, C.gold).setOrigin(0));
-      c.add(txt(this, 24, y + 3, t(`settings.group.${g.k}`), 'T1', { color: on ? C.text : C.dim }));
+    this.G.forEach((g, i) => {
+      const y = RAIL_Y + i * RAIL_H, on = i === this.group;
+      if (on) c.add(this.add.rectangle(16, y + 2, 2, RAIL_H - 4, C.gold).setOrigin(0));
+      c.add(txt(this, 24, y + Math.round((RAIL_H - 14) / 2), t(`settings.group.${g.k}`), 'T1', { color: on ? C.text : C.dim }));
     });
   }
 
   buildRail() {
     this.paintRail();
-    GROUPS.forEach((g, i) => {
-      const y = 30 + i * 20;
-      this.nav.add({ id: `g:${i}`, x: 16, y, w: 120, h: 20, rail: true,
+    this.G.forEach((g, i) => {
+      const y = RAIL_Y + i * RAIL_H;
+      this.nav.add({ id: `g:${i}`, x: 16, y, w: 120, h: RAIL_H, rail: true,
         onFocus: () => { if (this.group !== i) { this.group = i; this.paintRail(); this.buildGroup(); this.nav.raise(); } },
         onConfirm: () => this.enterGroup(), onRight: () => this.enterGroup() });
     });
-    this.nav.linkList(GROUPS.map((_, i) => `g:${i}`), 'v', true);
-    for (let i = 0; i < GROUPS.length; i++) this.nav.get(`g:${i}`).nav.left = null;
+    this.nav.linkList(this.G.map((_, i) => `g:${i}`), 'v', true);
+    for (let i = 0; i < this.G.length; i++) this.nav.get(`g:${i}`).nav.left = null;
   }
 
   enterGroup() { const id = this.firstRowId(); if (id) this.nav.focus(id); }
@@ -134,11 +152,11 @@ export class SettingsScene extends Phaser.Scene {
     const c = this.contentC; c.removeAll(true);
     this.previewC.removeAll(true);
     this.nav.clear('r:'); this.nav.clear('k:');
-    const g = GROUPS[this.group];
+    const g = this.G[this.group];
     this.rowIds = [];
     this.rowObjs = {};
     if (g.controls) { this.buildControls(); return; }
-    const rows = [...g.rows, { k: '__resetGroup', type: 'button' }];
+    const rows = [...g.rows.filter((r) => !r.touchOnly || this.touchCapable).map((r) => (r.k === 'haptics' && !canVibrate() ? { ...r, disabled: true } : r)), { k: '__resetGroup', type: 'button' }];
     rows.forEach((row, i) => {
       const y = ROW_Y + i * ROW_H, id = `r:${i}`;
       const rc = this.add.container(0, 0); c.add(rc);
@@ -218,7 +236,8 @@ export class SettingsScene extends Phaser.Scene {
     this.onMove(this.nav.cur());
     this.previewCue(row);
     if (row.k === 'vibration') { const rb = this.registry.get('rumble'); if (rb) rb.preview(); }   // §6 rule 5: same-screen preview
-    else if (GROUPS[this.group].preview && !row.noPreview) this.firePreview(row.k);
+    else if (row.k === 'haptics') { const rb = this.registry.get('rumble'); if (rb) rb.previewHaptic(); }
+    else if (this.G[this.group].preview && !row.noPreview) this.firePreview(row.k);
   }
 
   apply(k, v) {
@@ -252,7 +271,7 @@ export class SettingsScene extends Phaser.Scene {
       const x = p.x - this.p.x;
       if (x >= 466 && x <= 574) {
         const v = Math.round(Math.max(0, Math.min(100, ((x - 470) / 100) * 100)) / row.step) * row.step;
-        if (v !== Save.settings[row.k]) { this.apply(row.k, v); this.drawRow(id); this.previewCue(row); if (GROUPS[this.group].preview) this.firePreview(row.k); }
+        if (v !== Save.settings[row.k]) { this.apply(row.k, v); this.drawRow(id); this.previewCue(row); if (this.G[this.group].preview) this.firePreview(row.k); }
         return;
       }
     }
@@ -268,7 +287,7 @@ export class SettingsScene extends Phaser.Scene {
   pressButton(row) {
     this.mixer.fire('ui_confirm');
     if (row.k === '__resetGroup') {
-      const g = GROUPS[this.group];
+      const g = this.G[this.group];
       if (g.controls) { const b = Save.settings.bindings; this.apply('bindings', { kbm: {}, pad: b.pad || {} }); }
       else for (const r of g.rows) if ('def' in r && !r.disabled && Save.settings[r.k] !== r.def) this.apply(r.k, r.def);
       this.buildGroup(); this.nav.raise();
@@ -319,7 +338,7 @@ export class SettingsScene extends Phaser.Scene {
       c.add(txt(this, 572, y, pad, 'T1', { origin: [0.5, 0], color: C.dim }));
     });
     const ry = 44 + rows.length * 14 + 4;
-    c.add(txt(this, LABEL_X, ry + 18, t('settings.padNote'), 'Tsmall', { color: C.dim }));
+    c.add(txt(this, LABEL_X, ry + 18, t('settings.padNote'), 'T1', { color: C.dim, wrap: 456 }));   // §2.3 #24
     const g = this.add.graphics(); c.add(g);
     drawPanel(g, CTRL_R - 150, ry, 150, 16, 'button');
     c.add(txt(this, CTRL_R - 75, ry + 8, t('settings.resetControls'), 'T1', { origin: [0.5, 0.5] }));
@@ -385,9 +404,10 @@ export class SettingsScene extends Phaser.Scene {
   // ------------------------------------------------------------------------------------- preview
   buildPreview() {
     const c = this.previewC; c.removeAll(true);
-    const x = 480, y = 200;
+    // touch profile: 24 px rows reach y ≈ 246, so the preview moves under the rail (it would sit under the controls)
+    const x = this.pvX = this.touchUi ? 12 : 480, y = this.pvY = this.touchUi ? 218 : 200;
     c.add(box(this, x, y, 136, 90, 'dark'));
-    c.add(txt(this, x + 6, y + 4, t('settings.preview'), 'Tsmall', { color: C.dim }));
+    // (the "Preview" label is dropped, §2.3 #25: the box is self-evident; the description bar names the setting)
     const scene = this.add.container(x, y); c.add(scene);
     this.pv = scene;
     const g = this.add.graphics(); scene.add(g);
@@ -404,9 +424,9 @@ export class SettingsScene extends Phaser.Scene {
     if (!this.pv) return;
     const S = Save.settings, rm = Save.reducedMotion;
     this.pvPip.setVisible(!!S.showHitbox);
-    const shake = rm ? 0 : T('explosionShakePx', 2) * (S.screenShake / 100);
+    const shake = rm ? 0 : Math.round(T('shakeMaxPx') * T('traumaExplosion', 0.58) ** 2) * (S.screenShake / 100);   // one explosion's trauma² peak
     if (shake > 0) {
-      const x0 = 480, y0 = 200; let n = 0;
+      const x0 = this.pvX, y0 = this.pvY; let n = 0;
       this.time.addEvent({ delay: 16, repeat: 8, callback: () => { n++; this.pv.setPosition(x0 + (n < 9 ? Math.round((Math.random() * 2 - 1) * shake) : 0), y0 + (n < 9 ? Math.round((Math.random() * 2 - 1) * shake) : 0)); } });
     }
     this.pvFlash.setAlpha(S.flashIntensity / 100);
@@ -433,13 +453,14 @@ export class SettingsScene extends Phaser.Scene {
     let s = '';
     if (this._say) { s = this._say; this._say = null; }
     else if (!it) s = '';
-    else if (it.rail) s = t(`settings.groupDesc.${GROUPS[this.group].k}`);
+    else if (it.rail) s = t(`settings.groupDesc.${this.G[this.group].k}`);
     else if (it.row) {
       const row = it.row;
       if (row.k === '__resetGroup') s = t('settings.desc.__resetGroup');
       else if (row.descPer) s = t(`settings.desc.${row.k}.${String(Save.settings[row.k])}`);
       else s = t(`settings.desc.${row.k}`);
       if (row.k === 'vibration' && this.router.padReader.connected && !this.router.padReader.actuator) s += ' ' + t('settings.desc.vibrationNoActuator');
+      if (row.k === 'haptics' && !canVibrate()) s = t('settings.desc.hapticsNone');
     } else if (it.action) s = it.locked ? t(it.action === 'pause' ? 'settings.lockedEsc' : 'settings.lockedAim') : t('settings.desc.rebind', { action: t(`settings.action.${it.action}`) });
     else if (it.id === 'k:reset') s = t('settings.desc.resetControls');
     c.add(txt(this, 160, 318, s, 'T1', { color: C.dim, wrap: 456 }));
@@ -472,7 +493,7 @@ export class SettingsScene extends Phaser.Scene {
         this.close(); break;
       }
       if (a === 'tabPrev' || a === 'tabNext') {
-        const n = GROUPS.length, gi = (this.group + (a === 'tabNext' ? 1 : n - 1)) % n;
+        const n = this.G.length, gi = (this.group + (a === 'tabNext' ? 1 : n - 1)) % n;
         this.nav.focus(`g:${gi}`);
         continue;
       }
@@ -480,7 +501,7 @@ export class SettingsScene extends Phaser.Scene {
     }
     // controller-prompts §4 G8: footer + Controls pad column re-render on the frame the family changes
     if (this.router.promptFamily !== this._fam) this.buildFooter();
-    if (GROUPS[this.group].controls && this.router.padPromptFamily !== this._padFam && !this.capture) {
+    if (this.G[this.group].controls && this.router.padPromptFamily !== this._padFam && !this.capture) {
       const cur = this.nav.current;
       this.buildGroup(); this.nav.raise();
       if (cur && this.nav.has(cur)) this.nav.focus(cur, { silent: true, snap: true });

@@ -1,133 +1,7 @@
 {
-  "version": 1,
-  "$comment": "Passive relics. Effect types: specs/design/mechanic-spec.md §7.",
+  "version": 2,
+  "$comment": "v2 relics: categories conditional/scaling/rule/status/duo/corrupted (mechanic-spec §7, design-v2 §5). Flat-stat relics cut.",
   "relics": [
-    {
-      "id": "arcane_whetstone",
-      "name": "Arcane Whetstone",
-      "desc": "All spells deal x1.15 damage.",
-      "rarity": "common",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "shot_stat",
-          "stat": "damage",
-          "op": "mult",
-          "value": 1.15
-        }
-      ],
-      "visual": {
-        "shape": "stone"
-      }
-    },
-    {
-      "id": "winged_boots",
-      "name": "Winged Boots",
-      "desc": "Move 12% faster.",
-      "rarity": "common",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "player_stat",
-          "stat": "moveSpeedMult",
-          "op": "mult",
-          "value": 1.12
-        }
-      ],
-      "visual": {
-        "shape": "boots"
-      }
-    },
-    {
-      "id": "magnet_charm",
-      "name": "Magnet Charm",
-      "desc": "Double pickup and coin-magnet radius.",
-      "rarity": "common",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "player_stat",
-          "stat": "pickupRadiusMult",
-          "op": "mult",
-          "value": 2.0
-        }
-      ],
-      "visual": {
-        "shape": "magnet"
-      }
-    },
-    {
-      "id": "mana_font",
-      "name": "Mana Font",
-      "desc": "All wands regenerate mana x1.3 faster.",
-      "rarity": "common",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "player_stat",
-          "stat": "manaRegenMult",
-          "op": "mult",
-          "value": 1.3
-        }
-      ],
-      "visual": {
-        "shape": "chalice"
-      }
-    },
-    {
-      "id": "deep_well",
-      "name": "Deep Well",
-      "desc": "All wands hold x1.4 max mana.",
-      "rarity": "common",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "player_stat",
-          "stat": "manaMaxMult",
-          "op": "mult",
-          "value": 1.4
-        }
-      ],
-      "visual": {
-        "shape": "flask"
-      }
-    },
-    {
-      "id": "heart_vessel",
-      "name": "Heart Vessel",
-      "desc": "+2 max HP (one heart), and heal 2.",
-      "rarity": "common",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "player_stat",
-          "stat": "maxHp",
-          "op": "add",
-          "value": 2
-        }
-      ],
-      "visual": {
-        "shape": "heart"
-      }
-    },
-    {
-      "id": "greed_ring",
-      "name": "Greed Ring",
-      "desc": "Enemies drop x1.5 coins.",
-      "rarity": "common",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "economy",
-          "field": "coinMult",
-          "op": "mult",
-          "value": 1.5
-        }
-      ],
-      "visual": {
-        "shape": "ring"
-      }
-    },
     {
       "id": "ember_heart",
       "name": "Ember Heart",
@@ -152,7 +26,11 @@
       ],
       "visual": {
         "shape": "ember"
-      }
+      },
+      "category": "status",
+      "tags": [
+        "fire"
+      ]
     },
     {
       "id": "frost_crown",
@@ -171,7 +49,11 @@
       ],
       "visual": {
         "shape": "crown"
-      }
+      },
+      "category": "status",
+      "tags": [
+        "frost"
+      ]
     },
     {
       "id": "storm_battery",
@@ -190,7 +72,11 @@
       ],
       "visual": {
         "shape": "battery"
-      }
+      },
+      "category": "status",
+      "tags": [
+        "shock"
+      ]
     },
     {
       "id": "plague_vial",
@@ -209,61 +95,11 @@
       ],
       "visual": {
         "shape": "vial"
-      }
-    },
-    {
-      "id": "glass_lens",
-      "name": "Glass Lens",
-      "desc": "+10% critical chance on all spells.",
-      "rarity": "uncommon",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "shot_stat",
-          "stat": "critChance",
-          "op": "add",
-          "value": 0.1
-        }
-      ],
-      "visual": {
-        "shape": "lens"
-      }
-    },
-    {
-      "id": "quickened_quill",
-      "name": "Quickened Quill",
-      "desc": "All wands: cast delay x0.85.",
-      "rarity": "uncommon",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "player_stat",
-          "stat": "castDelayMult",
-          "op": "mult",
-          "value": 0.85
-        }
-      ],
-      "visual": {
-        "shape": "quill"
-      }
-    },
-    {
-      "id": "sand_hourglass",
-      "name": "Sand Hourglass",
-      "desc": "All wands: recharge time x0.75.",
-      "rarity": "uncommon",
-      "minFloor": 1,
-      "effects": [
-        {
-          "type": "player_stat",
-          "stat": "rechargeMult",
-          "op": "mult",
-          "value": 0.75
-        }
-      ],
-      "visual": {
-        "shape": "hourglass"
-      }
+      },
+      "category": "status",
+      "tags": [
+        "poison"
+      ]
     },
     {
       "id": "echo_chamber",
@@ -283,7 +119,11 @@
       ],
       "visual": {
         "shape": "shell"
-      }
+      },
+      "category": "conditional",
+      "tags": [
+        "stream"
+      ]
     },
     {
       "id": "blast_boots",
@@ -305,7 +145,12 @@
       ],
       "visual": {
         "shape": "boots-fire"
-      }
+      },
+      "category": "conditional",
+      "tags": [
+        "mobility",
+        "burst"
+      ]
     },
     {
       "id": "merchant_seal",
@@ -329,7 +174,9 @@
       ],
       "visual": {
         "shape": "seal"
-      }
+      },
+      "category": "rule",
+      "tags": []
     },
     {
       "id": "thorn_mantle",
@@ -353,7 +200,11 @@
       ],
       "visual": {
         "shape": "cloak"
-      }
+      },
+      "category": "conditional",
+      "tags": [
+        "arcane"
+      ]
     },
     {
       "id": "shatter_heart",
@@ -380,7 +231,11 @@
       ],
       "visual": {
         "shape": "crystal"
-      }
+      },
+      "category": "status",
+      "tags": [
+        "frost"
+      ]
     },
     {
       "id": "kindling",
@@ -405,7 +260,12 @@
       ],
       "visual": {
         "shape": "log"
-      }
+      },
+      "category": "status",
+      "tags": [
+        "fire",
+        "burst"
+      ]
     },
     {
       "id": "shadow_cloak",
@@ -423,7 +283,11 @@
       ],
       "visual": {
         "shape": "cloak-dark"
-      }
+      },
+      "category": "rule",
+      "tags": [
+        "mobility"
+      ]
     },
     {
       "id": "vampiric_fang",
@@ -444,7 +308,9 @@
       ],
       "visual": {
         "shape": "fang"
-      }
+      },
+      "category": "scaling",
+      "tags": []
     },
     {
       "id": "alchemist_stone",
@@ -463,7 +329,14 @@
       ],
       "visual": {
         "shape": "stone-philo"
-      }
+      },
+      "category": "status",
+      "tags": [
+        "fire",
+        "frost",
+        "shock",
+        "poison"
+      ]
     },
     {
       "id": "prism_shard",
@@ -482,7 +355,11 @@
       ],
       "visual": {
         "shape": "prism"
-      }
+      },
+      "category": "status",
+      "tags": [
+        "zone"
+      ]
     },
     {
       "id": "warding_sigil",
@@ -502,7 +379,9 @@
       ],
       "visual": {
         "shape": "sigil"
-      }
+      },
+      "category": "conditional",
+      "tags": []
     },
     {
       "id": "phoenix_feather",
@@ -523,6 +402,573 @@
       ],
       "visual": {
         "shape": "feather"
+      },
+      "category": "rule",
+      "tags": []
+    },
+    {
+      "id": "last_stand",
+      "name": "Last Stand",
+      "desc": "While you have 2 HP or less, spells deal x1.5 damage.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "category": "conditional",
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "damage",
+          "op": "mult",
+          "value": 1.5,
+          "condition": {
+            "type": "hp_at_most",
+            "value": 2
+          }
+        }
+      ],
+      "tags": [
+        "burst"
+      ],
+      "visual": {
+        "shape": "heart-cracked"
+      }
+    },
+    {
+      "id": "first_light",
+      "name": "First Light",
+      "desc": "The first cast after a wand recharges deals x1.8 damage.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "category": "conditional",
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "damage",
+          "op": "mult",
+          "value": 1.8,
+          "condition": {
+            "type": "first_cast_after_recharge"
+          }
+        }
+      ],
+      "tags": [
+        "burst"
+      ],
+      "visual": {
+        "shape": "sun"
+      }
+    },
+    {
+      "id": "still_hand",
+      "name": "Still Hand",
+      "desc": "After standing still for 0.4s, cast delay is x0.7.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "category": "conditional",
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "castDelayMult",
+          "op": "mult",
+          "value": 0.7,
+          "condition": {
+            "type": "standing_ms_at_least",
+            "value": 400
+          }
+        }
+      ],
+      "tags": [
+        "stream"
+      ],
+      "visual": {
+        "shape": "hand"
+      }
+    },
+    {
+      "id": "crowd_reader",
+      "name": "Crowd Reader",
+      "desc": "While 5 or more foes are alive, explosions are 50% wider.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "category": "conditional",
+      "effects": [
+        {
+          "type": "effect_param",
+          "effect": "explode",
+          "field": "radius",
+          "op": "mult",
+          "value": 1.5,
+          "condition": {
+            "type": "enemies_alive_at_least",
+            "value": 5
+          }
+        }
+      ],
+      "tags": [
+        "burst",
+        "zone"
+      ],
+      "visual": {
+        "shape": "eye-many"
+      }
+    },
+    {
+      "id": "full_focus",
+      "name": "Full Focus",
+      "desc": "While at full HP, +20% critical chance.",
+      "rarity": "common",
+      "minFloor": 1,
+      "category": "conditional",
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "critChance",
+          "op": "add",
+          "value": 0.2,
+          "condition": {
+            "type": "hp_full"
+          }
+        }
+      ],
+      "tags": [
+        "crit"
+      ],
+      "visual": {
+        "shape": "lens"
+      }
+    },
+    {
+      "id": "tally_stone",
+      "name": "Tally Stone",
+      "desc": "+1% damage for every 8 foes slain this run (up to +40%).",
+      "rarity": "common",
+      "minFloor": 1,
+      "category": "scaling",
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "damage",
+          "op": "mult",
+          "value": 1.0,
+          "scaling": {
+            "per": "kills",
+            "every": 8,
+            "add": 0.01,
+            "cap": 0.4
+          }
+        }
+      ],
+      "tags": [
+        "burst"
+      ],
+      "visual": {
+        "shape": "stone-marked"
+      }
+    },
+    {
+      "id": "unbroken_seal",
+      "name": "Unbroken Seal",
+      "desc": "+8% damage per room cleared without being hit (up to +40%). Lost when hit.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "category": "scaling",
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "damage",
+          "op": "mult",
+          "value": 1.0,
+          "scaling": {
+            "per": "clean_rooms",
+            "every": 1,
+            "add": 0.08,
+            "cap": 0.4,
+            "resetOn": "hurt"
+          }
+        }
+      ],
+      "tags": [
+        "crit"
+      ],
+      "visual": {
+        "shape": "seal"
+      }
+    },
+    {
+      "id": "misers_ring",
+      "name": "Miser's Ring",
+      "desc": "+1% damage per 6 coins held (up to +30%).",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "category": "scaling",
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "damage",
+          "op": "mult",
+          "value": 1.0,
+          "scaling": {
+            "per": "coins_held",
+            "every": 6,
+            "add": 0.01,
+            "cap": 0.3
+          }
+        }
+      ],
+      "tags": [],
+      "visual": {
+        "shape": "ring"
+      }
+    },
+    {
+      "id": "deepening_well",
+      "name": "Deepening Well",
+      "desc": "Every room you clear adds +4 max mana to all wands (up to +48).",
+      "rarity": "common",
+      "minFloor": 1,
+      "category": "scaling",
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "manaMaxAdd",
+          "op": "add",
+          "value": 0,
+          "scaling": {
+            "per": "rooms_cleared",
+            "every": 1,
+            "add": 4,
+            "cap": 48
+          }
+        }
+      ],
+      "tags": [
+        "stream"
+      ],
+      "visual": {
+        "shape": "well"
+      }
+    },
+    {
+      "id": "hollow_runes",
+      "name": "Hollow Runes",
+      "desc": "Modifiers cost no mana, but each adds +40ms cast delay.",
+      "rarity": "rare",
+      "minFloor": 1,
+      "category": "rule",
+      "effects": [
+        {
+          "type": "rule",
+          "rule": "modifier_mana_zero",
+          "castDelayAddMs": 40
+        }
+      ],
+      "tags": [
+        "multicast",
+        "trigger"
+      ],
+      "visual": {
+        "shape": "rune-hollow"
+      }
+    },
+    {
+      "id": "echoing_payload",
+      "name": "Echoing Payload",
+      "desc": "Trigger payloads are released twice (the echo at x0.5 damage).",
+      "rarity": "rare",
+      "minFloor": 1,
+      "category": "rule",
+      "effects": [
+        {
+          "type": "rule",
+          "rule": "payload_repeat",
+          "count": 1,
+          "damageMult": 0.5
+        }
+      ],
+      "tags": [
+        "trigger"
+      ],
+      "visual": {
+        "shape": "bell"
+      }
+    },
+    {
+      "id": "endless_page",
+      "name": "Endless Page",
+      "desc": "Once per wand cycle, a cast that wraps past the end doesn't force a recharge: the wand keeps firing.",
+      "rarity": "rare",
+      "minFloor": 1,
+      "category": "rule",
+      "effects": [
+        {
+          "type": "rule",
+          "rule": "wrap_no_recharge",
+          "perCycle": 1
+        }
+      ],
+      "tags": [
+        "multicast"
+      ],
+      "visual": {
+        "shape": "page"
+      }
+    },
+    {
+      "id": "overflow_cell",
+      "name": "Overflow Cell",
+      "desc": "If a wand finishes recharging at full mana, its next cast costs no mana.",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "category": "rule",
+      "effects": [
+        {
+          "type": "rule",
+          "rule": "free_cast_after_full_recharge"
+        }
+      ],
+      "tags": [
+        "burst"
+      ],
+      "visual": {
+        "shape": "battery-full"
+      }
+    },
+    {
+      "id": "steam_engine",
+      "name": "Steam Engine",
+      "desc": "Melt deals x3 (not x2) and chills foes near the target.",
+      "rarity": "duo",
+      "minFloor": 1,
+      "category": "duo",
+      "effects": [
+        {
+          "type": "rule",
+          "rule": "melt_boost",
+          "damageMult": 3.0,
+          "chillSplashRadius": 36
+        }
+      ],
+      "tags": [
+        "fire",
+        "frost"
+      ],
+      "visual": {
+        "shape": "engine"
+      },
+      "duo": {
+        "parents": [
+          "ember_heart",
+          "frost_crown"
+        ],
+        "offerWeightMult": 3
+      }
+    },
+    {
+      "id": "storm_furnace",
+      "name": "Storm Furnace",
+      "desc": "Overload explosions arc to 2 more foes.",
+      "rarity": "duo",
+      "minFloor": 1,
+      "category": "duo",
+      "effects": [
+        {
+          "type": "rule",
+          "rule": "overload_chain",
+          "jumps": 2,
+          "range": 64,
+          "fallbackDamage": 6
+        }
+      ],
+      "tags": [
+        "fire",
+        "shock"
+      ],
+      "visual": {
+        "shape": "furnace"
+      },
+      "duo": {
+        "parents": [
+          "storm_battery",
+          "kindling"
+        ],
+        "offerWeightMult": 3
+      }
+    },
+    {
+      "id": "plague_bloom",
+      "name": "Plague Bloom",
+      "desc": "Blight spreads half of the poison stacks to foes nearby.",
+      "rarity": "duo",
+      "minFloor": 1,
+      "category": "duo",
+      "effects": [
+        {
+          "type": "rule",
+          "rule": "blight_spread",
+          "radius": 48,
+          "stackFrac": 0.5,
+          "fallbackStacks": 4
+        }
+      ],
+      "tags": [
+        "poison",
+        "fire"
+      ],
+      "visual": {
+        "shape": "bloom"
+      },
+      "duo": {
+        "parents": [
+          "plague_vial",
+          "alchemist_stone"
+        ],
+        "offerWeightMult": 3
+      }
+    },
+    {
+      "id": "thorn_blaze",
+      "name": "Thorn Blaze",
+      "desc": "When hurt, also explode around you (radius 48).",
+      "rarity": "duo",
+      "minFloor": 1,
+      "category": "duo",
+      "effects": [
+        {
+          "type": "on_event",
+          "event": "hurt",
+          "action": {
+            "type": "explode",
+            "radius": 48,
+            "damage": 14,
+            "element": "fire"
+          }
+        }
+      ],
+      "tags": [
+        "burst",
+        "mobility"
+      ],
+      "visual": {
+        "shape": "thorn-fire"
+      },
+      "duo": {
+        "parents": [
+          "thorn_mantle",
+          "blast_boots"
+        ],
+        "offerWeightMult": 3
+      }
+    },
+    {
+      "id": "cracked_crown",
+      "name": "Cracked Crown",
+      "desc": "Spells deal x1.6 damage. Max HP -2 (one heart).",
+      "rarity": "corrupted",
+      "minFloor": 1,
+      "category": "corrupted",
+      "effects": [
+        {
+          "type": "shot_stat",
+          "stat": "damage",
+          "op": "mult",
+          "value": 1.6
+        },
+        {
+          "type": "player_stat",
+          "stat": "maxHp",
+          "op": "add",
+          "value": -2
+        }
+      ],
+      "tags": [
+        "burst"
+      ],
+      "visual": {
+        "shape": "crown-cracked"
+      }
+    },
+    {
+      "id": "hungry_rune",
+      "name": "Hungry Rune",
+      "desc": "Every wand casts +1 spell group per cast. All recharge times x1.5.",
+      "rarity": "corrupted",
+      "minFloor": 1,
+      "category": "corrupted",
+      "effects": [
+        {
+          "type": "rule",
+          "rule": "spells_per_cast_add",
+          "value": 1
+        },
+        {
+          "type": "player_stat",
+          "stat": "rechargeMult",
+          "op": "mult",
+          "value": 1.5
+        }
+      ],
+      "tags": [
+        "multicast"
+      ],
+      "visual": {
+        "shape": "rune-teeth"
+      }
+    },
+    {
+      "id": "blood_ink",
+      "name": "Blood Ink",
+      "desc": "Mana regenerates x2. Every 40 casts, lose half a heart (never lethal).",
+      "rarity": "corrupted",
+      "minFloor": 1,
+      "category": "corrupted",
+      "effects": [
+        {
+          "type": "player_stat",
+          "stat": "manaRegenMult",
+          "op": "mult",
+          "value": 2.0
+        },
+        {
+          "type": "rule",
+          "rule": "cast_toll",
+          "every": 40,
+          "damage": 1,
+          "neverLethal": true
+        }
+      ],
+      "tags": [
+        "stream"
+      ],
+      "visual": {
+        "shape": "ink"
+      }
+    },
+    {
+      "id": "unstable_core",
+      "name": "Unstable Core",
+      "desc": "Explosions are 50% wider, but your own blasts can hurt you (half a heart, at most once every 2s).",
+      "rarity": "corrupted",
+      "minFloor": 1,
+      "category": "corrupted",
+      "effects": [
+        {
+          "type": "effect_param",
+          "effect": "explode",
+          "field": "radius",
+          "op": "mult",
+          "value": 1.5
+        },
+        {
+          "type": "rule",
+          "rule": "self_blast",
+          "damage": 1,
+          "cooldownMs": 2000
+        }
+      ],
+      "tags": [
+        "burst"
+      ],
+      "visual": {
+        "shape": "core"
       }
     }
   ]

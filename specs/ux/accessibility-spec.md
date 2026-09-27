@@ -10,6 +10,7 @@
 
 - Internal canvas **640×360**. The **minimum effective scale for legibility is ×2** (1280×720 CSS px). `scaleMode: auto` (the default, `settings-spec.md` §1.1) guarantees ≥ ×2 whenever the window allows it, and fills fractionally below that instead of dropping to ×1 (objection **O-UX-1** against `architecture.md` §3). Every px minimum below is stated in **internal px**, with its CSS size at ×2.
 - Legibility floor rationale: a 1366×768 laptop running a browser has an inner viewport of ≈ 1366×650. The current integer-only rule gives `k = floor(min(2.13, 1.81)) = 1` there: a 640×360 canvas with T1 text at a **7 CSS px** cap height. That fails any reasonable reading-size floor. Auto → FIT gives ≈ ×1.8 (cap ≈ 12.6 CSS px), and fullscreen gives ×2 (14 CSS px).
+- **Phones (v2).** The canvas FIT-scales at **1.04–1.19×** in landscape (`mobile-touch-spec.md` §1). T1's 7 px cap renders at **7.3–8.4 CSS px** (≈ 10.5–12 px font-size equivalent), at the edge of Apple's 11 pt text floor. That is why **T1 is now the minimum text role** (§2.1): the removed T-small role rendered at **5.2 CSS px** on a phone and was illegible. A home-screen launch recovers the height the Safari toolbar takes (≈ 0.92× in Safari → 1.04× standalone), so Add-to-Home is treated as a legibility feature (`mobile-touch-spec.md` §7.2). **Recorded limitation:** below 1.04× (Safari with its toolbar), T1 is ≈ 6.4 CSS px. The fixed 640×360 canvas can't be made larger without a phone-specific internal resolution, which is out of v2 scope. Mitigations: nothing below T1; every critical state is also a shape or icon (§3); the A2HS card.
 
 ---
 
@@ -22,15 +23,15 @@
 | **T1 — body** | Kenney Pixel @ 16 px em | **7 px** | 12 px | 14 px cap (≈ 20 px font-size equivalent) | **Everything gameplay-critical or decision-bearing**: prompts, tooltips and detail numbers, costs, prices, warnings, HUD coins, damage numbers, door labels, settings labels, confirm dialogs |
 | **T2 — heading** | Kenney High @ 16 px em | 9 px | 14 px | 18 px cap | screen titles, boss name card, section heads |
 | **Display** | T1 at integer ×2 | 14 px | 24 px | 28 px cap | floor title card, run-end outcome, title logo fallback |
-| **T-small — label** | Kenney Mini @ 8 px em | 5 px | 8 px | 10 px cap | **only text that is redundant** with position or with a T1 value: slot indices, bracket numbers, keycap letters inside a glyph, "2/4 slots" under a wand name, the mana number next to the mana bar. Never the sole carrier of any number the player must act on |
+| ~~T-small — label~~ | ~~Kenney Mini @ 8 px em~~ | ~~5 px~~ | — | — | **Removed in v2.** At phone scale it rendered at 5.2 CSS px. Every former call site is ruled in §2.3. `kit.js` keeps a one-wave alias `Tsmall → T1` so nothing crashes mid-migration. After Wave C, `grep -rn Tsmall src` must return **0**, and the TA stops baking `font.small`. |
 
-**Hard rules:** no text below a 5 px cap. No fractional scaling of any bitmap text (including tweens: a scale pop must be ×1 → ×2 steps, never 1.5; see objection **O-UX-3**). Every text object is BitmapText (architecture §9).
+**Hard rules:** **no text below T1 (7 px cap)** anywhere, in any profile. No fractional scaling of any bitmap text (including tweens: a scale pop must be ×1 → ×2 steps, never 1.5; see objection **O-UX-3**). Every text object is BitmapText (architecture §9). Keycaps, pills and chips are **12 px tall** so T1 fits them (cap 7 + a 2–3 px margin).
 
 ### 2.2 Contrast
 
 | Case | Requirement | How it's met |
 |---|---|---|
-| Text on a UI panel | **≥ 4.5:1** (T-small: ≥ 7:1, because it is small) | panel colours from the style guide. Reference pairings below until the 2D Artist's `style-guide` lands. |
+| Text on a UI panel | **≥ 4.5:1** | panel colours from the style guide. Reference pairings below until the 2D Artist's `style-guide` lands. |
 | Text over the game world (HUD numbers, damage numbers, prompts without a panel, banners) | **≥ 4.5:1 between the glyph and its own outline** (`#fdf7ed` on `#222222` = 14.9:1) | a **1 px dark outline on all 8 neighbours** is part of the baked font (the TA bakes an outlined variant). With the outline, legibility no longer depends on the floor tile behind the text. |
 | Non-text UI (bars, slot frames, focus ring, pips, toggles, icons that carry meaning) | **≥ 3:1** against the adjacent colour | mana fill vs its track, boss fill vs its chip, and the focus ring are all specified as a light element with a dark keyline |
 | Disabled controls | exempt (WCAG), but the **reason text** is T1 at ≥ 4.5:1 | settings §3 description bar; shop "Need n more coins" |
@@ -39,7 +40,7 @@
 
 | Token | Hex | vs panel `#2a2a3a` | vs stroke `#222222` | Use / rule |
 |---|---|---|---|---|
-| text | `#fdf7ed` | 13.2:1 | 14.9:1 | T1/T2 primary; **the only colour allowed for T-small** (needs ≥ 7:1) |
+| text | `#fdf7ed` | 13.2:1 | 14.9:1 | T1/T2 primary |
 | text-dim | `#b6cbcf` | 8.3:1 | 9.4:1 | descriptions, secondary T1 |
 | warn (⚠) | `#facb3e` | 9.2:1 | 10.4:1 | amber warnings |
 | error (⛔) | `#FF6B5E` | 5.0:1 | — | red warnings, "can't" states. The master-ramp `#da4e38` fails 4.5:1 on the panel. The hue (≈ 5°) stays outside the reserved hostile band (330°–355°, `style-guide.md` §4.1). |
@@ -47,6 +48,47 @@
 | mana | `#5698cc` | 4.5:1 | 5.1:1 | the mana **bar** (non-text, ≥ 3:1). The mana *number* uses `text`, not this colour. |
 | gold | `#facb3e` + coin icon | 9.2:1 | 10.4:1 | coins, crits (the shape carries the difference from warn) |
 | disabled | `#6E6886` | 2.7:1 | — | disabled label text only (WCAG-exempt); the **reason** is always given in `text-dim` |
+
+### 2.3 T-small call-site audit (v2; one ruling per site; the Game Developer applies them in Wave C)
+
+**promote** = same place, T1 role (the container grows as noted) · **abbreviate** = T1, shorter string · **drop** = remove the text; the stated channel carries the information.
+
+| # | Site | What it shows | Ruling | Detail |
+|---|---|---|---|---|
+| 1 | `kit.js:24` | ROLE comment | infra | rewrite: "T1 7 px, T2 9 px, display = T1 ×2; no smaller role" |
+| 2 | `kit.js:28` | `ROLE.Tsmall` | infra | alias to T1 metrics for one wave, then delete |
+| 3 | `kit.js:31` | `PITCH.Tsmall` | infra | delete (any caller uses `PITCH.T1` = 12) |
+| 4 | `kit.js:50` | `FONT.small` | infra | delete; the TA drops the `font.small*` bake |
+| 5 | `kit.js:128` | missing-icon fallback letters (< 32 px icons) | **promote** | T1; **1 letter** below 32 px, 2 letters at 32 px |
+| 6 | `kit.js:190` `chip()` | mana-cost chip on 32 px card cells | **promote** | chip height 7 → **12**, width = text + 4; stays inside the cell's bottom-left. It is not drawn on 16 px mini-cards (unchanged). |
+| 7 | `kit.js:243` `keycap()` | key legend | **promote** | 12 px keycap unchanged; width = `max(12, textW + 6)` |
+| 8 | `draw.js:99` `richLine` | line height branch for Tsmall | infra | delete the branch (`h = 10` always) |
+| 9 | `HudKit.js:249` | pad glyph legend letter beside the diamond | **promote** | T1; `c._w = 14 + textW + 1` |
+| 10 | `HudKit.js:267` | pill legend (L1, R1, Create, Options, Touch) | **promote** | T1; `w = max(12, textW + 6)`. Atlas glyphs (≤ 16×12) stay preferred; this is only the fallback path. |
+| 11 | `WandEditor.js:155` | "Wand stats" header (A2) | **promote** | T1 at y 182; rows start at 196 (A2 fits: 12 + 9 × 12 = 120 ≤ 146) |
+| 12 | `WandEditor.js:204` | "2/4 slots" under the wand name | **abbreviate** | "2/4" in T1 at `(x + 40, y + 27)`; the word "slots" is dropped (the header B1 says "Slots 2/4") |
+| 13 | `WandEditor.js:206` | changed badge "↻ 0.40s" on the wand card | **promote** | T1, right-aligned at `x + 118, y + 27` |
+| 14 | `WandEditor.js:270` | slot indices over each cell | **drop** | order is left to right. Warnings name the **card** and badge the **cell**, and pane C prints "Slot 5" for the focused cell. |
+| 15 | `WandEditor.js:291` | "Shuffled: order changes…" in the bracket lane | **promote** | T1 at y 84 (lane 1 is 12 px tall, §2.1 B5 as revised in `wand-editor-ux.md` §10) |
+| 16 | `WandEditor.js:313` | cast number on bracket lane 1 | **promote** | T1 at y 84; lane 1 = y 80–95 |
+| 17 | `WandEditor.js:323` | cast number on the wrap lane | **drop** | lane 2 (y 97–101) draws only the dashed line + ↩. The number shows once, where the cast starts, in lane 1. |
+| 18 | `WandEditor.js:356` | salvage-bin second line | **promote** | T1, wrap 124 (the bin is 136×74: 3 lines fit) |
+| 19 | `WandEditor.js:392` | "▼ n more" in the preview | **promote** | T1, right-aligned `(519, 286)` |
+| 20 | `WandEditor.js:411` | "+n" overflow of cast-line icons | **promote** | T1; `x += 14` |
+| 21 | `CodexView.js:63` | "n/total" under each tab label | **abbreviate** | moves **into** the tab label: "Cards 12/43" (T1). Tabs keep their height. |
+| 22 | `RewardScene.js:72` | "★ NEW" badge | **promote** | T1, right-aligned `(W − 8, 6)` |
+| 23 | `SettingsScene.js:87` | breadcrumb "Title ›" / "Paused ›" | **promote** | T1 at `(86, 10)` |
+| 24 | `SettingsScene.js:322` | gamepad-remapping note under the Controls table | **promote** | T1 with wrap 456. If the table would overflow, the note moves to the description bar whenever the pad column is focused. |
+| 25 | `SettingsScene.js:390` | "Preview" label on the preview box | **drop** | the box is self-evident, and the description bar names the setting being previewed |
+| 26 | `PauseScene.js:179` | Map tab: 3-letter reward kind under each pip | **drop** | replaced by the **16 px reward-kind icon** already used on doors (`hud-layout.md` §6) |
+| 27 | `HudScene.js:240` | relic overflow "+n" | **promote** | T1 (`hud-layout.md` §9.5) |
+| 28 | `HudScene.js:468` | mana value next to the bar | **promote** | T1 at `(199, 344)` desktop / `(sl + 199, st + 42)` touch |
+| 29 | `HudScene.js:472` | "AUTO" chip | **promote** | T1 at `(76, 312)` |
+| 30 | `HudScene.js:475` | "no spells" | **promote** | T1 |
+| 31 | `HudScene.js:514` | wand-badge key digit | **drop** | left-to-right order = 1, 2, 3; Controls table. The SWAP button (touch) prints the next wand's digit in T1. |
+| 32 | `HudScene.js:522/532` | pad shoulder glyph text "◂Y" / "RB▸" (+ its comment) | **promote** | T1 at `y = 318` over the first and last badges |
+
+**Overflow check (falsifiable):** after the promotions, `?debug` + F4 (`hud-layout.md` §9.4) plus a Codex, Settings, Editor and Reward screenshot at 812×375 show no clipped or overlapping T1 string.
 
 ---
 
@@ -64,7 +106,7 @@ Every colour-coded meaning in the game, with the channel that carries it without
 | Status: chill (1–2 stacks; 3 = frozen) | `chill-tint-1/2` MULTIPLY | **1–2 frost-shard pips** over the head (count = stacks). *Currently missing:* `style-guide.md` §4.4 gives chill only the tint tokens → objection **O-UX-5**. | 2D Artist |
 | Status: frozen | blue | a **crystal shell silhouette** around the sprite, and no animation (frozen pose) | 2D Artist / Animator |
 | Status: shocked / vulnerable | yellow | jagged spark glyph; vulnerable = a small ▼ pip | 2D Artist |
-| Status: poison (stacks) | green | droplet glyph + **stack number** (T-small on a dark chip) | 2D Artist |
+| Status: poison (stacks) | green | droplet glyph + **stack number** (a T1 numeral on a dark 12 px chip; a baked 5×7 numeral sprite set is acceptable as art, because it is an icon, not a text role) | 2D Artist |
 | Elite | gold | baked 1 px `elite-gold` **outline + a ground ring** (a shape under the actor). Scale stays 1.0 per `style-guide.md` §4.4 / O-ART-1, so the ring is the non-colour cue. | 2D Artist |
 | Card type | slate (spells) vs bronze (modifiers) frame material | spells: an **element-shape corner badge**; multicast: the **×n badge**; trigger: **rivet corners + T badge** (`wand-editor-ux.md` §2.2 and its grayscale test). Slate vs bronze alone is luminance 0.174 vs 0.197 (**1.10:1**), invisible in grayscale → objection **O-UX-4**. | 2D Artist |
 | Rarity | underline colour | the rarity **word** in the detail pane and reward panels | UX / Dev |
@@ -140,7 +182,9 @@ The feel-spec clamps concurrent shake to `shakeMaxPx` 6 px. The setting only sca
 | Reaction-time floors | enemy windups ≥ 350 ms (≥ 600 ms for 2-damage, ≥ 450 ms on bosses), aim locks 150 ms before release, cast buffer 120 ms, dash buffer 100 ms (designer data). The UX never adds a timed element on top. | mechanic-spec §12.2 E13 |
 | Pause anywhere (WCAG 2.2.2) | Esc / Start at any time in a run; auto-pause on focus loss; every modal pauses the sim; no timed decisions in any menu | scene-flow §3, `screen-graph.md` §0 |
 | Pointer target size | every interactive widget ≥ **16×16 internal** (= 32 CSS px at ×2, above WCAG 2.5.8's 24 px); editor cells 36×36; settings rows 18 px tall × full width | all UX specs |
-| Touch | deferred (README). Nothing in the UX specs assumes hover-only affordances, so touch can come later without a redesign (hover = focus, which is reachable by tap). | — |
+| **Touch targets (v2)** | gameplay buttons DASH/SWAP/USE hit **Ø46** game px (visual 38); PAUSE/EDIT/Back 40×40; every touch-profile row or button ≥ **24** px tall (≥ 25 CSS px at 1.04×, WCAG 2.5.8); primary actions ≥ **37** px. No tap needs precision below the editor's 36 px cells. | `mobile-touch-spec.md` §4–§5 |
+| **Touch (v2)** | floating twin sticks (no fixed stick positions to find); **auto-fire** by default, so a player who can only use one thumb can move and still fight (aim override optional); dash direction falls back to the target; left-handed side swap; every drag has a tap-tap alternative (WCAG 2.5.7); release-over-same cancels mistaken taps; the open-guard stops a tap carrying over from one screen into the next | `mobile-touch-spec.md` §3–§6 |
+| **Haptics (v2)** | its own setting (Off / Low / High), independent of Reduced motion; never continuous; never in menus except the HUD-button tick | `mobile-touch-spec.md` §8.2 |
 
 ---
 
@@ -184,10 +228,12 @@ There is no voice or dialogue, so no subtitles are needed (I11 applies only if V
 ## §9 Reviewer checklist (falsifiable; run at Wave 5 on the built game)
 
 1. At a 1366×650 browser viewport, the canvas renders at ≥ ×1.8 effective scale (Auto), and T1 cap height is ≥ 12 CSS px. In fullscreen on 1366×768 it is ×2 (14 CSS px).
-2. A pixel-sampled pair of every text-on-panel colour in the built UI is ≥ 4.5:1 (T-small ≥ 7:1). Every world-overlaid text has an intact 8-neighbour outline.
+2. A pixel-sampled pair of every text-on-panel colour in the built UI is ≥ 4.5:1. Every world-overlaid text has an intact 8-neighbour outline.
 3. The §3 grayscale and CVD-simulation screenshots pass for every row.
 4. Every enemy bullet frame is a closed-outline, dark-core disc of diameter 2r + 1, with a rim ≥ 3:1 against the dominant floor tone of F1, F2 and F3. No player-owned pixel falls in the hostile band after LUTs (`style-guide.md` §10).
 5. A 10-second capture of the densest explosion build (explosive + triple cast on `archmage_scepter`) shows no window with > 3 large-area flashes.
 6. With reduced motion On, every row in §4.1's right column holds, and the camera never moves without player movement.
 7. Every screen in `screen-graph.md` is completable with (a) keyboard only, (b) gamepad only, (c) mouse only (plus WASD for movement in-run), with no hold and no simultaneous press.
-8. Every interactive widget is ≥ 16×16 internal px.
+8. Every interactive widget is ≥ 16×16 internal px; every touch-profile target is ≥ 24 px (primary ≥ 37, gameplay buttons Ø46).
+9. `grep -rn Tsmall src` returns 0, and no rendered string anywhere has a cap below 7 internal px.
+10. At 812×375 emulation, every screen is completable by touch alone (`mobile-touch-spec.md` §13).

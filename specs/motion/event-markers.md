@@ -68,7 +68,7 @@ Audio sync rule: **cues fire on the marker step even during hit-stop** (hit-stop
       audio_cue: player_hurt          # shield absorbed → shield_break
       audio_bus: sfx-player
       hit_stop: { victim_ms: hurtHitstopMs, attacker_ms: 0 }          # shield: shieldBreakHitstopMs
-      screen_shake: { magnitude: hurtShakePx, duration_ms: hurtShakeMs, starts: "after the hit-stop" }
+      trauma: { add: traumaHurt, starts: "after the hit-stop" }
       screen_flash: { duration_ms: hurtFlashMs, color: red-edge }
       knockback: { direction: away-from-source, magnitude: hurtKnockback }
     - { frame: 6, kind: pose-end, notes: "hurtPoseMs 100 after the stop → run/idle (sim frames exclude the stop)" }
@@ -116,13 +116,13 @@ Each attack follows the five-phase anatomy (`telegraphs.md` §1): `opening [0,5]
 | 2.3 | `shoot` | `W`: `spawn-projectile` × `count` (one release cue per volley, not per projectile), `muzzle-flash`. |
 | 2.4 | `ring` | `W`: `spawn-projectile` ring. Multi-volley: `spawn-projectile` at `W + k·round(volleyIntervalMs·0.06)` (k = 1…volleys−1). **Spoke preview** at each of those minus 9 steps. The release cue fires per volley. |
 | 2.5 | `spiral` | `W`: spiral start (`enemy_release` spiral variant, **once**). Each shot tick is sim-driven: the per-shot cue is optional, voice cap 1, ≥ 100 ms apart. `act_end` = `W + round(shotsPerArm·intervalMs·0.06)`: `spiral_end` (proposed, soft). Mote shrink starts 12 steps before `act_end`. |
-| 2.6 | `charge` | `W`: charge start (`enemy_release` charge variant: roar/stomp). Speed-line afterimages every 6 steps. **Wall impact** (sim-detected, any step in `[W, W + round(durationMs·0.06)]`): hit-impact `heavy_impact` (proposed) + `heavyImpactShakePx`/`heavyImpactShakeMs` + dust; then stunned (dizzy loop cue optional). Player contact: `player_hurt` path. |
-| 2.7a | `slam` (self) | `W`: **hit-impact**: `heavy_impact` + `heavyImpactShakePx`/`heavyImpactShakeMs` + dust ring + rock-ring `spawn-projectile` on the same step. |
+| 2.6 | `charge` | `W`: charge start (`enemy_release` charge variant: roar/stomp). Speed-line afterimages every 6 steps. **Wall impact** (sim-detected, any step in `[W, W + round(durationMs·0.06)]`): hit-impact `heavy_impact` (proposed) + `traumaHeavyImpact` (feel, trauma² shake) + dust; then stunned (dizzy loop cue optional). Player contact: `player_hurt` path. |
+| 2.7a | `slam` (self) | `W`: **hit-impact**: `heavy_impact` + `traumaHeavyImpact` (feel, trauma² shake) + dust ring + rock-ring `spawn-projectile` on the same step. |
 | 2.7b | `slam` (target) | `W`: take-off (`leap`, proposed) · airborne `[W, W + round(travelMs·0.06) − 1]` · **land** at `W + round(travelMs·0.06)` = hit-impact `heavy_impact` + `heavyImpactShake*` + ring `spawn-projectile`. Target-circle lock outline at land − 9. |
 | 2.8 | `hazard` | `0`: marks appear (`hazard_mark`, proposed). `W`: activation (`hazard_on`, proposed). Tick: every `round(tickMs·0.06)` steps from `W` (outline flash + damage check, `hazard_tick` optional). End: `W + round(durationMs·0.06)`: damage off and fade starts (`hazard_off`, proposed). The 4 Hz blink starts 30 steps before the end. |
 | 2.9s | `summon` | `W`: portal(s) open (normal spawn, §3). No `wave_spawn` cue (that one is for waves); use `summon` (proposed). `maxAlive` skip: `fizzle` at `W`. |
 | 2.10 | `blink` | `W`: vanish (`blink_out`, proposed) + mote burst at the origin, then reappear at the destination on the same step. `W … rec_end`: reappear tween; `blink_in` (proposed) at `W + 1`. |
-| 2.11 | `self_destruct` | Strobe beats (visual only) at a shrinking period. `W`: **hit-impact** `explode` + `explosionShakePx`/`explosionShakeMs` + explosion flipbook, then the entity dies (no `kill` cue, no coins). Killed mid-fuse: the same event on the kill step, plus coins. |
+| 2.11 | `self_destruct` | Strobe beats (visual only) at a shrinking period. `W`: **hit-impact** `explode` + `traumaExplosion` (feel, trauma² shake) + explosion flipbook, then the entity dies (no `kill` cue, no coins). Killed mid-fuse: the same event on the kill step, plus coins. |
 | — | `sequence` | Each step is its own attack with its own markers. The gap is `recover` = `gapMs`. |
 
 ### 2.9 Resolved frames per attack (nominal; `W` = windup steps)
@@ -138,7 +138,7 @@ Each attack follows the five-phase anatomy (`telegraphs.md` §1): `opening [0,5]
 | eye_turret | `eye_burst` | shoot | 30 | 21 | 30 | 30 | — |
 | wraith | `wraith_blink` | blink | 30 | 21 | 30 | 30 | `blink_in` 31; recover to 39 |
 | wraith | `wraith_volley` | shoot | 27 | 18 | 27 | 27 | — |
-| necromancer | `raise` | summon | 54 | 45 | 54 | 54 | portals 54 → active at 96 (spawnPortalMs 700 = 42 steps) |
+| necromancer | `raise` | summon | 54 | 45 | 54 | 54 | portals 54 → active at 105 (v2 spawnPortalMs 850 = 51 steps) |
 | stone_golem | `stomp` | slam self | 51 | 42 | 51 | 51 | heavy impact + ring at 51 |
 | ossuary_knight | `cleave` | melee_swipe | 48 | 39 | 48 | 48 | lock glint 39 |
 | ossuary_knight | `bone_ring` | ring | 42 | 33 | 42 | 42 | — |
@@ -168,13 +168,13 @@ P3 values = `round(windupMs × 0.9 × 0.06)`, floored at 450 ms (27 steps), and 
 
 ```yaml
 - { actor: enemy, event: spawn, timebase: sim, frame: 0, kind: portal-open, cue_id: wave_spawn, bus: sfx, condition: "first portal of the wave only" }
-- { actor: enemy, event: spawn, timebase: sim, frame: 30, kind: emerge, notes: "spawnPortalMs − spawnEmergeMs = 500 ms" }
-- { actor: enemy, event: spawn, timebase: sim, frame: 42, kind: active, notes: "spawnPortalMs 700: AI starts" }
+- { actor: enemy, event: spawn, timebase: sim, frame: 39, kind: emerge, notes: "spawnPortalMs − spawnEmergeMs = 650 ms (v2 spawnPortalMs 850; ambush twist portalMs 1100 → 54)" }
+- { actor: enemy, event: spawn, timebase: sim, frame: 51, kind: active, notes: "spawnPortalMs 850 (v2): AI starts. Always read from rules; these frames are reference" }
 - { actor: enemy, event: hit, timebase: sim, frame: 0, kind: hit-impact, audio_cue: hit_enemy, variant: element, audio_bus: sfx-impact, hit_stop: none, fx_id: hit-particles, notes: "crit adds `crit`; status application adds `status_apply` (×4 variants); a reaction adds `reaction` (×5)" }
 - { actor: enemy, event: death, timebase: sim, frame: 0, kind: hit-impact, audio_cue: kill, audio_bus: sfx-impact, hit_stop: { victim_ms: killHitstopMs, rate_limit: killHitstopMinIntervalMs }, fx_id: death-puff }
 - { actor: enemy, event: death-elite, timebase: sim, frame: 0, kind: hit-impact, audio_cue: elite_kill, hit_stop: { victim_ms: eliteKillHitstopMs }, fx_id: elite-outline-shatter }
 - { actor: enemy, event: frozen-thaw, timebase: sim, frame: 0, kind: fx, cue_id: freeze_shatter, fx_id: ice-shell-shatter }
-- { actor: enemy, event: stun-wall, timebase: sim, frame: 0, kind: hit-impact, audio_cue: heavy_impact, proposed: true, screen_shake: { magnitude: heavyImpactShakePx, duration_ms: heavyImpactShakeMs } }
+- { actor: enemy, event: stun-wall, timebase: sim, frame: 0, kind: hit-impact, audio_cue: heavy_impact, proposed: true, trauma: { add: traumaHeavyImpact } }
 - { actor: golem, event: locomotion, animation_key: <golem>_move, timebase: clip, frames: [0, 2], kind: footstep, cue_id: heavy_step, proposed: true, notes: "heavy units only; small enemies get no footsteps (mix clutter)" }
 - { actor: boss,  event: locomotion, animation_key: <boss>_move, timebase: clip, frames: [0, 2], kind: footstep, cue_id: boss_step, proposed: true, notes: "0x72 32×36 run: f0/f2 are the grounded poses (f1 lifts to bbox bottom 32)" }
 - { actor: boss, event: intro, timebase: real, at_ms: "bossIntroPanMs/2", kind: rise, cue_id: boss_intro, proposed: true }
@@ -195,3 +195,76 @@ P3 values = `round(windupMs × 0.9 × 0.06)`, floored at 450 ms (27 steps), and 
 | Chest opens | anticipation start | `chest_open` (proposed) | `world-chest-open` |
 | Crate breaks | break step | `crate_break` (proposed) | telegraphs.md §3.6 |
 | Floor descent | sink start | `portal_enter` (proposed) | `screen-floor-descend` |
+
+---
+
+## §5 v2 (Wave A2) markers
+
+Cue ids are **aligned with the Audio Director's `specs/audio/cue-spec.json`** (delivered in parallel): enemy shield break = `shield_shatter` (`shield_break` stays the player's warding shield), armour = `armour_clang_chip` / `armour_clang_blast` / `armour_break`, ward = `ward_pop` / `ward_break` / `ward_raise`, `guard_raise`, `stg_boss_intro` / `stg_miniboss_intro` (+ `*_roar_<id>`), `stg_boss_adapt`, `miniboss_death`, `ui_reroll`, `stg_goal`, `forge_slot`. Ids still marked *proposed* (`affix_reveal`, `volatile_arm`) have no cue yet; the Audio Director may route them or list them as silent events. **Throttling contract** (the plan: "block spam never masks hurt"): the motion layer already coalesces defence reads per enemy within `defenceReadCooldownMs` 120 (break/strip never coalesced). The Audio Director's cue-spec should additionally voice-cap block/clang/pop globally and duck them under `player_hurt`. The marker frames below are when the *first* read of a coalesced group fires.
+
+### 5.1 Defence events (`EV.DEFENCE`; timebase `sim`, frame 0 = the hit step)
+
+```yaml
+- { event: shield.block,   frame: 0, kind: defence-read, cue_id: shield_block,  bus: sfx-impact, throttle: "per enemy defenceReadCooldownMs", fx_id: shield-glance-sparks }
+- { event: shield.wear,    frame: 0, kind: defence-read, cue_id: shield_wear, notes: "at ⌈wearBlocks/3⌉ and ⌈2·wearBlocks/3⌉ blocks" }
+- { event: shield.break,   frame: 0, kind: defence-break, cue_id: shield_shatter, bus: sfx-impact, fx_id: shield-shards, local_freeze_ms: defenceBreakFreezeMs, haptic: "UX §8.2 priority 3 (20 ms)", notes: "the breaking pierce hit's hit_enemy cue also plays on this step" }
+- { event: armour.reduce,  frame: 0, kind: defence-read, cue_id: "armour_clang_chip | armour_clang_blast",  bus: sfx-impact, variant: "blast (heavier) | direct | dot", throttle: "per enemy defenceReadCooldownMs; dot ticks never cue" }
+- { event: armour.break,   frame: 0, kind: defence-break, cue_id: armour_break, fx_id: armour-shards, local_freeze_ms: defenceBreakFreezeMs }
+- { event: ward.absorb,    frame: 0, kind: defence-read, cue_id: ward_pop,      bus: sfx-impact, throttle: "per enemy defenceReadCooldownMs", notes: "swallowed DoT ticks: no cue, no fx" }
+- { event: ward.strip,     frame: 0, kind: defence-break, cue_id: ward_break,   bus: sfx-impact, fx_id: ward-burst+shock-arc, local_freeze_ms: defenceBreakFreezeMs }
+- { event: ward.regrow,    frame: 0, kind: fx, cue_id: ward_raise, notes: "first mote; motes every wardRegrowStepMs" }
+- { event: ward.grant,     frame: "rel (W)", kind: fx, cue_id: ward_raise, notes: "ward_allies act; arrival 12 steps later (200 ms)" }
+- { event: guard.start,    frame: "rel (W)", kind: fx, cue_id: guard_raise, notes: "Knight shield_wall; guard ends at W + 180 steps, blink from W + 150" }
+```
+
+### 5.2 v2 attacks, resolved frames (nominal; `W` = windup steps; the sim emits anchors, per §2.9)
+
+| Actor | Attack | Type | W | lock | rel | act_end | Extra markers |
+|---|---|---|---|---|---|---|---|
+| tomb_sentinel | `spear_thrust` | melee_swipe | 36 | 27 | 36 | 36 | recover to 66 |
+| lantern_acolyte | `kindle_ward` | ward_allies | 48 | 39 | 48 | 48 | `ward_raise` 48; arrival 60 |
+| grave_warden | `shield_bash` | charge | 48 | 39 | 48 | ≤ 78 | wall impact ∈ [48, 78]; stun 54 steps |
+| grave_warden | `bone_toss` | shoot | 36 | 27 | 36 | 36 | — |
+| grave_warden | `raise_sentinel` | summon | 54 | 45 | 54 | 54 | portal active at +51 (spawnPortalMs 850) |
+| lantern_matron | `lantern_ring` | ring | 39 | 30 | 39 | 39 | — |
+| lantern_matron | `kindle_choir` | ward_allies | 48 | 39 | 48 | 48 | `ward_raise` 48 |
+| lantern_matron | `call_acolytes` | summon | 54 | 45 | 54 | 54 | — |
+| lantern_matron | `ember_fan` | shoot | 33 | 24 | 33 | 33 | — |
+| iron_colossus | `quake` | slam self | 54 | 45 | 54 | 54 | heavy impact + ring at 54 (`traumaHeavyImpact`) |
+| iron_colossus | `rock_volley` | shoot | 36 | 27 | 36 | 36 | — |
+| iron_colossus | `iron_charge` | charge | 57 | 48 | 57 | ≤ 99 | wall impact ∈ [57, 99]; stun 78 steps |
+| ossuary_knight | `shield_wall` | guard | 36 | 27 | 36 | 216 | `guard_raise` 36; blink from 186; guard end 216 |
+| ossuary_knight | `bone_rain` | hazard | 60 | 51 | 60 | 132 | bones land at 60; single tick window 60–132 |
+| mire_queen | `veil` | ward_allies (self) | 42 | 33 | 42 | 42 | motes spiral in 42–54 |
+| mire_queen | `bog_surge` | ring ×2 | 48 | 39 | 48 | 69 | volley 2 at 69 (preview 60) |
+| archlich | `mirror_volley` | mirror | 39 (P3 35) | 30 (26) | 39 (35) | same | `n` read at `ws`; mirror-ghost flash at rel |
+| archlich | `grand_spiral` | spiral | 54 (P3 49) | 45 (40) | 54 (49) | +79 | shots every 6.6 steps (sim-timed); mote shrink 12 steps before act_end |
+| elite `volatile` | death ring | post-death | 27 (`delayMs` 450) | 18 | 27 | 27 | `volatile_arm` (proposed) at 0; ring fires at 27 with `explode` (small) |
+
+### 5.3 Boss / mini-boss lifecycle (v2)
+
+```yaml
+- { actor: boss|mini, event: intro, timebase: real, at_ms: "name phase (150 boss / 100 mini)", cue_id: "stg_boss_intro + boss_roar_<id> | stg_miniboss_intro + miniboss_roar_<id>", bus: music-stinger }
+- { actor: boss|mini, event: adapt, timebase: real, at_ms: "adapt phase (450 boss / 300 mini)", cue_id: stg_boss_adapt, bus: sfx, condition: "an adapt rule applied" }
+- { actor: boss|mini, event: phase, timebase: sim, frame: 0, audio_cue: boss_phase, hit_stop: { victim_ms: bossPhaseHitstopMs }, trauma: traumaBossPhase, notes: "the phase banner starts when the stop ends; mini regrow read plays inside invulnMs" }
+- { actor: boss, event: death, timebase: sim, frame: 0, audio_cue: boss_death, hit_stop: { victim_ms: bossDeathHitstopMs }, trauma: traumaBossKill, notes: "bossDeathHitstopMs = 300 (v2), the single boss-kill key" }
+- { actor: mini, event: death, timebase: sim, frame: 0, audio_cue: miniboss_death, hit_stop: { victim_ms: miniBossDeathHitstopMs }, trauma: traumaBigExplosion, notes: "fallback cue: elite_kill; final burst at stop + miniBossDeathUnravelMs" }
+- { actor: elite, event: affix-reveal, timebase: sim, frame: "spawn emerge end", cue_id: affix_reveal, proposed: true }
+```
+
+### 5.4 UI / meta markers (v2)
+
+| Moment | Marker | Cue | Source entry |
+|---|---|---|---|
+| DASH / SWAP / USE / PAUSE / EDIT press | press start (release for PAUSE/EDIT) | `touch_ui_tap` (+ 6 ms haptic) | `touch-button-press` |
+| Door threat icon | first threat icon's pop, once per room | `door_threat` | `door-threat-icon` |
+| Reward skip | cards-out start | `reward_skip` | `reward-skip` |
+| Reward reroll | out start | `ui_reroll` | `reward-reroll` |
+| Duo offered / taken | link phase / parents-pulse | `duo_unlock` | `duo-offer`, `duo-take` |
+| Forge merge | fuse phase | `forge_merge` | `forge-merge` |
+| Forge evolve | gather phase | `forge_evolve` | `forge-evolve` |
+| Forge slot | buy | `forge_slot` | `forge-slot-buy` |
+| Daily begin | Mode Select close on Daily | `daily_start` | `mode-select` |
+| Goal complete | stamp phase | `stg_goal` / `ui_unlock` | `goal-complete` |
+| Daily copy success | chip in | `ui_confirm` | `daily-result` |
+| First-block tip | enter | none (the block cue just played; UX P12) | `coach-first-block-tip` |

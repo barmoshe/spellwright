@@ -1,7 +1,10 @@
 // sim/Fx.js — world presentation services (sim-contract §2 ctx.fx). Lives in RunScene, so everything
 // here freezes with hit-stop (the whole run scene pauses; state-graph R3).
-//   shake(px, ms)        — × Settings screen-shake, 0 under reduced motion, concurrent sum clamped to
-//                          feel `shakeMaxPx` (accessibility-spec §4.2). Camera reads offset().
+//   addTrauma(k)         — v2 trauma² shake (feel-spec §impact, Eiserloh): trauma += k (≤ 1), decays linearly
+//                          over `traumaDecayMs`; offset = shakeMaxPx × trauma² × noise(traumaNoiseHz), × Settings
+//                          screen-shake, 0 under reduced motion (accessibility-spec §4.2). Camera reads shakeX/Y.
+//   Phones (display.isPhone, mobile-touch-spec §9): particle counts and the particle pool are halved;
+//   enemy bullets, telegraphs and hazard rims are never capped.
 //   hitstop(ms)          — core/timecontrol (pauses the whole run scene; audio keeps playing)
 //   particles(...)       — pooled 1–3 px sprites (budget ≤ 1 200 live, architecture §11)
 //   ring / explosion     — one Graphics redrawn per render frame for all rings (1 draw call)
@@ -22,8 +25,12 @@ export class Fx {
   constructor(ctx) {
     this.ctx = ctx;
     const s = this.scene = ctx.scene;
-    this.shakes = [];
+    this.trauma = 0; this.noiseT = 0;
+    this.noiseA = [0, 0]; this.noiseB = [0, 0];     // value-noise keyframes (x, y)
     this.shakeX = 0; this.shakeY = 0;
+    const disp = s.registry.get('display');
+    this.isPhone = !!(disp && disp.isPhone);
+    this.maxParticles = this.isPhone ? MAX_PARTICLES / 2 : MAX_PARTICLES;
     this.rings = [];
     this.lines = [];
     this.ringG = s.add.graphics().setDepth(DEPTH.fx);
@@ -42,11 +49,9 @@ export class Fx {
   get reduced() { return this.ctx.flags.reducedMotion; }
 
   // ------------------------------------------------------------------ shake
-  shake(px, ms) {
-    const scale = this.reduced ? 0 : Save.settings.screenShake / 100;
-    if (scale <= 0 || px <= 0 || ms <= 0) return;
-    this.shakes.push({ px: px * scale, ms, t: 0 });
-  }
+  addTrauma(k) { if (k > 0) this.trauma = Math.min(1, this.trauma + k); }
+  /** Pick the explosion trauma by radius (bigExplosionRadiusPx stays the threshold). */
+  explosionTrauma(radius) { this.addTrauma(radius >= this.T('bigExplosionRadiusPx') ? this.T('traumaBigExplosion', 0.71) : this.T('traumaExplosion', 0.58)); }
   hitstop(ms) { if (ms > 0) this.scene.registry.get('time').hitstop(ms); }
 
   // ------------------------------------------------------------------ particles
@@ -62,8 +67,9 @@ export class Fx {
     const life = opt.lifeMs ?? 300;
     const grav = opt.gravity ?? (kind === 'ember' || kind === 'mote' || kind === 'soul' || kind === 'bubble' || kind === 'smoke' ? -20 : 0);
     const size = opt.size ?? (kind === 'shard' || kind === 'smoke' ? 2 : 1);
+    if (this.isPhone && !opt.safety) n = Math.ceil(n / 2);        // phone cap (mobile-touch-spec §9)
     for (let i = 0; i < n; i++) {
-      if (this.parts.length >= MAX_PARTICLES) return;
+      if (this.parts.length >= this.maxParticles) return;
       const p = this.freeParts.pop() || this._newPart();
       const a = opt.dir != null ? opt.dir + rng.float(-(opt.spread ?? 0.6), opt.spread ?? 0.6) : rng.float(0, Math.PI * 2);
       const v = speed * rng.float(0.5, 1);
@@ -148,17 +154,21 @@ export class Fx {
   // ------------------------------------------------------------------ per step (sim clock)
   step(dt) {
     this.stepFlashArea = 0;
-    // shake: sum of linearly decaying shakes, clamped to shakeMaxPx
-    let amp = 0;
-    for (let i = this.shakes.length - 1; i >= 0; i--) {
-      const s = this.shakes[i]; s.t += dt;
-      if (s.t >= s.ms) { this.shakes.splice(i, 1); continue; }
-      amp += s.px * (1 - s.t / s.ms);
+    // trauma² shake: linear decay, smooth value noise at traumaNoiseHz (fx stream)
+    if (this.trauma > 0) this.trauma = Math.max(0, this.trauma - dt / this.T('traumaDecayMs', 450));
+    const scale = this.reduced ? 0 : Save.settings.screenShake / 100;
+    const amp = this.T('shakeMaxPx') * this.trauma * this.trauma * scale;
+    if (amp <= 0.01) { this.shakeX = 0; this.shakeY = 0; return; }
+    const rng = this.ctx.rng.fx, period = 1000 / this.T('traumaNoiseHz', 24);
+    this.noiseT += dt;
+    while (this.noiseT >= period) {
+      this.noiseT -= period;
+      this.noiseA[0] = this.noiseB[0]; this.noiseA[1] = this.noiseB[1];
+      this.noiseB[0] = rng.float(-1, 1); this.noiseB[1] = rng.float(-1, 1);
     }
-    amp = Math.min(amp, this.T('shakeMaxPx'));
-    const rng = this.ctx.rng.fx;
-    this.shakeX = amp > 0 ? Math.round(rng.float(-amp, amp)) : 0;
-    this.shakeY = amp > 0 ? Math.round(rng.float(-amp, amp)) : 0;
+    const f = this.noiseT / period;
+    this.shakeX = Math.round(amp * (this.noiseA[0] + (this.noiseB[0] - this.noiseA[0]) * f));
+    this.shakeY = Math.round(amp * (this.noiseA[1] + (this.noiseB[1] - this.noiseA[1]) * f));
   }
 
   /** Per render frame (RunScene update; frozen with hit-stop). */
@@ -218,7 +228,7 @@ export class Fx {
     this.parts.length = 0; this.rings.length = 0; this.flashes.length = 0; this.lines.length = 0;
     for (const b of this.books) b.im.destroy(); this.books.length = 0;
     for (const g of this.ghosts) g.im.destroy(); this.ghosts.length = 0;
-    this.shakes.length = 0;
+    this.trauma = 0;
   }
 
   destroy() { this.clear(); for (const p of this.freeParts) p.im.destroy(); this.ringG.destroy(); this.flashG.destroy(); }

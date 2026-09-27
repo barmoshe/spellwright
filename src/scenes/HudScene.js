@@ -19,20 +19,38 @@ import { C, txt, icon, cardCell } from '../ui/kit.js';
 import { ensureHudTextures, hudImage, hudTex, reducedMotion, flashScale, PIP_FOR_KIND, drawPsSymbol } from '../ui/HudKit.js';
 import { promptEntry } from '../input/prompts.js';
 import { Toasts } from '../ui/Toasts.js';
+import { layoutFor } from '../ui/hudLayout.js';
+import { TouchHud } from '../ui/TouchHud.js';
+import { warnOnce } from '../core/log.js';
+import EN from '../i18n/en.js';
+import { Art } from '../core/art.js';
 
-// hud-layout §2 geometry (internal px)
-const HEART_X = 6, HEART_DX = 14, TOP_Y = 6;
-const RELIC_X = 6, RELIC_Y = 22, RELIC_DX = 18, RELIC_MAX = 8;
-const TRACK_LABEL_X = 276, PIP_X = 280, PIP_DX = 9, PIP_Y = 8;
-const BOSS = { x: 170, y: 17, w: 300, h: 6 };
-const RIGHT_X = 634;
-const BADGE_X = 6, BADGE_DX = 22, BADGE_Y = 334, BADGE_UP = 330;
-const STRIP_Y = 324, CELL_DX = 19, CHEV_Y = 343, RBAR_Y = 343;
-const MANA = { x: 76, y: 348, w: 120, h: 6 };
-const AUTO_POS = { x: 76, y: 316 };
-// clusters for the occlusion fade (hud-layout §2.2 / §3.2)
-const CLUSTER = { tl: [6, 6, 144, 34], tc: [262, 6, 110, 12], tr: [560, 6, 74, 24], bl: [6, 314, 264, 40] };
-const BOSS_CLUSTER = [170, 4, 300, 20];
+/** t(key) only when the key exists (data-driven banner keys may be authored by another slice later), else `fb`. */
+const tk = (key, params, fb = null) => (key && Object.prototype.hasOwnProperty.call(EN, key) ? t(key, params) : fb);
+const DEF_ORDER = ['shield', 'armour', 'ward'];
+/** Worlds (ui-artwork §9.7, art-slot-map world_cards): accent rule colour = the world light colour. */
+const WORLD_ACCENT = { w1_sunken_crypt: 0xee8e2e, w2_drowned_halls: 0x72d6ce, w3_last_library: 0xfacb3e };
+const WORLD_CARDS_SHOWN = new WeakMap();   // run → Set(floor): one card per world entry, survives HUD restarts
+const DEF_BIT = { shield: 1, armour: 2, ward: 4 };
+const KW_FOR_DEF = { shield: 'pierce', armour: 'blast', ward: 'shock' };
+// C's pure keyword reader (contract §3). Guarded: until it exists the pips show "not countered" (hollow).
+let _kwMod = null;
+const kwModReady = import('../spells/keywords.js').then((m) => { _kwMod = m; }).catch(() => warnOnce('hud-keywords', '[hud] src/spells/keywords.js not available yet: counter pips show hollow'));
+
+// Geometry comes ONLY from ui/hudLayout.js layoutFor(profile, safeRect) (hud-layout §9.1); these module
+// bindings are (re)assigned by applyLayout() before the HUD is built. Desktop = the §2.1 numbers.
+let HEART_X, HEART_DX, TOP_Y, RELIC_X, RELIC_Y, RELIC_DX, RELIC_MAX, TRACK_LABEL_X, PIP_X, PIP_DX, PIP_Y, BOSS, RIGHT_X,
+  BADGE_X, BADGE_DX, BADGE_Y, BADGE_UP, STRIP_Y, CELL_DX, CHEV_Y, RBAR_Y, MANA, AUTO_POS, CLUSTER, BOSS_CLUSTER, LAYOUT;
+function applyLayout(L) {
+  LAYOUT = L;
+  ({ x: HEART_X, dx: HEART_DX, y: TOP_Y } = L.hearts);
+  ({ x: RELIC_X, y: RELIC_Y, dx: RELIC_DX, max: RELIC_MAX } = L.relics);
+  ({ labelX: TRACK_LABEL_X, pipX: PIP_X, pipDx: PIP_DX, pipY: PIP_Y } = L.track);
+  BOSS = L.boss; RIGHT_X = L.right.x;
+  ({ x: BADGE_X, dx: BADGE_DX, y: BADGE_Y, up: BADGE_UP } = L.badges);
+  STRIP_Y = L.strip.y; CELL_DX = L.strip.cellDx; CHEV_Y = L.chevY; RBAR_Y = L.rbarY;
+  MANA = L.mana; AUTO_POS = L.auto; CLUSTER = L.clusters; BOSS_CLUSTER = L.bossCluster;
+}
 
 export class HudScene extends Phaser.Scene {
   constructor() { super('hud'); }
@@ -41,6 +59,15 @@ export class HudScene extends Phaser.Scene {
 
   create() {
     const reg = this.registry;
+    // hud-layout §9.1: one layout object for this HUD instance (touch profile or desktop), published to the
+    // router for input/TouchSticks.js. A profile / safe-rect / stick-side / wand-count change restarts the HUD.
+    const router0 = reg.get('router'), disp = reg.get('display');
+    const run0 = reg.get('run');
+    this._layoutOpts = { profile: router0 && router0.touchProfile ? 'touch' : 'desktop', safe: disp ? { ...disp.safe } : undefined,
+      stickSide: Save.settings.touchStickSide, wandCount: run0 ? run0.wands.length : 1 };
+    applyLayout(layoutFor(this._layoutOpts.profile, this._layoutOpts.safe, this._layoutOpts));
+    this.L = LAYOUT;
+    if (router0) router0.hudLayout = LAYOUT;
     this.bus = reg.get('bus');
     this.router = reg.get('router');
     this.flow = reg.get('flow');
@@ -68,11 +95,18 @@ export class HudScene extends Phaser.Scene {
     this._buildTopRight();
     this._buildWand();
     this._buildBanners();
+    this._buildCounters();
     this._buildHurtEdges();
-    this.toasts = new Toasts(this, { flow: this.flow, router: this.router, mixer: this.mixer });
+    this.dimK = 1; this.dimTarget = 1;          // intro-card HUD dim (hud-layout §9.6: 40% while the card shows)
+    this.card = null; this.phaseBan = null;
+    this.toasts = new Toasts(this, { flow: this.flow, router: this.router, mixer: this.mixer, layout: LAYOUT.toast });
+    this.touchHud = LAYOUT.profile === 'touch' ? new TouchHud(this, LAYOUT, this.router) : null;
+    if (this.touchHud && this.run) this.touchHud.setWandCount(this.run.wands.length);
 
     this._listen();
     this._syncAll();
+    this.worldCard = null;
+    if (this.run && this.run.step === 0) this._worldCard(this.run.floor);     // run start: the room entered before the HUD existed
 
     this._lastTop = this.flow ? this.flow.top() : null;
     this.events.once('shutdown', () => this._shutdown());
@@ -237,7 +271,7 @@ export class HudScene extends Phaser.Scene {
   // =============================================================================================
   _buildRelics() {
     this.relicIcons = [];
-    this.relicMore = txt(this, 150, 27, '', 'Tsmall').setVisible(false);
+    this.relicMore = txt(this, LAYOUT.relics.moreX, LAYOUT.relics.moreY, '', 'T1', LAYOUT.relics.moreRight ? { origin: [1, 0] } : {}).setVisible(false);
     this.relicFrame = this.add.graphics();
     this.cl.tl.c.add([this.relicMore, this.relicFrame]);
     this.relicFade = { rest: 0.5, wake: -1 };
@@ -296,7 +330,7 @@ export class HudScene extends Phaser.Scene {
     const step = r ? r.step : 0;
     for (let i = 0; i < n; i++) {
       const kind = i <= step ? this.visited[`${floor}:${i}`] : null;
-      const name = kind ? PIP_FOR_KIND[kind] || 'pip_combat' : 'pip_future';
+      const name = kind ? PIP_FOR_KIND[kind] || (kind === 'miniboss' ? 'pip_elite' : 'pip_combat') : 'pip_future';
       const big = name === 'pip_boss_9';
       const im = hudImage(this, PIP_X + PIP_DX * i - (big ? 1 : 0), PIP_Y - (big ? 1 : 0), name);
       this.cl.tc.c.add(im);
@@ -310,7 +344,8 @@ export class HudScene extends Phaser.Scene {
 
   _buildBoss() {
     const c = this.cl.boss.c;
-    this.bossName = txt(this, VIEW_W / 2, 3, '', 'T1', { origin: [0.5, 0] });
+    const bn = LAYOUT.bossName || { x: VIEW_W / 2, y: 3 };
+    this.bossName = txt(this, bn.x, bn.y, '', 'T1', { origin: [0.5, 0] });
     this.bossG = this.add.graphics();
     this.bossHatch = this.add.tileSprite(BOSS.x + 1, BOSS.y + 1, BOSS.w - 2, BOSS.h - 2, hudTex('hatch_4').key, hudTex('hatch_4').frame).setOrigin(0).setAlpha(0.55).setVisible(false);
     this.bossTicks = this.add.graphics();
@@ -320,11 +355,15 @@ export class HudScene extends Phaser.Scene {
 
   _bossStart(d) {
     const def = this.cat && this.cat.bosses ? this.cat.bosses[d.id] : null;
+    const mini = (d.tier || (def && def.tier)) === 'mini';
+    // mini-boss bar: × rules.boss.miniBossBarScale, rect from hudLayout (hud-layout §9.2)
+    const R = this.bossRect = mini && LAYOUT.miniBoss ? LAYOUT.miniBoss : BOSS;
+    this.bossHatch.setPosition(R.x + 1, R.y + 1).setSize(R.w - 2, R.h - 2);
     this.boss = {
       id: d.id, name: d.name || (def && def.name) || '', title: d.title || (def && def.title) || '',
       max: d.maxHp || d.hp || 1, hp: d.hp ?? d.maxHp ?? 1, fill: 0, chip: 0, lastHit: -1e9,
       thresholds: d.thresholds || (def && def.phases ? def.phases.map((p) => p.untilHpFrac) : []),
-      phaseLabelUntil: 0, invulnMs: 0, flashUntil: 0, intro: 0, def,
+      phaseLabelUntil: 0, invulnMs: 0, flashUntil: 0, intro: 0, def, mini,
     };
     const b = this.boss;
     this.bossName.setText(b.name);
@@ -334,16 +373,18 @@ export class HudScene extends Phaser.Scene {
     this.bossTicks.clear();
     for (const f of b.thresholds) {
       if (!(f > 0 && f < 1)) continue;
-      const x = BOSS.x + 1 + Math.round((BOSS.w - 2) * f);
-      this.bossTicks.fillStyle(C.stroke, 1).fillRect(x - 1, BOSS.y - 2, 3, 10).fillStyle(C.text, 1).fillRect(x, BOSS.y - 1, 1, 8);
+      const x = R.x + 1 + Math.round((R.w - 2) * f);
+      this.bossTicks.fillStyle(C.stroke, 1).fillRect(x - 1, R.y - 2, 3, 10).fillStyle(C.text, 1).fillRect(x, R.y - 1, 1, 8);
     }
     // intro fill 0 → full over 600 ms Cubic.easeOut (RM: instant)
     const frac = b.hp / b.max;
     if (this.rm) { b.fill = b.chip = frac; this._drawBoss(); }
     else this._tw({ targets: b, fill: frac, chip: frac, duration: 600, ease: 'Cubic.easeOut', onUpdate: () => this._drawBoss() });
     this._drawBoss();
-    // boss name card (H15) synced to the camera pan arrival (bossIntroPanMs / 2)
-    this._banner({ kind: 'boss', text: b.name, sub: b.title, total: 1200, delay: Math.round(T('bossIntroPanMs') / 2), force: true });
+    // boss name card (H15) synced to the camera pan arrival (bossIntroPanMs / 2); a mini-boss gets the §9.6 intro card
+    const sub = tk(def && def.intro && def.intro.subtitleKey, null, b.title);
+    if (mini) this._introCard({ id: b.id, name: b.name, sub });
+    else this._banner({ kind: 'boss', text: b.name, sub: b.title, total: 1200, delay: Math.round(T('bossIntroPanMs') / 2), force: true });
   }
 
   _bossHp(hp, max) {
@@ -361,6 +402,7 @@ export class HudScene extends Phaser.Scene {
 
   _bossPhase(i) {
     const b = this.boss; if (!b) return;
+    this._phaseBanner(i);
     b.phaseLabelUntil = this.now + 2000;
     b.flashUntil = this.now + 33;                  // 2-frame frame flash (kept under RM; flash-scaled)
     this.bossName.setText(t('hud.phase', { name: b.name, n: (i | 0) + 1 }));
@@ -372,6 +414,7 @@ export class HudScene extends Phaser.Scene {
 
   _bossDead() {
     this.boss = null;
+    if (this.phaseBan) { this.phaseBan.c.destroy(); this.phaseBan = null; }
     this.cl.boss.c.setVisible(false);
     this.cl.tc.c.setVisible(true);
     this.bossHatch.setVisible(false);
@@ -396,6 +439,7 @@ export class HudScene extends Phaser.Scene {
   _drawBoss() {
     const b = this.boss; if (!b) return;
     const g = this.bossG;
+    const BOSS = this.bossRect || LAYOUT.boss;
     const iw = BOSS.w - 2, ih = BOSS.h - 2;
     g.clear();
     const flash = b.flashUntil > this.now ? flashScale() : 0;
@@ -416,9 +460,9 @@ export class HudScene extends Phaser.Scene {
     const c = this.cl.tr.c;
     this.coinText = txt(this, RIGHT_X, TOP_Y - 1, '0', 'T1', { origin: [1, 0] });
     this.coinIcon = hudImage(this, 0, TOP_Y, 'coin_anim_f0');
-    this.bagText = txt(this, RIGHT_X, 19, '0/12', 'T1', { origin: [1, 0] });
-    this.bagIcon = hudImage(this, 0, 20, 'bag_8');
-    this.bagWarn = hudImage(this, 0, 20, 'g_warn').setVisible(false);
+    this.bagText = txt(this, RIGHT_X, LAYOUT.right.bagY, '0/12', 'T1', { origin: [1, 0] });
+    this.bagIcon = hudImage(this, 0, LAYOUT.right.bagY + 1, 'bag_8');
+    this.bagWarn = hudImage(this, 0, LAYOUT.right.bagY + 1, 'g_warn').setVisible(false);
     c.add([this.coinText, this.coinIcon, this.bagText, this.bagIcon, this.bagWarn]);
     this.coinFade = this._fade([this.coinText, this.coinIcon], 0.7);
     this.bagFade = this._fade([this.bagText, this.bagIcon, this.bagWarn], 0.7);
@@ -445,10 +489,10 @@ export class HudScene extends Phaser.Scene {
     const full = n >= cap;
     this.bagText.setText(full ? t('hud.bagFull') : `${n}/${cap}`);
     const x = Math.round(RIGHT_X - this.bagText.width - 2 - 8);
-    this.bagIcon.moveBox(x, 20);
+    this.bagIcon.moveBox(x, LAYOUT.right.bagY + 1);
     const warn = full ? 'g_stop' : n >= cap - 1 ? 'g_warn' : null;
     this.bagWarn.setVisible(!!warn);
-    if (warn) this.bagWarn.setGlyph(warn).moveBox(x - 11, 19);
+    if (warn) this.bagWarn.setGlyph(warn).moveBox(x - 11, LAYOUT.right.bagY);
     if (animate) this._wake(this.bagFade, 2000);
   }
 
@@ -465,14 +509,15 @@ export class HudScene extends Phaser.Scene {
     this.rbar = this.add.graphics();
     this.manaG = this.add.graphics();
     this.manaHatch = this.add.tileSprite(MANA.x + 1, MANA.y + 1, MANA.w - 2, MANA.h - 2, hudTex('hatch_4').key, hudTex('hatch_4').frame).setOrigin(0).setAlpha(0.6).setVisible(false);
-    this.manaText = txt(this, MANA.x + MANA.w + 3, MANA.y - 1, '', 'Tsmall');
+    this.manaText = txt(this, LAYOUT.manaText.x, LAYOUT.manaText.y, '', 'T1');      // §9.5: promoted to T1
     this.lockG = this.add.graphics();
-    this.autoChip = this.add.container(AUTO_POS.x, AUTO_POS.y);
+    // H9 AUTO chip: T1 (§9.5); not shown in the touch profile (toggle-cast doesn't apply on touch)
+    this.autoChip = this.add.container(AUTO_POS ? AUTO_POS.x : -100, AUTO_POS ? AUTO_POS.y : -100);
     const ag = this.add.graphics();
-    const at = txt(this, 3, 1, t('hud.auto'), 'Tsmall');
-    ag.fillStyle(C.stroke, 1).fillRect(0, 0, Math.ceil(at.width) + 6, 8).lineStyle(1, C.text, 1).strokeRect(0.5, 0.5, Math.ceil(at.width) + 5, 7);
+    const at = txt(this, 3, 0, t('hud.auto'), 'T1');
+    ag.fillStyle(C.stroke, 1).fillRect(0, 0, Math.ceil(at.width) + 6, 12).lineStyle(1, C.text, 1).strokeRect(0.5, 0.5, Math.ceil(at.width) + 5, 11);
     this.autoChip.add([ag, at]).setVisible(false);
-    this.noSpells = txt(this, 0, STRIP_Y + 5, t('hud.noSpells'), 'Tsmall').setVisible(false);
+    this.noSpells = txt(this, 0, STRIP_Y + 3, t('hud.noSpells'), 'T1').setVisible(false);
     c.add([this.badgeLayer, this.stripLayer, this.stripOv, this.lockG, this.chevron, this.rbar, this.manaG, this.manaHatch, this.manaText, this.autoChip, this.noSpells]);
 
     this.mana = [];                   // per wand {v, max}
@@ -489,7 +534,7 @@ export class HudScene extends Phaser.Scene {
   }
 
   get activeIdx() { return this.run ? this.run.activeWand : 0; }
-  get stripX() { const nb = Math.max(3, this.run ? this.run.wandSlots : 3); return BADGE_X + BADGE_DX * nb + 4; }
+  get stripX() { const nb = Math.max(3, this.run ? this.run.wandSlots : 3); return LAYOUT.strip.x0 != null ? LAYOUT.strip.x0 + (nb > 3 ? 22 : 0) : BADGE_X + BADGE_DX * nb + 4; }
 
   _setBadges() {
     for (const b of this.badges) b.c.destroy();
@@ -509,27 +554,25 @@ export class HudScene extends Phaser.Scene {
       const ic = icon(this, 10, 10, 'wands', w.id, 16);
       const ov = this.add.graphics();
       c.add([frame, ic, ov]);
-      if (!pad) {
-        const k = (this.router && this.router.kbm && (this.router.kbm[`wand${i + 1}`] || [])[0]) || `Digit${i + 1}`;
-        c.add(txt(this, 2, 1, k.replace(/^Digit/, '').replace(/^Key/, ''), 'Tsmall'));
-      }
+      // (key digits dropped, accessibility-spec §2.3 #31: left-to-right order is 1, 2, 3; Controls table lists keys)
       this.badgeLayer.add(c);
       const b = { c, i, frame, ov, eq };
       this.badges.push(b);
       if (!eq) { const f = this._fade([c], 0.7); this.badgeFades.push(f); b.fade = f; }
     }
     // pad cycle glyphs over the first and last badges (controller-prompts §4 G4, 8 px micro size):
-    // "◂Y" / "RB▸" (Xbox) · "◂△" / "R1▸" (PS). Shoulders as Tsmall text, PS face buttons as the 5×5 symbol.
-    if (pad && r.wands.length > 1) {
+    // "◂Y" / "RB▸" (Xbox) · "◂△" / "R1▸" (PS). Shoulders as T1 text at glyphY (§2.3 #32), PS faces as the 5×5 symbol.
+    if (pad && fam !== 'touch' && r.wands.length > 1) {
       const g = this.add.graphics();
       const last = BADGE_X + BADGE_DX * (r.wands.length - 1);
-      g.fillStyle(C.text, 1).fillTriangle(BADGE_X, 326, BADGE_X + 3, 323, BADGE_X + 3, 329).fillTriangle(last + 20, 326, last + 17, 323, last + 17, 329);
+      const gy = LAYOUT.badges.glyphY;
+      g.fillStyle(C.text, 1).fillTriangle(BADGE_X, gy + 6, BADGE_X + 3, gy + 3, BADGE_X + 3, gy + 9).fillTriangle(last + 20, gy + 6, last + 17, gy + 3, last + 17, gy + 9);
       const bind = this.router.pad || {};
       const micro = (idx, x, right) => {
         const e = promptEntry(fam, idx);
         if (!e) return null;
-        if (e.sym) { const sx = right ? x - 5 : x; g.fillStyle(C.stroke, 1).fillRect(sx - 1, 322, 7, 7); drawPsSymbol(g, sx, 323, e.sym); return null; }
-        return txt(this, x, 322, e.text, 'Tsmall', right ? { origin: [1, 0] } : {});
+        if (e.sym) { const sx = right ? x - 5 : x; g.fillStyle(C.stroke, 1).fillRect(sx - 1, gy + 3, 7, 7); drawPsSymbol(g, sx, gy + 4, e.sym); return null; }
+        return txt(this, x, gy, e.text, 'T1', right ? { origin: [1, 0] } : {});
       };
       const parts = [g, micro((bind.wandPrev || [3])[0], BADGE_X + 5, false), micro((bind.wandNext || [5])[0], last + 15, true)].filter(Boolean);
       const c = this.add.container(0, 0, parts);
@@ -571,7 +614,7 @@ export class HudScene extends Phaser.Scene {
     if (!any) {
       const cell = cardCell(this, x, STRIP_Y, null, 18);
       this.stripLayer.add(cell); this.cells.push({ cell, x, empty: true });
-      this.noSpells.setPosition(x + 22, STRIP_Y + 5);
+      this.noSpells.setPosition(x + 22, STRIP_Y + 3);
     } else {
       slots.forEach((id, i) => {
         const cell = cardCell(this, x + CELL_DX * i, STRIP_Y, id ? cards[id] || { id, type: 'projectile' } : null, 18);
@@ -782,7 +825,7 @@ export class HudScene extends Phaser.Scene {
   }
 
   _showBanner(b) {
-    const c = this.add.container(VIEW_W / 2, 70).setDepth(40);
+    const c = this.add.container(VIEW_W / 2, LAYOUT.banner.y).setDepth(40);
     let main;
     if (b.kind === 'floor') { main = txt(this, 0, 0, b.text, 'display', { origin: [0.5, 0] }); }
     else main = txt(this, 0, 0, b.text, 'T2', { origin: [0.5, 0] });
@@ -792,7 +835,7 @@ export class HudScene extends Phaser.Scene {
     const rm = this.rm;
     const end = () => { c.destroy(); this.banner = null; };
     c.setAlpha(0);
-    const X0 = VIEW_W / 2, Y0 = 70;
+    const X0 = VIEW_W / 2, Y0 = LAYOUT.banner.y;
     const R = (o) => ({ ...o, onUpdate: () => { c.x = Math.round(c.x); c.y = Math.round(c.y); } });
     if (b.kind === 'cleared') {           // banner-room-cleared: punch 160 / hold 840 / dissipate 200
       if (rm) this.tweens.chain({ targets: c, tweens: [{ alpha: 1, duration: 160 }, { alpha: 0, duration: 200, delay: 840 }], onComplete: end });
@@ -803,6 +846,202 @@ export class HudScene extends Phaser.Scene {
     } else {                              // boss-name-card: enter 200 / hold 800 / exit 200
       if (rm) this.tweens.chain({ targets: c, tweens: [{ alpha: 1, duration: 200 }, { alpha: 0, duration: 200, delay: 800 }], onComplete: end });
       else { c.x = X0 - 24; this.tweens.chain({ targets: c, tweens: [R({ x: X0, alpha: 1, duration: 200, ease: 'Cubic.easeOut' }), R({ x: X0 + 24, alpha: 0, duration: 200, delay: 800, ease: 'Quad.easeIn' })], onComplete: end }); }
+    }
+  }
+
+  // =============================================================================================
+  // v2 (hud-layout §9.3, §9.6): mini-boss intro card · phase banner · adapt line · twist banner · counter pips
+  // =============================================================================================
+  /** Mini-boss intro card: T2 name + T1 epithet (+ adapt line), centred y 60–110, 16 px letterbox bars slide in 200 ms (RM: appear). */
+  _introCard({ id, name, sub, adapt = null }) {
+    this._endCard();
+    const L = LAYOUT.introCard || { y: 60, bars: 16 };
+    const c = this.add.container(0, 0).setDepth(43);
+    const bars = this.add.graphics();
+    bars.fillStyle(0x000000, 1).fillRect(0, 0, VIEW_W, L.bars).fillRect(0, VIEW_H - L.bars, VIEW_W, L.bars);
+    c.add(bars);
+    const nameT = txt(this, VIEW_W / 2, L.y, name || '', 'T2', { origin: [0.5, 0] });
+    let y = L.y + Math.ceil(nameT.height * (nameT.scaleY || 1)) + 2;
+    c.add(nameT);
+    if (sub) { const st = txt(this, VIEW_W / 2, y, sub, 'T1', { origin: [0.5, 0], color: C.dim }); c.add(st); y += 13; }
+    const card = this.card = { id, c, bars, y, left: T('miniIntroCardMs', 2200), adapt: null };
+    if (adapt) this._cardAdapt(adapt);
+    this.dimTarget = 0.4;
+    if (this.rm) return;
+    bars.y = 0;
+    const o = { k: 0 };
+    this._tw({ targets: o, k: 1, duration: T('introLetterboxMs', 200), ease: 'Cubic.easeOut', onUpdate: () => {
+      if (this.card !== card) return;
+      bars.clear().fillStyle(0x000000, 1).fillRect(0, Math.round(-L.bars * (1 - o.k)), VIEW_W, L.bars).fillRect(0, Math.round(VIEW_H - L.bars * o.k), VIEW_W, L.bars);
+    } });
+    nameT.setAlpha(0);
+    this._tw({ targets: nameT, alpha: 1, duration: 200, delay: 100 });
+  }
+  _cardAdapt(text) {
+    const k = this.card; if (!k || !text || k.adapt === text) return;
+    k.adapt = text;
+    k.c.add(txt(this, VIEW_W / 2, k.y, text, 'T1', { origin: [0.5, 0], color: C.gold }));
+    k.y += 13;
+  }
+  _endCard() {
+    if (!this.card) return;
+    this.card.c.destroy();
+    this.card = null;
+    this.dimTarget = 1;
+  }
+  /** The build-reading line (bosses.json adapt[].bannerKey): card line for a mini at activation, else the phase-banner slot. Always shown. */
+  _adapt(d) {
+    if (!d) return;
+    const text = tk(d.bannerKey || d.adaptKey, d.params || {}, null);
+    if (!text || this._adaptShown === `${d.id}|${text}`) return;
+    this._adaptShown = `${d.id}|${text}`;
+    if (this.card && (!d.id || this.card.id === d.id)) this._cardAdapt(text);
+    else this._phaseBanner(null, text);
+  }
+  /** Phase banner (§9.6): directly under the boss bar, T1 "Phase N" + the phase's banner line in T1 dim, 1.5 s (sim clock). */
+  _phaseBanner(i, line = null) {
+    if (this.phaseBan) { this.phaseBan.c.destroy(); this.phaseBan = null; }
+    const P = LAYOUT.phaseBanner; if (!P) return;
+    const b = this.boss;
+    const parts = [];
+    if (i != null) parts.push([t('hud.phaseN', { n: (i | 0) + 1 }), C.text]);
+    if (i != null && !line && b && b.def && b.def.phases && b.def.phases[i]) line = tk(b.def.phases[i].bannerKey, { name: b.name }, null);
+    if (line) parts.push([line, i != null ? C.dim : C.gold]);
+    if (!parts.length) return;
+    const c = this.add.container(0, 0).setDepth(41);
+    const objs = parts.map(([s, color]) => txt(this, 0, P.y, s, 'T1', { color }));
+    const gap = 6, w = objs.reduce((a, o) => a + Math.ceil(o.width), 0) + gap * (objs.length - 1);
+    let x = Math.round(P.x - w / 2);
+    for (const o of objs) { o.x = x; x += Math.ceil(o.width) + gap; c.add(o); }
+    this.phaseBan = { c, left: i != null ? T('phaseBannerMs', 1500) : T('adaptBannerMs', 2500) };   // motion tunable (state-graph §8.3)
+  }
+  _updateV2(dt) {
+    if (this.card && this.simActive) { this.card.left -= dt; if (this.card.left <= 0) this._endCard(); }
+    if (this.worldCard && !this.worldCard.exiting && this.simActive) { this.worldCard.left -= dt; if (this.worldCard.left <= 250) this._endWorldCard(); }
+    if (this.phaseBan && this.simActive) { this.phaseBan.left -= dt; if (this.phaseBan.left <= 0) { this.phaseBan.c.destroy(); this.phaseBan = null; } }
+    const step = this.rm ? 1 : dt / 150;
+    if (this.dimK !== this.dimTarget) this.dimK = this.dimK < this.dimTarget ? Math.min(this.dimTarget, this.dimK + step) : Math.max(this.dimTarget, this.dimK - step);
+  }
+  // =============================================================================================
+  // Worlds: world-entry title card (ui-artwork §9.7; worlds.md §4) — step 0 of each floor, ~2.2 s, never blocks input
+  // =============================================================================================
+  /** Frame name for tileset index `idx` on the tileset image `tex` (frames added lazily; tileset JSON geometry). */
+  _tileFrame(tex, idx) {
+    const ts = this.registry.get('tileset'), T = this.textures.get(tex);
+    if (!ts || !T || T.key === '__MISSING' || idx == null || idx < 0) return null;
+    const name = `t${idx}`;
+    if (!T.has(name)) {
+      const step = ts.tileWidth + ts.spacing;
+      T.add(name, 0, ts.margin + (idx % ts.columns) * step, ts.margin + Math.floor(idx / ts.columns) * step, ts.tileWidth, ts.tileHeight);
+    }
+    return name;
+  }
+  /** A 640×96 band centred at y 96: backdrop strip (world tiles + props at 1×), emblem, T2 name, T1 fantasy line + question. */
+  _worldCard(floor) {
+    const run = this.run, fd = this.cat.floors && this.cat.floors[`f${floor}`], wd = fd && fd.world;
+    if (!run || !wd) return false;
+    let seen = WORLD_CARDS_SHOWN.get(run);
+    if (!seen) WORLD_CARDS_SHOWN.set(run, (seen = new Set()));
+    if (seen.has(floor)) return true;
+    seen.add(floor);
+    this._endWorldCard(true);
+    const top = (LAYOUT.introCard ? LAYOUT.introCard.y - 60 : 0) + 48, H = 96;
+    const c = this.add.container(0, 0).setDepth(42);
+    const bg = this.add.graphics();
+    bg.fillStyle(0x0d0a10, 0.88).fillRect(0, top, VIEW_W, H);
+    const accent = WORLD_ACCENT[wd.id] ?? C.gold;
+    bg.fillStyle(accent, 1).fillRect(0, top + H - 1, VIEW_W, 1);
+    c.add(bg);
+    // backdrop strip: the world's own north wall (47-blob mask N|E|W = 199) at 1×
+    const ts = this.registry.get('tileset'), tex = wd.tileset, WD = ts && ts.worlds && ts.worlds[tex];
+    const pair = ts && ts.wallLookup ? ts.wallLookup['199'] || ts.wallLookup['0'] : null;
+    const fTop = pair && this._tileFrame(tex, pair[1]), fFace = pair && this._tileFrame(tex, pair[0]);
+    const fShelf = WD && WD.wallShelf ? this._tileFrame(tex, WD.wallShelf.tile) : null;
+    const fWater = WD && WD.water ? this._tileFrame(tex, WD.water.frames[0]) : null;
+    for (let x = 0; x < VIEW_W; x += 16) {
+      if (fTop) c.add(this.add.image(x, top, tex, fTop).setOrigin(0, 0));
+      if (fFace) c.add(this.add.image(x, top + 16, tex, fFace).setOrigin(0, 0));
+      if (fShelf) c.add(this.add.image(x, top + 16, tex, fShelf).setOrigin(0, 0));
+      if (fWater) c.add(this.add.image(x, top + 32, tex, fWater).setOrigin(0, 0).setAlpha(0.9));
+    }
+    const prop = (id, x, y) => { const a = Art.getQuiet(id, 0); if (a) c.add(this.add.image(x, y, a.key, a.frame).setOrigin(0.5, 1)); };
+    if (wd.id === 'w2_drowned_halls') for (const x of [120, 520]) prop('worlds.w2_drowned_halls.props.drain', x, top + 32);
+    const pairProp = wd.id === 'w1_sunken_crypt' ? 'worlds.w1_sunken_crypt.props.candles' : wd.id === 'w3_last_library' ? 'worlds.w3_last_library.props.candelabra' : null;
+    // text block
+    const key = wd.cardKey || `world.w${floor}.card`;
+    const name = tk(`${key}.name`, null, wd.name || '');
+    const fantasy = tk(`${key}.fantasy`, null, wd.fantasy || '');
+    const question = tk(key, null, null);
+    let y = top + (fWater ? 52 : 40);
+    const nameT = txt(this, VIEW_W / 2, y, name, 'T2', { origin: [0.5, 0] });
+    c.add(nameT);
+    const em = Art.getQuiet(`world_cards.${wd.id}.emblem`, 0);
+    const nw = Math.ceil(nameT.width * (nameT.scaleX || 1));
+    if (em) c.add(this.add.image(Math.round(VIEW_W / 2 - nw / 2 - 12), y + 7, em.key, em.frame));
+    if (pairProp) for (const dx of [-1, 1]) prop(pairProp, Math.round(VIEW_W / 2 + dx * (nw / 2 + 32)), y + 15);
+    y += Math.ceil(nameT.height * (nameT.scaleY || 1)) + 1;
+    if (fantasy) { const ft = txt(this, VIEW_W / 2, y, fantasy, 'T1', { origin: [0.5, 0], color: C.dim, wrap: VIEW_W - 32, align: 'center' }); c.add(ft); y += Math.ceil(ft.height * (ft.scaleY || 1)) + 1; }
+    if (question && y + 12 <= top + H) c.add(txt(this, VIEW_W / 2, y, question, 'T1', { origin: [0.5, 0], color: accent }));
+    const card = this.worldCard = { c, left: T('worldCardMs', 2200), exiting: false };
+    c.setAlpha(0);
+    if (this.rm) this._tw({ targets: c, alpha: 1, duration: 150 });                         // reduced motion: appears (no slide)
+    else { c.x = -24; this._tw({ targets: c, x: 0, alpha: 1, duration: 250, ease: 'Cubic.easeOut', onUpdate: () => { if (this.worldCard === card) c.x = Math.round(c.x); } }); }
+    return true;
+  }
+  _endWorldCard(now = false) {
+    const k = this.worldCard; if (!k) return;
+    if (now || this.rm) { k.c.destroy(); this.worldCard = null; return; }
+    if (k.exiting) return;
+    k.exiting = true;
+    this._tw({ targets: k.c, alpha: 0, duration: 250, ease: 'Quad.easeIn', onComplete: () => { k.c.destroy(); if (this.worldCard === k) this.worldCard = null; } });
+  }
+
+  _twist(d) {
+    const kind = d && d.kind; if (!kind) return;
+    this._banner({ kind: 'twist', text: t(`twist.${kind}`), sub: tk(`twist.${kind}.sub`), force: true });
+  }
+
+  /** Counter pips (hud-layout §9.3): one 7×7 defence-shape pip per defence type present; filled + rim = the equipped wand counters it. */
+  _buildCounters() {
+    const K = LAYOUT.counters;
+    this.counterIcons = {};
+    this.counterRim = this.add.graphics();
+    const list = [this.counterRim];
+    for (const d of DEF_ORDER) { const im = hudImage(this, K ? K.x : -50, K ? K.y : -50, `def_${d}`).setVisible(false); this.counterIcons[d] = im; list.push(im); }
+    this.cl.bl.c.add(list);
+    this._counterKey = '';
+    this._kw = null;                        // cached wandKeywords(run, active) — invalidated on wand/relic events
+    kwModReady.then(() => { if (this.sys && this.sys.isActive()) { this._kw = null; this._counterKey = ''; } });
+  }
+  _wandKw() {
+    if (this._kw) return this._kw;
+    const r = this.run;
+    if (!_kwMod || !_kwMod.wandKeywords || !r || !r.wand) return null;
+    try { this._kw = _kwMod.wandKeywords(r, r.activeWand) || {}; }
+    catch (e) { warnOnce('hud-kw-throw', '[hud] wandKeywords threw', e); this._kw = {}; }
+    return this._kw;
+  }
+  _updateCounters(probe) {
+    const K = LAYOUT.counters; if (!K) return;
+    const mask = probe && probe.near ? probe.near.defences | 0 : 0;
+    const kw = mask ? this._wandKw() : null;
+    const key = `${mask}|${kw ? (kw.pierce ? 1 : 0) + (kw.blast ? 2 : 0) + (kw.shock ? 4 : 0) : -1}`;
+    if (key === this._counterKey) return;
+    this._counterKey = key;
+    const rules = this.cat && this.cat.rules && this.cat.rules.defences;
+    this.counterRim.clear();
+    let k = 0;
+    for (const d of DEF_ORDER) {
+      const im = this.counterIcons[d];
+      const on = !!(mask & DEF_BIT[d]);
+      im.setVisible(on);
+      if (!on) continue;
+      const x = K.x + K.dx * k++;
+      im.moveBox(x, K.y);
+      const need = (rules && rules[d] && rules[d].breakKeyword) || KW_FOR_DEF[d];
+      const countered = !!(kw && kw[need]);
+      im.setAlpha(countered ? 1 : 0.5);
+      if (countered) this.counterRim.lineStyle(1, C.text, 1).strokeRect(x - 1.5, K.y - 1.5, 10, 10);
     }
   }
 
@@ -849,18 +1088,36 @@ export class HudScene extends Phaser.Scene {
       if (d && d.kind != null) this.visited[`${d.floor ?? this.run.floor}:${d.step ?? this.run.step}`] = d.kind;
       this._setTrack(); this._wake(this.trackFade, 3000);
       this.bannerQ = this.bannerQ.filter((b) => b.kind !== 'cleared');
+      this._endCard(); this._adaptShown = null;
+      if (this.phaseBan) { this.phaseBan.c.destroy(); this.phaseBan = null; }
+      if (d && d.step === 0 && d.kind === 'start') this._worldCard(d.floor ?? this.run.floor);     // Worlds: world-entry card
+      else if (this.worldCard && d && d.step > 0) this._endWorldCard(true);
     });
     on(EV.ROOM_CLEARED, () => { this._setTrack(); this._wake(this.trackFade, 3000); this._banner({ kind: 'cleared', text: t('hud.roomCleared') }); });
     on(EV.FLOOR_ENTER, (d) => {
       const f = (d && d.floor) || (this.run && this.run.floor) || 1;
       const name = (d && d.name) || (this.cat.floorList[f - 1] || {}).name || '';
       this._setTrack();
-      this._banner({ kind: 'floor', text: t('hud.floorTitle', { n: f, name }) });
+      // Worlds: the world-entry card (on step 0's ROOM_ENTER) replaces the floor-title banner when the floor has a world
+      if (!(this.cat.floors && this.cat.floors[`f${f}`] && this.cat.floors[`f${f}`].world)) this._banner({ kind: 'floor', text: t('hud.floorTitle', { n: f, name }) });
     });
     on(EV.BOSS_START, (d) => this._bossStart(d || {}));
     on(EV.BOSS_HP, (hp, max) => this._bossHp(hp, max));
     on(EV.BOSS_PHASE, (i) => this._bossPhase(i));
     on(EV.BOSS_DEAD, () => this._bossDead());
+    on(EV.BOSS_INTRO, (d) => {
+      if (!d) return;
+      if (d.tier === 'mini') {
+        if (!this.card || this.card.id !== d.id) this._introCard({ id: d.id, name: d.name, sub: d.subtitle || tk(d.subtitleKey) });
+        if (d.adaptKey) this._adapt({ id: d.id, bannerKey: d.adaptKey, params: d.adaptParams || d.params });
+      } else if (d.adaptKey) this._adapt({ id: d.id, bannerKey: d.adaptKey, params: d.adaptParams || d.params });
+    });
+    on(EV.BOSS_ADAPT, (d) => this._adapt(d));
+    on(EV.TWIST, (d) => this._twist(d));
+    const kwDirty = () => { this._kw = null; this._counterKey = ''; };
+    on(EV.WAND_CHANGED, kwDirty);
+    on(EV.WAND_ACTIVE, kwDirty);
+    on(EV.RELIC_GAINED, kwDirty);
     on(EV.WAND_CAST, (d) => this._onCast(d));
     on(EV.WAND_SPUTTER, (d) => this._onSputter(d));
     on(EV.WAND_RECHARGE_START, (i, ms) => this._onRechargeStart(i, ms));
@@ -871,7 +1128,24 @@ export class HudScene extends Phaser.Scene {
     on(EV.TOAST, (d) => { if (d) this.toasts.push(d); });
     on(EV.INPUT_DEVICE, () => { this._setBadges(); this.toasts.refreshGlyphs(); });
     on(EV.SETTINGS_CHANGED, (k) => { if (k === 'reducedMotion' || k === 'flashIntensity') { this._lowHpDirty = true; this._setLowHp(this.lowHp); } });
-    on(EV.RUN_END, () => { this._setLowHp(false); });
+    on(EV.RUN_END, () => { this._setLowHp(false); this._endCard(); this._endWorldCard(true); });
+    // hud-layout §9.1 rebuild triggers → a HUD restart (debounced to the next frame; rare: device/rotation/setting)
+    const relayout = () => {
+      const r = this.router, d = this.registry.get('display');
+      const want = { profile: r && r.touchProfile ? 'touch' : 'desktop', safe: d ? d.safe : undefined, stickSide: Save.settings.touchStickSide };
+      const o = this._layoutOpts;
+      const same = want.profile === o.profile && want.stickSide === o.stickSide && (want.profile === 'desktop' ||
+        (want.safe && o.safe && ['l', 't', 'r', 'b'].every((k) => want.safe[k] === o.safe[k])));
+      if (same || this._restarting) return;
+      this._restarting = true;
+      this.time.delayedCall(0, () => this.scene.restart({ sim: this.simKey }));
+    };
+    on(EV.TOUCH_PROFILE, relayout);
+    on(EV.DISPLAY_CHANGED, relayout);
+    on(EV.SETTINGS_CHANGED, (k) => { if (k === 'touchStickSide' || k === 'touchControls') relayout(); });
+    on(EV.PLAYER_DASH, (c, max, f) => { if (this.touchHud) this.touchHud.onDash(c, max, f); });
+    on(EV.INTERACT_PROMPT, (p) => { if (this.touchHud) this.touchHud.onInteract(p); });
+    on(EV.WAND_CHANGED, () => { if (this.touchHud && this.run) this.touchHud.setWandCount(this.run.wands.length); });
   }
 
   _cardGained(id) {
@@ -949,6 +1223,7 @@ export class HudScene extends Phaser.Scene {
       if (!this.hurtMs) this.hurtG.setVisible(false);
     }
     this._updateBoss(dt);
+    this._updateV2(dt);
 
     // H9 toggle-cast indicator (input state; changes only on a latch toggle)
     const auto = Save.settings.castMode === 'toggle' && !!(this.router && this.router.castLatch);
@@ -956,6 +1231,7 @@ export class HudScene extends Phaser.Scene {
 
     this._occlusion(dt);
     this.toasts.update(dt);
+    if (this.touchHud) this.touchHud.update(dt, this._sim());
     this._updateBanners(dt);
     this._cursor(modal);
   }
@@ -969,6 +1245,7 @@ export class HudScene extends Phaser.Scene {
       const sx = probe.player.x - probe.camera.scrollX, sy = probe.player.y - probe.camera.scrollY;
       px0 = sx - 7; px1 = sx + 7; py0 = sy - 18; py1 = sy;
     }
+    this._updateCounters(probe);
     const mask = probe && probe.hudOcclusion | 0;          // optional sim bitmask: 1 tl, 2 tc, 4 tr, 8 bl
     const bits = { tl: 1, tc: 2, tr: 4, bl: 8, boss: 2 };
     for (const k of ['tl', 'tc', 'tr', 'bl', 'boss']) {
@@ -982,8 +1259,9 @@ export class HudScene extends Phaser.Scene {
       if (cl.a !== target) {
         const step = this.rm ? 1 : dt / 100 * 0.7;
         cl.a = cl.a < target ? Math.min(target, cl.a + step) : Math.max(target, cl.a - step);
-        cl.c.setAlpha(cl.a);
       }
+      const out = k === 'boss' ? cl.a : cl.a * this.dimK;     // the intro card dims the HUD (not the boss bar) to 40%
+      if (cl.out !== out) { cl.out = out; cl.c.setAlpha(out); }
     }
   }
 
@@ -999,6 +1277,9 @@ export class HudScene extends Phaser.Scene {
   _shutdown() {
     if (this.game && this.game.canvas) this.game.canvas.style.cursor = '';
     if (this.toasts) this.toasts.destroy();
+    if (this.touchHud) { this.touchHud.destroy(); this.touchHud = null; }
+    if (this.router && this.router.hudLayout === this.L) this.router.hudLayout = null;
+    this._restarting = false;
     this.fades.length = 0;
   }
 }

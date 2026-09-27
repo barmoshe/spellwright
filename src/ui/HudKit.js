@@ -9,7 +9,7 @@
 import { Art } from '../core/art.js';
 import { Save } from '../core/save.js';
 import { C, txt } from './kit.js';
-import { promptEntry, promptText, tokenKeys } from '../input/prompts.js';
+import { promptEntry, promptText, tokenKeys, touchEntry } from '../input/prompts.js';
 
 // ---------------------------------------------------------------------------------------------
 // settings-derived helpers
@@ -199,6 +199,7 @@ function codeLabel(code) {
  */
 export function glyphSpecs(router, token) {
   const fam = router ? router.promptFamily : 'kbm';
+  if (fam === 'touch') { const e = touchEntry(token, Save.settings.touchFire); return e ? [{ touchE: e }] : []; }
   if (fam !== 'kbm') return tokenKeys(router, token).map((idx) => ({ fam, idx }));
   const kbm = (router && router.kbm) || {};
   switch (token) {
@@ -215,7 +216,7 @@ export function glyphSpecs(router, token) {
 }
 /** Text-only labels for a token (tooltips / logs): "Cross", "L1", "RT" … never "X" for Cross. */
 export function glyphLabels(router, token) {
-  return glyphSpecs(router, token).map((g) => (g.key !== undefined ? g.key : promptText(g.fam, g.idx)));
+  return glyphSpecs(router, token).map((g) => (g.touchE ? g.touchE.text : g.key !== undefined ? g.key : promptText(g.fam, g.idx)));
 }
 
 /**
@@ -226,6 +227,7 @@ export function glyphLabels(router, token) {
  */
 export function glyph(scene, x, y, spec) {
   if (typeof spec === 'string') spec = { key: spec };
+  if (spec.touchE) return touchGlyph(scene, x, y, spec.touchE);
   const c = scene.add.container(x, y);
   const e = spec.key === undefined ? promptEntry(spec.fam, spec.idx) : null;
   const a = e && e.atlas ? Art.getQuiet(e.atlas) : null;
@@ -246,8 +248,9 @@ export function glyph(scene, x, y, spec) {
         drawPsSymbol(g, 14, 3, e.sym);
         c._w = 20;
       } else {
-        c.add(txt(scene, 14, 6, e.text, 'Tsmall', { origin: [0, 0.5] }));
-        c._w = 14 + Math.max(5, e.text.length * 5);
+        const lt = txt(scene, 14, 6, e.text, 'T1', { origin: [0, 0.5] });   // §2.3 #9
+        c.add(lt);
+        c._w = 14 + Math.ceil(lt.width) + 1;
       }
     } else if (e && e.dpad) {
       // D-pad plus: arms filled for the directions the prompt names ('all' | 'ud' | 'lr' | one direction)
@@ -261,14 +264,51 @@ export function glyph(scene, x, y, spec) {
     } else {
       const label = e ? (e.pill || e.text) : (spec.key !== undefined ? spec.key : '?');
       const pill = spec.key === undefined;               // pad: rounded pill; keyboard: square keycap
-      const w = Math.max(12, label.length * 5 + 5);
+      const lt = txt(scene, 0, 6, label, 'T1', { origin: [0.5, 0.5] });   // §2.3 #10
+      const w = Math.max(12, Math.ceil(lt.width) + 6);
+      lt.x = Math.floor(w / 2);
       g.fillStyle(C.stroke, 1).fillRect(pill ? 1 : 0, 0, w - (pill ? 2 : 0), 12).fillRect(0, pill ? 1 : 0, w, pill ? 10 : 12);
       g.fillStyle(BODY, 1).fillRect(1, 1, w - 2, 10).fillStyle(0x6a7590, 1).fillRect(1, 1, w - 2, 1);
-      c.add(txt(scene, Math.floor(w / 2), 6, label, 'Tsmall', { origin: [0.5, 0.5] }));
+      c.add(lt);
       c._w = w;
     }
   }
   c.setSize(c._w, 12);
+  return c;
+}
+
+// controller-prompts §9.2 touch glyphs: procedural 12×12 pictograms ('#' = #fdf7ed on the #4b5468 body,
+// 1 px #222222 outline) until the TA's `prompt.touch.*` frames land; a missing id → the T1 text pill.
+const TOUCH_MASK = {
+  stick_l: ['############', '#..........#', '#.##.......#', '#.##.......#', '#..........#', '############'],
+  stick_r: ['############', '#..........#', '#.......##.#', '#.......##.#', '#..........#', '############'],
+  auto: ['.....#......', '..#######...', '..#..#..#...', '#######.###.', '..#..#..#...', '..#######...', '.....#......', '............', '..#...#.....', '.#.#..#.....', '.###..#.....', '.#.#..###...'],
+  dash: ['............', '#...#...#...', '.#...#...#..', '..#...#...#.', '.#...#...#..', '#...#...#...'],
+  swap: ['...#........', '..#######...', '...#.....#..', '.........#..', '..#.....#...', '..#######...', '........#...'],
+  use: ['..#.#.#.....', '..#.#.#.#...', '..#######...', '#.#######...', '.########...', '..######....'],
+  edit: ['.........#..', '........###.', '.......#.#..', '......#.....', '.....#......', '....#.......', '...#........', '..#.........'],
+  pause: ['..##..##....', '..##..##....', '..##..##....', '..##..##....', '..##..##....', '..##..##....'],
+  tap: ['....###.....', '...#...#....', '..#.###.#...', '..#.###.#...', '...#...#....', '....###.....'],
+  back: ['.....#......', '....#.......', '...#........', '....#.......', '.....#......'],
+  drag: ['....###.....', '....###.....', '............', '.#.......#..', '###########.', '.#.......#..'],
+};
+function touchGlyph(scene, x, y, e) {
+  const c = scene.add.container(x, y);
+  const a = e.atlas ? Art.getQuiet(e.atlas) : null;
+  if (a) { const im = scene.add.image(0, 0, a.key, a.frame).setOrigin(0, 0); c.add(im); c._w = Math.round(im.width); c.setSize(c._w, 12); return c; }
+  const g = scene.add.graphics(); c.add(g);
+  const m = e.touch && TOUCH_MASK[e.touch];
+  if (!m) {                                               // text pill fallback (T1, max(12, textW + 6))
+    const lt = txt(scene, 0, 6, e.text, 'T1', { origin: [0.5, 0.5] });
+    const w = Math.max(12, Math.ceil(lt.width) + 6); lt.x = Math.floor(w / 2);
+    g.fillStyle(C.stroke, 1).fillRect(1, 0, w - 2, 12).fillRect(0, 1, w, 10).fillStyle(BODY, 1).fillRect(1, 1, w - 2, 10);
+    c.add(lt); c._w = w; c.setSize(w, 12); return c;
+  }
+  g.fillStyle(C.stroke, 1).fillRect(-1, -1, 14, 14).fillStyle(BODY, 1).fillRect(0, 0, 12, 12);
+  const oy = Math.floor((12 - m.length) / 2);
+  g.fillStyle(C.text, 1);
+  for (let r = 0; r < m.length; r++) for (let q = 0; q < m[r].length; q++) if (m[r][q] === '#') g.fillRect(q, oy + r, 1, 1);
+  c._w = 12; c.setSize(12, 12);
   return c;
 }
 

@@ -30,6 +30,7 @@ function blank() {
     payload: null, trigger: null, triggerTimerMs: 0, released: false, collided: false,
     hits: [], rehit: null, phase: 0, phi: 0, orbitR: 0, angSpeed: 0, armed: false, settled: false,
     cardId: '', seq: 0, noSplit: false, wallNormal: null, sprite: null, glow: null, ownerUid: 0, frost: false, killedByCap: false,
+    pierceKw: false, fromBoss: false,
   };
 }
 
@@ -37,6 +38,8 @@ export class ShotSystem {
   constructor(ctx) {
     this.ctx = ctx;
     this.scene = ctx.scene;
+    const disp = ctx.scene.registry.get('display');
+    this.phoneCap = !!(disp && disp.isPhone);
     this.all = [];
     this.free = [];
     for (let i = 0; i < MAX_SHOTS; i++) this.free.push(this._make());
@@ -45,6 +48,7 @@ export class ShotSystem {
     this.hash = new SpatialHash(32, 96);
     this._q = null; this._visit = this._visitEnemy.bind(this);
     this.playerCount = 0; this.enemyBulletCount = 0;
+    this.enemyCapped = 0;             // non-boss enemy bullets in the air (rules.enemies.enemyShotCap; bosses exempt)
   }
 
   _make() {
@@ -72,7 +76,8 @@ export class ShotSystem {
 
   /** Enforce rules.casting.maxPlayerProjectiles (oldest first; despawn by cap fires nothing). */
   _capPlayer() {
-    if (this.playerCount < this.casting.maxPlayerProjectiles) return;
+    // phones: the player-projectile cap is halved (mobile-touch-spec §9 / v2 plan; enemy bullets are never capped here)
+    if (this.playerCount < (this.phoneCap ? this.casting.maxPlayerProjectiles / 2 : this.casting.maxPlayerProjectiles)) return;
     for (const s of this.live) if (s.alive && s.team === 0) { s.killedByCap = true; this._despawn(s); return; }
   }
   _capOrbit() {
@@ -93,6 +98,9 @@ export class ShotSystem {
     s.team = 0; s.cardId = spec.cardId; s.x = x; s.y = y;
     s.heading = baseHeadingDeg + (spec.angleOffset || 0) + (spec.spreadRoll || 0);
     s.speed = st.speed; s.r = st.radius; s.damage = st.damage; s.pierce = st.pierce; s.bounce = st.bounce; s.homing = st.homing;
+    // §9.7 pierce keyword: the COMPOSED pierce at spawn (the counter decrements per hit), or any boomerang / orbit shot
+    s.pierceKw = st.pierce >= 1 || spec.behavior.type === 'boomerang' || spec.behavior.type === 'orbit';
+    if (st.speed > 0 && !opt.payload) this.lastPlayerSpeed = st.speed;   // AutoAim lead (feel-spec touch-aim)
     s.knockback = st.knockback; s.statusChance = st.statusChance; s.element = spec.element; s.isCrit = !!spec.isCrit; s.critTotal = spec.critTotal;
     s.lifeMs = st.lifetimeMs; s.behavior = spec.behavior.type; s.bp = spec.behavior;
     s.onHit = spec.onHit; s.onExpire = spec.onExpire; s.onTick = spec.onTick; s.tickT = spec.onTick ? spec.onTick.everyMs : 0;
@@ -132,10 +140,17 @@ export class ShotSystem {
     gl.setPosition(Math.round(s.x), Math.round(s.y));
   }
 
-  /** Enemy bullet (sim-contract §2). Caller applies floor enemyProjSpeedMult. */
+  /**
+   * Enemy bullet (sim-contract §2). Caller applies floor enemyProjSpeedMult. v2 cap (mechanic-spec §9.5):
+   * normal enemies may have at most rules.enemies.enemyShotCap bullets in the air — an attack that would
+   * exceed it fires only up to the cap (the surplus returns null). Bosses (o.boss) are exempt.
+   */
   enemyBullet(o) {
+    if (!o.boss && this.enemyCapped >= (this.ctx.rules.enemies.enemyShotCap ?? Infinity)) { this.cappedRefused = (this.cappedRefused || 0) + 1; return null; }
     const s = this._acquire(); if (!s) return null;
-    s.team = 1; s.x = o.x; s.y = o.y; s.heading = o.angleDeg; s.speed = o.speed; s.r = o.radius || 3; s.damage = o.damage ?? 1;
+    s.team = 1; s.fromBoss = !!o.boss;
+    if (!s.fromBoss) this.enemyCapped++;
+    s.x = o.x; s.y = o.y; s.heading = o.angleDeg; s.speed = o.speed; s.r = o.radius || 3; s.damage = o.damage ?? 1;
     s.lifeMs = o.lifetimeMs || 3000; s.element = o.element || 'arcane'; s.behavior = 'bullet'; s.ownerUid = o.ownerUid || 0;
     s.frost = s.element === 'frost'; s.pierce = 0; s.bounce = 0; s.homing = 0; s.onHit = null; s.onExpire = null;
     this._setVel(s);
@@ -244,8 +259,10 @@ export class ShotSystem {
         const hitXY = !hitX && !hitY && w.blocksShots(nx, ny);
         if (hitX || hitY || hitXY) {
           // crates take the shot's damage
-          const ci = w.isCrateAt(hitX || hitXY ? nx : s.x, hitY || hitXY ? ny : s.y);
+          const hx = hitX || hitXY ? nx : s.x, hy = hitY || hitXY ? ny : s.y;
+          const ci = w.isCrateAt(hx, hy);
           if (ci >= 0) this.ctx.combat.hitCrate(ci, s.damage);
+          else if (w.shelves) { const si = w.isShelfAt(hx, hy); if (si >= 0) this.ctx.combat.hitShelf(si, s.damage, s.element); }   // Worlds W3 bookshelf
           const nxv = hitX || hitXY ? -Math.sign(sx) : 0, nyv = hitY || (hitXY && !hitX) ? -Math.sign(sy) : 0;
           if (s.trigger === 'hit' && !s.released) {
             // released by a wall: heading reflected off the wall normal
@@ -303,8 +320,11 @@ export class ShotSystem {
     const d = Math.hypot(s.vx, s.vy) || 1;
     const dir = s.behavior === 'orbit' ? { dx: (e.x - this.ctx.player.coreX), dy: (e.y - this.ctx.player.coreY) } : { dx: s.vx / d, dy: s.vy / d };
     const dl = Math.hypot(dir.dx, dir.dy) || 1;
+    // source point for the shield front-arc test: the orbiting shot itself, else a point back along the shot's path
+    const back = e.r + s.r + 4, orbit = s.behavior === 'orbit';
     this.ctx.combat.hitEnemy(e, s.damage, { element: s.element, statusChance: s.statusChance, isCrit: s.isCrit, source: 'direct',
-      knock: s.knockback ? { dx: dir.dx / dl, dy: dir.dy / dl, speed: s.knockback } : null, x: e.x, y: e.y });
+      knock: s.knockback ? { dx: dir.dx / dl, dy: dir.dy / dl, speed: s.knockback } : null, x: e.x, y: e.y,
+      pierce: s.pierceKw, fromX: orbit ? s.x : s.x - (dir.dx / dl) * back, fromY: orbit ? s.y : s.y - (dir.dy / dl) * back });
     this.ctx.fx.particles('spark', s.x, s.y, this.T('hitParticles'), { color: ELEMENT_TINT[s.element], speed: 60, lifeMs: this.T('hitParticleLifeMs'), dir: Math.atan2(-dir.dy, -dir.dx), spread: 1.2 });
     this.ctx.mixer.fire(`hit_${s.element}`);
     if (s.isCrit) this.ctx.mixer.fire('crit');
@@ -388,7 +408,7 @@ export class ShotSystem {
     if (s.sprite.anims) s.sprite.anims.stop();
     s.sprite.setVisible(false).setActive(false);
     s.glow.setVisible(false);
-    if (s.team === 0) this.playerCount--; else this.enemyBulletCount--;
+    if (s.team === 0) this.playerCount--; else { this.enemyBulletCount--; if (!s.fromBoss) this.enemyCapped--; }
   }
 
   _sync(s) {
@@ -407,8 +427,7 @@ export class ShotSystem {
     s.x = nx; s.y = ny;
     const p = this.ctx.player;
     if (p.alive && p.canBeHit()) {
-      const dx = p.coreX - s.x, dy = p.coreY - s.y, rr = p.hurtR + s.r;
-      if (dx * dx + dy * dy < rr * rr) {
+      if (p.hurtOverlap(s.x, s.y, s.r)) {                 // v2 circle-vs-capsule (feel-spec hurt zone)
         if (p.hurt(s.damage, { kind: 'shot', enemyId: s.ownerUid, x: s.x, y: s.y }) && s.frost) p.applySlow(this.ctx.run.statusTable.status.playerSlow.durationMs);
         this._despawn(s); return;
       }

@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "$comment": "Projectile cards. Card ids share one namespace with modifiers.json. Effect vocabulary: specs/design/mechanic-spec.md §6.",
+  "version": 2,
+  "$comment": "Projectile cards (levels 1-2 + evolutions). One card-id namespace with modifiers.json. pool:false = never offered as a reward (forge-only). Vocabulary: mechanic-spec §6, keywords §9.7, defences §9.6.",
   "spells": [
     {
       "id": "spark_bolt",
@@ -38,7 +38,14 @@
       "visual": {
         "element": "arcane",
         "shape": "dart"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [],
+      "tags": [
+        "arcane",
+        "stream"
+      ]
     },
     {
       "id": "magic_missile",
@@ -76,7 +83,15 @@
       "visual": {
         "element": "arcane",
         "shape": "orb"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "homing"
+      ],
+      "tags": [
+        "arcane"
+      ]
     },
     {
       "id": "bouncing_burst",
@@ -114,7 +129,16 @@
       "visual": {
         "element": "arcane",
         "shape": "orb"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "bounce"
+      ],
+      "tags": [
+        "arcane",
+        "stream"
+      ]
     },
     {
       "id": "fire_bolt",
@@ -152,7 +176,15 @@
       "visual": {
         "element": "fire",
         "shape": "flame"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "burn"
+      ],
+      "tags": [
+        "fire"
+      ]
     },
     {
       "id": "fireball",
@@ -196,7 +228,17 @@
       "visual": {
         "element": "fire",
         "shape": "flame-orb"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "blast",
+        "burn"
+      ],
+      "tags": [
+        "fire",
+        "burst"
+      ]
     },
     {
       "id": "ice_shard",
@@ -234,7 +276,17 @@
       "visual": {
         "element": "frost",
         "shape": "shard"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "pierce",
+        "chill"
+      ],
+      "tags": [
+        "frost",
+        "stream"
+      ]
     },
     {
       "id": "frost_nova",
@@ -273,7 +325,15 @@
       "visual": {
         "element": "frost",
         "shape": "shard"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "chill"
+      ],
+      "tags": [
+        "frost"
+      ]
     },
     {
       "id": "frost_lance",
@@ -311,7 +371,17 @@
       "visual": {
         "element": "frost",
         "shape": "lance"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "pierce",
+        "chill"
+      ],
+      "tags": [
+        "frost",
+        "burst"
+      ]
     },
     {
       "id": "chain_lightning",
@@ -356,7 +426,16 @@
       "visual": {
         "element": "shock",
         "shape": "spark"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "shock",
+        "chain"
+      ],
+      "tags": [
+        "shock"
+      ]
     },
     {
       "id": "thunder_orb",
@@ -404,7 +483,17 @@
       "visual": {
         "element": "shock",
         "shape": "big-orb"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "pierce",
+        "shock"
+      ],
+      "tags": [
+        "shock",
+        "burst"
+      ]
     },
     {
       "id": "venom_dart",
@@ -442,7 +531,16 @@
       "visual": {
         "element": "poison",
         "shape": "dart"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "poison"
+      ],
+      "tags": [
+        "poison",
+        "stream"
+      ]
     },
     {
       "id": "toxic_flask",
@@ -488,7 +586,18 @@
       "visual": {
         "element": "poison",
         "shape": "flask"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "poison",
+        "zone"
+      ],
+      "tags": [
+        "poison",
+        "burst",
+        "zone"
+      ]
     },
     {
       "id": "boomerang_blade",
@@ -528,7 +637,15 @@
       "visual": {
         "element": "arcane",
         "shape": "blade"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "pierce"
+      ],
+      "tags": [
+        "arcane"
+      ]
     },
     {
       "id": "arcane_orbit",
@@ -569,7 +686,18 @@
       "visual": {
         "element": "arcane",
         "shape": "orb"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "pierce",
+        "orbit"
+      ],
+      "tags": [
+        "arcane",
+        "burst",
+        "zone"
+      ]
     },
     {
       "id": "rune_mine",
@@ -616,7 +744,19 @@
       "visual": {
         "element": "fire",
         "shape": "rune"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "blast",
+        "burn",
+        "mine"
+      ],
+      "tags": [
+        "fire",
+        "burst",
+        "zone"
+      ]
     },
     {
       "id": "blink_bolt",
@@ -658,7 +798,16 @@
       "visual": {
         "element": "arcane",
         "shape": "dart"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "mobility"
+      ],
+      "tags": [
+        "arcane",
+        "mobility"
+      ]
     },
     {
       "id": "comet",
@@ -702,7 +851,18 @@
       "visual": {
         "element": "fire",
         "shape": "big-orb"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "pierce",
+        "blast",
+        "burn"
+      ],
+      "tags": [
+        "fire",
+        "burst"
+      ]
     },
     {
       "id": "vortex",
@@ -755,7 +915,1316 @@
       "visual": {
         "element": "arcane",
         "shape": "swirl"
-      }
+      },
+      "level": 1,
+      "pool": true,
+      "keywords": [
+        "pierce",
+        "blast",
+        "zone"
+      ],
+      "tags": [
+        "arcane",
+        "burst",
+        "zone"
+      ]
+    },
+    {
+      "id": "spark_bolt_2",
+      "name": "Spark Bolt II",
+      "desc": "A quick, cheap arcane bolt. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 4,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 7,
+        "speed": 340,
+        "lifetimeMs": 700,
+        "radius": 3,
+        "spreadDeg": 2,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 40,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "dart"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "spark_bolt",
+      "keywords": [],
+      "tags": [
+        "arcane"
+      ]
+    },
+    {
+      "id": "magic_missile_2",
+      "name": "Magic Missile II",
+      "desc": "A slower bolt that curves toward the nearest foe. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 11,
+      "castDelayAddMs": 60,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 11,
+        "speed": 200,
+        "lifetimeMs": 1400,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 260,
+        "knockback": 60,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "orb"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "magic_missile",
+      "keywords": [
+        "homing"
+      ],
+      "tags": [
+        "arcane",
+        "burst"
+      ]
+    },
+    {
+      "id": "bouncing_burst_2",
+      "name": "Bouncing Burst II",
+      "desc": "Ricochets off walls up to 4 times. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 6,
+      "castDelayAddMs": 20,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 6,
+        "speed": 260,
+        "lifetimeMs": 1500,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 6,
+        "homing": 0,
+        "knockback": 40,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "orb"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "bouncing_burst",
+      "keywords": [
+        "bounce"
+      ],
+      "tags": [
+        "arcane",
+        "stream"
+      ]
+    },
+    {
+      "id": "fire_bolt_2",
+      "name": "Fire Bolt II",
+      "desc": "A burning bolt. Often ignites. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "fire",
+      "mana": 8,
+      "castDelayAddMs": 40,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 10,
+        "speed": 240,
+        "lifetimeMs": 800,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 50,
+        "statusChance": 0.85,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "flame"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "fire_bolt",
+      "keywords": [
+        "burn"
+      ],
+      "tags": [
+        "fire",
+        "burst"
+      ]
+    },
+    {
+      "id": "fireball_2",
+      "name": "Fireball II",
+      "desc": "Slow orb that explodes where it lands. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "fire",
+      "mana": 20,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 14,
+        "speed": 170,
+        "lifetimeMs": 1100,
+        "radius": 6,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 120,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 40,
+          "damageMult": 1.0
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "flame-orb"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "fireball",
+      "keywords": [
+        "blast",
+        "burn"
+      ],
+      "tags": [
+        "fire",
+        "burst"
+      ]
+    },
+    {
+      "id": "ice_shard_2",
+      "name": "Ice Shard II",
+      "desc": "A piercing shard that chills. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "frost",
+      "mana": 7,
+      "castDelayAddMs": 20,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 7,
+        "speed": 280,
+        "lifetimeMs": 700,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 2,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 30,
+        "statusChance": 0.7,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "frost",
+        "shape": "shard"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "ice_shard",
+      "keywords": [
+        "pierce",
+        "chill"
+      ],
+      "tags": [
+        "frost"
+      ]
+    },
+    {
+      "id": "frost_nova_2",
+      "name": "Frost Nova II",
+      "desc": "A ring of eight short-range shards around you. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "frost",
+      "mana": 18,
+      "castDelayAddMs": 120,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "ring",
+        "count": 12
+      },
+      "stats": {
+        "damage": 6,
+        "speed": 180,
+        "lifetimeMs": 350,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 80,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "frost",
+        "shape": "shard"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "frost_nova",
+      "keywords": [
+        "chill"
+      ],
+      "tags": [
+        "frost"
+      ]
+    },
+    {
+      "id": "frost_lance_2",
+      "name": "Frost Lance II",
+      "desc": "A very fast lance that pierces four foes and always chills. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 2,
+      "element": "frost",
+      "mana": 18,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 19,
+        "speed": 480,
+        "lifetimeMs": 600,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 6,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 60,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "frost",
+        "shape": "lance"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "frost_lance",
+      "keywords": [
+        "pierce",
+        "chill"
+      ],
+      "tags": [
+        "frost",
+        "burst"
+      ]
+    },
+    {
+      "id": "chain_lightning_2",
+      "name": "Chain Lightning II",
+      "desc": "A crackling bolt that leaps to 3 more foes. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "shock",
+      "mana": 14,
+      "castDelayAddMs": 80,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 8,
+        "speed": 420,
+        "lifetimeMs": 450,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 20,
+        "statusChance": 0.4,
+        "critChance": 0.0
+      },
+      "onHit": [
+        {
+          "type": "chain",
+          "jumps": 4,
+          "range": 72,
+          "damageMult": 0.8
+        }
+      ],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "shock",
+        "shape": "spark"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "chain_lightning",
+      "keywords": [
+        "shock",
+        "chain"
+      ],
+      "tags": [
+        "shock"
+      ]
+    },
+    {
+      "id": "thunder_orb_2",
+      "name": "Thunder Orb II",
+      "desc": "A drifting orb that zaps up to 2 nearby foes every 0.35s. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 2,
+      "element": "shock",
+      "mana": 27,
+      "castDelayAddMs": 250,
+      "rechargeAddMs": 200,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 5,
+        "speed": 70,
+        "lifetimeMs": 2500,
+        "radius": 7,
+        "spreadDeg": 0,
+        "pierce": 10,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 0,
+        "statusChance": 0.5,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": {
+        "everyMs": 300,
+        "effects": [
+          {
+            "type": "zap",
+            "radius": 60,
+            "damageMult": 1.0,
+            "maxTargets": 3
+          }
+        ]
+      },
+      "visual": {
+        "element": "shock",
+        "shape": "big-orb"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "thunder_orb",
+      "keywords": [
+        "pierce",
+        "shock"
+      ],
+      "tags": [
+        "shock",
+        "burst"
+      ]
+    },
+    {
+      "id": "venom_dart_2",
+      "name": "Venom Dart II",
+      "desc": "A tiny, fast dart that always poisons. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "common",
+      "minFloor": 1,
+      "element": "poison",
+      "mana": 5,
+      "castDelayAddMs": -30,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 3,
+        "speed": 340,
+        "lifetimeMs": 600,
+        "radius": 2,
+        "spreadDeg": 3,
+        "pierce": 1,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 10,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "poison",
+        "shape": "dart"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "venom_dart",
+      "keywords": [
+        "pierce",
+        "poison"
+      ],
+      "tags": [
+        "poison",
+        "stream"
+      ]
+    },
+    {
+      "id": "toxic_flask_2",
+      "name": "Toxic Flask II",
+      "desc": "Shatters into a poison pool that lasts 3s. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "poison",
+      "mana": 16,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 3,
+        "speed": 160,
+        "lifetimeMs": 600,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 20,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "zone",
+          "radius": 34,
+          "durationMs": 4000,
+          "tickMs": 500,
+          "damageMult": 0.5
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "poison",
+        "shape": "flask"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "toxic_flask",
+      "keywords": [
+        "poison",
+        "zone"
+      ],
+      "tags": [
+        "poison",
+        "burst",
+        "zone"
+      ]
+    },
+    {
+      "id": "boomerang_blade_2",
+      "name": "Boomerang Blade II",
+      "desc": "Flies out, then returns to you, cutting everything twice. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 13,
+      "castDelayAddMs": 120,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "boomerang",
+        "outMs": 400,
+        "returnSpeedMult": 1.2
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 10,
+        "speed": 260,
+        "lifetimeMs": 1600,
+        "radius": 5,
+        "spreadDeg": 0,
+        "pierce": 10,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 40,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "blade"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "boomerang_blade",
+      "keywords": [
+        "pierce"
+      ],
+      "tags": [
+        "arcane",
+        "burst"
+      ]
+    },
+    {
+      "id": "arcane_orbit_2",
+      "name": "Arcane Orbit II",
+      "desc": "Three orbs circle you for 4 seconds. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 22,
+      "castDelayAddMs": 200,
+      "rechargeAddMs": 200,
+      "behavior": {
+        "type": "orbit",
+        "orbitRadius": 26,
+        "angularSpeed": 300
+      },
+      "pattern": {
+        "type": "ring",
+        "count": 4
+      },
+      "stats": {
+        "damage": 7,
+        "speed": 0,
+        "lifetimeMs": 4000,
+        "radius": 4,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 60,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "orb"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "arcane_orbit",
+      "keywords": [
+        "pierce",
+        "orbit"
+      ],
+      "tags": [
+        "arcane",
+        "burst",
+        "zone"
+      ]
+    },
+    {
+      "id": "rune_mine_2",
+      "name": "Rune Mine II",
+      "desc": "Lays a mine that explodes when a foe steps near. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "uncommon",
+      "minFloor": 1,
+      "element": "fire",
+      "mana": 18,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "mine",
+        "settleMs": 250,
+        "armMs": 300,
+        "triggerRadius": 20
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 19,
+        "speed": 200,
+        "lifetimeMs": 6000,
+        "radius": 5,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 160,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 48,
+          "damageMult": 1.0
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "rune"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "rune_mine",
+      "keywords": [
+        "blast",
+        "burn",
+        "mine"
+      ],
+      "tags": [
+        "fire",
+        "burst",
+        "zone"
+      ]
+    },
+    {
+      "id": "blink_bolt_2",
+      "name": "Blink Bolt II",
+      "desc": "Teleports you to wherever the bolt ends. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 18,
+      "castDelayAddMs": 100,
+      "rechargeAddMs": 150,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 2,
+        "speed": 400,
+        "lifetimeMs": 300,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 0,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "teleport_caster"
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "dart"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "blink_bolt",
+      "keywords": [
+        "mobility"
+      ],
+      "tags": [
+        "arcane",
+        "mobility"
+      ]
+    },
+    {
+      "id": "comet_2",
+      "name": "Comet II",
+      "desc": "A huge, slow comet. Pierces 3, explodes massively. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 2,
+      "element": "fire",
+      "mana": 36,
+      "castDelayAddMs": 400,
+      "rechargeAddMs": 300,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 42,
+        "speed": 150,
+        "lifetimeMs": 1500,
+        "radius": 8,
+        "spreadDeg": 0,
+        "pierce": 3,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 250,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 56,
+          "damageMult": 1.0
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "big-orb"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "comet",
+      "keywords": [
+        "pierce",
+        "blast",
+        "burn"
+      ],
+      "tags": [
+        "fire",
+        "burst"
+      ]
+    },
+    {
+      "id": "vortex_2",
+      "name": "Vortex II",
+      "desc": "A slow singularity that drags foes in, then bursts. (Forged: stronger.)",
+      "type": "projectile",
+      "rarity": "rare",
+      "minFloor": 2,
+      "element": "arcane",
+      "mana": 27,
+      "castDelayAddMs": 250,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 2,
+        "speed": 90,
+        "lifetimeMs": 2200,
+        "radius": 6,
+        "spreadDeg": 0,
+        "pierce": 10,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 0,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 40,
+          "damageMult": 2.5
+        }
+      ],
+      "onTick": {
+        "everyMs": 100,
+        "effects": [
+          {
+            "type": "pull",
+            "radius": 80,
+            "strength": 120
+          }
+        ]
+      },
+      "visual": {
+        "element": "arcane",
+        "shape": "swirl"
+      },
+      "level": 2,
+      "pool": false,
+      "baseId": "vortex",
+      "keywords": [
+        "pierce",
+        "blast",
+        "zone"
+      ],
+      "tags": [
+        "arcane",
+        "burst",
+        "zone"
+      ]
+    },
+    {
+      "id": "sunburst",
+      "name": "Sunburst",
+      "desc": "A fireball whose blast leaves a burning pool.",
+      "type": "projectile",
+      "rarity": "evolved",
+      "minFloor": 1,
+      "element": "fire",
+      "mana": 20,
+      "castDelayAddMs": 150,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 18,
+        "speed": 170,
+        "lifetimeMs": 1100,
+        "radius": 7,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 120,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "explode",
+          "radius": 44,
+          "damageMult": 1.0
+        },
+        {
+          "type": "zone",
+          "radius": 36,
+          "durationMs": 3000,
+          "tickMs": 500,
+          "damageMult": 0.4
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "fire",
+        "shape": "evolved-flame-orb"
+      },
+      "level": 3,
+      "pool": false,
+      "baseId": "fireball_2",
+      "keywords": [
+        "blast",
+        "burn",
+        "zone"
+      ],
+      "tags": [
+        "fire",
+        "burst",
+        "zone"
+      ]
+    },
+    {
+      "id": "tempest_chain",
+      "name": "Tempest Chain",
+      "desc": "Lightning that leaps through seven foes at full strength.",
+      "type": "projectile",
+      "rarity": "evolved",
+      "minFloor": 1,
+      "element": "shock",
+      "mana": 14,
+      "castDelayAddMs": 80,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 10,
+        "speed": 420,
+        "lifetimeMs": 450,
+        "radius": 3,
+        "spreadDeg": 0,
+        "pierce": 0,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 20,
+        "statusChance": 0.4,
+        "critChance": 0.0
+      },
+      "onHit": [
+        {
+          "type": "chain",
+          "jumps": 7,
+          "range": 80,
+          "damageMult": 1.0
+        }
+      ],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "shock",
+        "shape": "evolved-spark"
+      },
+      "level": 3,
+      "pool": false,
+      "baseId": "chain_lightning_2",
+      "keywords": [
+        "shock",
+        "chain"
+      ],
+      "tags": [
+        "shock",
+        "burst"
+      ]
+    },
+    {
+      "id": "glacier_spike",
+      "name": "Glacier Spike",
+      "desc": "A huge shard that pierces five and bursts into chilling splinters.",
+      "type": "projectile",
+      "rarity": "evolved",
+      "minFloor": 1,
+      "element": "frost",
+      "mana": 7,
+      "castDelayAddMs": 20,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 12,
+        "speed": 280,
+        "lifetimeMs": 700,
+        "radius": 5,
+        "spreadDeg": 0,
+        "pierce": 5,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 30,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "split",
+          "count": 4,
+          "arcDeg": 70,
+          "damageMult": 0.5
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "frost",
+        "shape": "evolved-shard"
+      },
+      "level": 3,
+      "pool": false,
+      "baseId": "ice_shard_2",
+      "keywords": [
+        "pierce",
+        "chill",
+        "split"
+      ],
+      "tags": [
+        "frost",
+        "burst"
+      ]
+    },
+    {
+      "id": "blight_needle",
+      "name": "Blight Needle",
+      "desc": "A piercing venom needle that leaves a small poison pool on every hit.",
+      "type": "projectile",
+      "rarity": "evolved",
+      "minFloor": 1,
+      "element": "poison",
+      "mana": 5,
+      "castDelayAddMs": -30,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 4,
+        "speed": 340,
+        "lifetimeMs": 600,
+        "radius": 2,
+        "spreadDeg": 3,
+        "pierce": 3,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 10,
+        "statusChance": 1.0,
+        "critChance": 0.0
+      },
+      "onHit": [
+        {
+          "type": "zone",
+          "radius": 16,
+          "durationMs": 1500,
+          "tickMs": 500,
+          "damageMult": 0.5
+        }
+      ],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "poison",
+        "shape": "evolved-dart"
+      },
+      "level": 3,
+      "pool": false,
+      "baseId": "venom_dart_2",
+      "keywords": [
+        "pierce",
+        "poison",
+        "zone"
+      ],
+      "tags": [
+        "poison",
+        "stream",
+        "zone"
+      ]
+    },
+    {
+      "id": "prism_spark",
+      "name": "Prism Spark",
+      "desc": "A spark that ricochets once and splinters into four.",
+      "type": "projectile",
+      "rarity": "evolved",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 4,
+      "castDelayAddMs": 0,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "bolt"
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 8,
+        "speed": 340,
+        "lifetimeMs": 700,
+        "radius": 3,
+        "spreadDeg": 2,
+        "pierce": 0,
+        "bounce": 1,
+        "homing": 0,
+        "knockback": 40,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [],
+      "onExpire": [
+        {
+          "type": "split",
+          "count": 4,
+          "arcDeg": 80,
+          "damageMult": 0.6
+        }
+      ],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "evolved-dart"
+      },
+      "level": 3,
+      "pool": false,
+      "baseId": "spark_bolt_2",
+      "keywords": [
+        "bounce",
+        "split"
+      ],
+      "tags": [
+        "arcane"
+      ]
+    },
+    {
+      "id": "reaper_disc",
+      "name": "Reaper Disc",
+      "desc": "A heavy boomerang that chains to 2 foes on every cut.",
+      "type": "projectile",
+      "rarity": "evolved",
+      "minFloor": 1,
+      "element": "arcane",
+      "mana": 13,
+      "castDelayAddMs": 120,
+      "rechargeAddMs": 0,
+      "behavior": {
+        "type": "boomerang",
+        "outMs": 400,
+        "returnSpeedMult": 1.2
+      },
+      "pattern": {
+        "type": "single"
+      },
+      "stats": {
+        "damage": 12,
+        "speed": 260,
+        "lifetimeMs": 1600,
+        "radius": 7,
+        "spreadDeg": 0,
+        "pierce": 10,
+        "bounce": 0,
+        "homing": 0,
+        "knockback": 40,
+        "statusChance": 0.0,
+        "critChance": 0.0
+      },
+      "onHit": [
+        {
+          "type": "chain",
+          "jumps": 2,
+          "range": 48,
+          "damageMult": 0.5
+        }
+      ],
+      "onExpire": [],
+      "onTick": null,
+      "visual": {
+        "element": "arcane",
+        "shape": "evolved-blade"
+      },
+      "level": 3,
+      "pool": false,
+      "baseId": "boomerang_blade_2",
+      "keywords": [
+        "pierce",
+        "shock",
+        "chain"
+      ],
+      "tags": [
+        "arcane",
+        "burst"
+      ]
     }
   ]
 }

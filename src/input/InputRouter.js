@@ -11,6 +11,7 @@ import { KBM_DEFAULTS, KBM_UI, PAD_DEFAULTS, PAD_UI, PAD_MOVE_DEADZONE, PAD_AIM_
   PAD_MENU_FLICK, PAD_MENU_REARM, PAD_DIGITAL_PRESS, mergeBindings } from './bindings.js';
 import { EV } from '../core/events.js';
 import { Save } from '../core/save.js';
+import { setPromptFamily } from '../core/i18n.js';
 import { PadReader, PAD_BUTTONS } from '../platform/gamepad.js';
 
 const EDGE_ACTIONS = ['cast', 'altCast', 'dash', 'interact', 'wandNext', 'wandPrev', 'wand1', 'wand2', 'wand3', 'wand4', 'inventory', 'pause'];
@@ -51,16 +52,36 @@ export class InputRouter {
       castHeld: false, castPressed: false, altCastHeld: false, altCastPressed: false,
       dashPressed: false, interactPressed: false, wandNext: false, wandPrev: false, wandSlot: 0,
       openInventory: false, pause: false, device: 'kbm',
+      aimSource: 'mouse',               // 'mouse' | 'pad' | 'stick' (touch override) | 'auto' (touch auto-fire, AutoAim resolves)
     };
+    // touch (mobile-touch-spec §3, §5): TouchSticks is attached by SystemScene once the display exists.
+    this.touch = null;
+    this.hudLayout = null;              // ui/hudLayout.js object published by HudScene (TouchSticks reads it)
+    this.gameplayActive = () => false;  // SystemScene: a run is active and no modal is open
+    this.lastTouchAt = -1e9;
+    this._touchProf = false;            // latched touch profile for touchControls:auto (debounced, §5.1)
+    this._profSent = false;
+    this._profChangeAt = 0;
+    this._tmpV = { x: 0, y: 0 };
     this.applyBindings(settings.bindings);
 
     const kb = scene.input.keyboard;
     kb.addCapture('SPACE,TAB,UP,DOWN,LEFT,RIGHT');
     kb.on('keydown', (e) => this._onDown(e.code, false, e.repeat));
     kb.on('keyup', (e) => this.keysDown.delete(e.code));
-    scene.input.on('pointerdown', (p) => { this.pointerX = p.x; this.pointerY = p.y; this._onDown(`Mouse${p.button}`); });
-    scene.input.on('pointerup', (p) => this.keysDown.delete(`Mouse${p.button}`));
-    scene.input.on('pointermove', (p) => { this.pointerX = p.x; this.pointerY = p.y; this._setDevice('kbm'); });
+    // Touch pointers never become Mouse0 (that would cast): the `wasTouch` branch only switches the device.
+    // Compatibility mouse events synthesized within 500 ms of a touch never flip the device back (§5.1).
+    const synth = () => performance.now() - this.lastTouchAt < 500;
+    scene.input.on('pointerdown', (p) => {
+      if (p.wasTouch) { this._touchSeen(); return; }
+      if (synth()) return;
+      this.pointerX = p.x; this.pointerY = p.y; this._onDown(`Mouse${p.button}`);
+    });
+    scene.input.on('pointerup', (p) => { if (!p.wasTouch) this.keysDown.delete(`Mouse${p.button}`); });
+    scene.input.on('pointermove', (p) => {
+      if (p.wasTouch || synth()) return;
+      this.pointerX = p.x; this.pointerY = p.y; this._setDevice('kbm');
+    });
     scene.input.on('wheel', (p, over, dx, dy) => { if (dy) this._onDown(dy > 0 ? 'WheelDown' : 'WheelUp', true); });
     if (scene.input.mouse) scene.input.mouse.disableContextMenu();
     // promptStyle is a prompt-family input: a settings change re-announces the family (controller-prompts §1 rule 4)
@@ -72,7 +93,37 @@ export class InputRouter {
    * keyboard/mouse (promptStyle never overrides the keyboard); otherwise the forced setting, else the
    * auto-classified family of the pad in hand. Every scene compares THIS, never `device === 'pad'`.
    */
-  get promptFamily() { return this.device === 'kbm' ? 'kbm' : this.padPromptFamily; }
+  get promptFamily() { return this.device === 'kbm' ? 'kbm' : this.device === 'touch' ? 'touch' : this.padPromptFamily; }
+
+  /** A touch was seen (Phaser wasTouch or TouchSticks' DOM pointer): device 'touch' (controller-prompts §9.1). */
+  _touchSeen() {
+    this.lastTouchAt = performance.now();
+    this._setDevice('touch');
+    // switching TO touch is immediate, so the screen a first tap opens is already built for thumbs (Back button,
+    // 24 px rows); switching AWAY is the debounced direction (below) that protects touchscreen-laptop users
+    if (!this._touchProf) { this._touchProf = true; this._profChangeAt = 0; this._updateProfile(); }
+  }
+
+  /**
+   * mobile-touch-spec §5.1: the touch HUD profile is on when touchControls is 'on', or 'auto' and the last
+   * meaningful input was touch. Switches are debounced 250 ms and wait for every touch to lift.
+   */
+  get touchProfile() {
+    const s = Save.settings.touchControls;
+    if (s === 'on') return true;
+    if (s === 'off') return false;
+    return this._touchProf;
+  }
+  _updateProfile() {
+    const want = this.device === 'touch';
+    if (want !== this._touchProf) {
+      const now = performance.now();
+      if (!this._profChangeAt) this._profChangeAt = now;
+      if (now - this._profChangeAt >= 250 && !(this.touch && this.touch.anyHeld)) { this._touchProf = want; this._profChangeAt = 0; }
+    } else this._profChangeAt = 0;
+    const p = this.touchProfile;
+    if (p !== this._profSent) { this._profSent = p; this.bus.emit(EV.TOUCH_PROFILE, p); }
+  }
   /** The pad family even while the keyboard is in use (Settings Controls table pad column, §4 G8). */
   get padPromptFamily() {
     const s = Save.settings.promptStyle;
@@ -84,6 +135,7 @@ export class InputRouter {
     const f = this.promptFamily;
     if (f === this._famSent) return;
     this._famSent = f;
+    setPromptFamily(f);                      // i18n `.touch` verb variants (controller-prompts §9.3)
     this.bus.emit(EV.INPUT_DEVICE, this.device, f);
   }
 
@@ -164,6 +216,7 @@ export class InputRouter {
 
   /** Called every render frame by SystemScene.update: latch gamepad edges. */
   pollFrame() {
+    this._updateProfile();
     const pad = this.padReader.poll();
     if (!pad) { this.padNow.fill(0); this._trig[0] = this._trig[1] = false; return; }
     for (let i = 0; i < PAD_BUTTONS; i++) {
@@ -209,9 +262,23 @@ export class InputRouter {
       const s = radial(pad.leftStick.x, pad.leftStick.y, this.moveDead);
       if (s) { mx = pad.leftStick.x * s; my = pad.leftStick.y * s; }
     }
+    const tch = this.touch;
+    let touchCast = false;
+    it.aimSource = this.device === 'pad' ? 'pad' : 'mouse';
+    if (tch && (this.device === 'touch' || tch.move.held || tch.aim.held)) {
+      const v = tch.moveVector(this._tmpV);
+      if (v.x || v.y) { mx = v.x; my = v.y; }
+    }
     it.moveX = mx; it.moveY = my;
-
-    if (this.device === 'pad' && pad) {
+    if (this.device === 'touch') {
+      // §3.3: aim-stick deflection past touchAimOverride = aim + cast ('stick'); otherwise touchFire
+      // 'auto' hands aim/cast to sim/AutoAim.js ('auto'); 'stick' mode = no cast while released.
+      if (tch && tch.aimOverride) {
+        const a = tch.aim, m = Math.hypot(a.x, a.y) || 1;
+        this.lastAimX = a.x / m; this.lastAimY = a.y / m;
+        it.aimSource = 'stick'; touchCast = true;
+      } else it.aimSource = Save.settings.touchFire === 'stick' ? 'stick' : 'auto';
+    } else if (this.device === 'pad' && pad) {
       const s = radial(pad.rightStick.x, pad.rightStick.y, this.aimDead);
       if (s) { const m = Math.hypot(pad.rightStick.x, pad.rightStick.y); this.lastAimX = pad.rightStick.x / m; this.lastAimY = pad.rightStick.y / m; }
     } else {
@@ -223,8 +290,8 @@ export class InputRouter {
     it.aimScreenX = this.pointerX; it.aimScreenY = this.pointerY;
 
     const P = this._pressed;
-    it.castHeld = this._held('cast') || this._padHeld(pad, 'cast');
-    if (Save.settings.castMode === 'toggle') {
+    it.castHeld = this._held('cast') || this._padHeld(pad, 'cast') || touchCast;
+    if (Save.settings.castMode === 'toggle' && this.device !== 'touch') {     // toggle-cast doesn't apply on touch (§3.3)
       if (P.has('cast')) this.castLatch = !this.castLatch;
       it.castHeld = this.castLatch;          // survives modals; RunScene clears it on run end
     }
@@ -262,6 +329,7 @@ export class InputRouter {
 
   /** Focus loss / overlay transitions: nothing stays held, no stale edges. */
   clearHeld() {
+    if (this.touch) this.touch.releaseAll();
     this.keysDown.clear();
     this._pressed.clear();
     this._ui.length = 0;

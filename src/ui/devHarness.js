@@ -4,6 +4,16 @@
 //   editor · editor-held · reward · reward-relic · wand-offer · shop · pause-map · codex · settings ·
 //   runend · unlocks · setup · title · credits · pause-menu · relics
 // Options: &full (bag near full, 3 wands) · &bagfull (12/12 bag, for D3) · &reveal (codex shows everything)
+//
+// ROOM-FLOW harness (a REAL run, not synthetic): `?harness=floor:N:step:M` starts RunScene on floor N and jumps
+// straight into step M (0 start … 4 mini-boss … 7 puzzle … 8 boss; floors.json steps). Forcing options:
+//   &room=combat|elite|miniboss|puzzle|boss|shop|treasure|start   override the step's room kind
+//   &threat=<id>        this room's door threat (shield|armour|ward|swarm|ranged|summoner; anchor guaranteed)
+//   &twist=ambush|dark  force this room's twist        &risk        this room is a risk-door room (elite + corrupted)
+//   &doorthreat=<id>    force the threat rolled onto the NEXT doors   &riskdoor   force a risk door into the next pair
+//   &seed=<n>           run seed (default 1234567)     &god         player can't die
+// Console: __SW__.room.jump(floor, step, {room, threat, twist, risk, doorThreat, riskDoor}) · .doors({threat, risk})
+//          · .clear() · .state()
 
 import { RunState } from '../run/RunState.js';
 import { cat } from '../data/catalog.js';
@@ -36,7 +46,25 @@ function makeRun(bus, opts = {}) {
   return run;
 }
 
+/** `?harness=floor:N:step:M` (+ forcing params, see header) → a real run jumped to that room. */
+function startFloor(boot) {
+  const q = new URLSearchParams(location.search);
+  const m = /floor:(\d+)(?::step:(\d+))?/.exec(q.get('harness') || '');
+  const val = (k) => { const v = q.get(k); return v ? v.replace(/[^\w-]/g, '') : null; };
+  const harness = { floor: m ? +m[1] : 1, step: m && m[2] != null ? +m[2] : 0, room: val('room'), threat: val('threat'),
+    twist: val('twist'), risk: q.has('risk'), doorThreat: val('doorthreat'), riskDoor: q.has('riskdoor') };
+  const seed = q.has('seed') ? (+q.get('seed') >>> 0) : 1234567;
+  const sm = boot.scene;
+  sm.start('run', { seed, harness });
+  if (q.has('god')) {
+    const run = boot.game.scene.getScene('run');
+    run.events.once('create', () => { run.god = true; if (run.ctx) run.ctx.player.iframesMs = 1e12; });
+  }
+  console.info(`[harness] floor ${harness.floor} step ${harness.step}`, harness, '— window.__SW__.room');
+}
+
 export function start(boot, name) {
+  if (name === 'floor') { startFloor(boot); return; }
   const reg = boot.registry;
   const bus = reg.get('bus'), flow = reg.get('flow');
   const full = has('full');

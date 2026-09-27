@@ -20,6 +20,13 @@ import { DamageNumbers } from './DamageNumbers.js';
 import { Ftue } from './Ftue.js';
 
 const D = { doors: 90, pedestal: 90, dash: 92, dmg: 95, interact: 96, door: 96, ftue: 97, reticle: 99 };
+// v2 doors (hud-layout §9.6): room-kind pip for the new kinds, reward shape for the new reward kinds, and the
+// defence shape a keyword test asks for (mini-boss / puzzle doors carry no rolled threat, only a keyword)
+const DOOR_PIP = { ...PIP_FOR_KIND, miniboss: 'pip_elite' };
+const DOOR_REWARD = { miniboss: 'relic', corrupted: 'relic', boss: 'bossRelic' };
+const DEF_FOR_KW = { pierce: 'shield', blast: 'armour', shock: 'ward' };
+/** floors.json threat iconKey 'threat.<id>' / rules.risk.doorIconKey 'door.risk' → ui atlas frame 'door_<id>' (ATLAS-KEYS ui.door_*). */
+const doorFrame = (iconKey) => (iconKey ? `door_${String(iconKey).split('.').pop()}` : null);
 const NEAR = 48;                   // door label / pedestal preview proximity (hud-layout §6)
 const GLINT_MS = 2500, GLINT_ON_MS = 100;
 
@@ -93,16 +100,23 @@ export class WorldHud {
     if (!Array.isArray(list)) return;
     const s = this.scene;
     const rm = reducedMotion();
+    const riskKey = this.run && this.run.cat && this.run.cat.rules.risk ? this.run.cat.rules.risk.doorIconKey : 'door.risk';
     list.forEach((d, i) => {
       const c = s.add.container(0, 0).setDepth(D.doors);
       const g = s.add.graphics();
+      // third icon: the risk door's icon replaces the threat icon; else the rolled threat; else the keyword test's defence shape
+      const third = d.risk ? doorFrame(riskKey) : d.threatIcon ? doorFrame(d.threatIcon) : d.threat ? `door_${d.threat}` : d.keyword ? `door_${DEF_FOR_KW[d.keyword] || 'unknown'}` : null;
+      const w = third ? 58 : 38;
       drawDarkPanel(g, 0, 0, 18, 18); drawDarkPanel(g, 20, 0, 18, 18);
+      if (third) drawDarkPanel(g, 40, 0, 18, 18);
       c.add(g);
-      const rk = hudTex(PIP_FOR_KIND[d.roomKind] || 'pip_future');
+      const rk = hudTex(DOOR_PIP[d.roomKind] || 'pip_future');
       c.add(s.add.image(9, 9, rk.key, rk.frame));
-      const rw = rewardKindTex(d.reward || 'none');
+      const rw = rewardKindTex(DOOR_REWARD[d.reward] || d.reward || 'none');
       c.add(s.add.image(29, 9, rw.key, rw.frame));
-      const e = { c, x: d.x, y: d.y, roomKind: d.roomKind, reward: d.reward, choice: d.choice, label: d.label, index: i, n: list.length, dy: 0 };
+      if (third) { const tt = hudTex(third); c.add(s.add.image(49, 9, tt.key, tt.frame)); }
+      const e = { c, w, x: d.x, y: d.y, roomKind: d.roomKind, reward: d.reward, choice: d.choice, label: d.label, index: i, n: list.length, dy: 0,
+        threat: d.threat || null, risk: !!d.risk, puzzle: !!d.puzzle, keyword: d.keyword || null, testName: d.testName || null };
       this.doorIcons.push(e);
       this._placeDoor(e);
       // world-door-open `icons` phase: 100 ms after the swap, Back.easeOut −4 → 0 px + fade (RM: fade only)
@@ -120,10 +134,11 @@ export class WorldHud {
   _placeDoor(e) {
     const cam = this.scene.cameras.main;
     const top = e.y - 16 - 20;
-    const [sx, sy] = clampBox(e.x - 19 - cam.scrollX, top - cam.scrollY, 38, 18);
+    const w = e.w || 38;
+    const [sx, sy] = clampBox(e.x - Math.round(w / 2) - cam.scrollX, top - cam.scrollY, w, 18);
     e.c.setPosition(sx + cam.scrollX, sy + cam.scrollY + Math.round(e.dy));
     e.sx = sx + cam.scrollX; e.sy = sy + cam.scrollY;
-    this._placed.push({ x: sx, y: sy, w: 38, h: 18 });
+    this._placed.push({ x: sx, y: sy, w, h: 18 });
   }
 
   /** Clamp a label into the spatial box and step it clear of labels already placed this frame. */
@@ -151,9 +166,22 @@ export class WorldHud {
 
   _doorText(e) {
     if (typeof e.label === 'string' && e.label) return e.label;
-    const room = t(`world.room.${e.roomKind || 'combat'}`);
+    const room = t(`world.room.${e.puzzle ? 'puzzle' : e.roomKind || 'combat'}`);
     const reward = e.reward ? t(`world.reward.${e.reward}`) : '';
     return reward ? t('world.door.label', { room, reward }) : room;
+  }
+  /** v2 label lines (hud-layout §9.6): threat ("Shielded foes: bring PIERCE"), mini-boss / puzzle test, risk trade. */
+  _doorLines(e) {
+    const out = [];
+    const kw = e.keyword ? t(`world.kw.${e.keyword}`) : '';
+    if (e.roomKind === 'miniboss') out.push(t(kw ? 'world.door.mini' : 'world.door.miniNoKw', { name: e.testName || '', kw }));
+    else if (e.puzzle) out.push(t(kw ? 'world.door.puzzle' : 'world.door.puzzleNoKw', { name: e.testName || '', kw }));
+    else if (e.threat && e.threat !== 'none') out.push(t(`threat.${e.threat}`));
+    if (e.risk) {
+      const R = (this.run && this.run.cat && this.run.cat.rules.risk) || {};
+      out.push(t('world.door.risk', { n: R.extraElites ?? 1, k: R.rewardDraft ?? 2 }));
+    }
+    return out;
   }
 
   _roomEnter() {
@@ -175,11 +203,15 @@ export class WorldHud {
     this.dmg.update(dt);
     if (!probe || !probe.player) return;
     const P = probe.player, cam = s.cameras.main;
-    const pad = this.router && this.router.device === 'pad';
+    const dev = this.router ? this.router.device : 'kbm';
+    const pad = dev === 'pad' || dev === 'touch';
     const ctl = probe.room ? probe.room.controllable !== false : true;
 
-    // ---- reticle / aim pip (hud-layout §3.3) ----
+    // ---- reticle / aim pip (hud-layout §3.3; touch: the pip only while the aim stick overrides, the auto
+    // target marker is the HUD's corner ticks — mobile-touch-spec §3.3) ----
     let rx, ry;
+    const it = s.ctx && s.ctx.intent;
+    const touchPip = dev !== 'touch' || !!(it && it.aimSource === 'stick' && it.castHeld);
     if (!pad) {
       cam.getWorldPoint(this.router.pointerX, this.router.pointerY, this._v);
       rx = Math.round(this._v.x); ry = Math.round(this._v.y);
@@ -187,7 +219,7 @@ export class WorldHud {
       this.aimPip.setVisible(false);
     } else {
       rx = Math.round(P.coreX + (P.aimX || 0) * 40); ry = Math.round(P.coreY + (P.aimY || 0) * 40);
-      this.aimPip.setPosition(rx, ry).setVisible(P.alive !== false);
+      this.aimPip.setPosition(rx, ry).setVisible(P.alive !== false && touchPip);
       this.reticle.setVisible(false);
     }
 
@@ -334,10 +366,16 @@ export class WorldHud {
         const main = txt(s, 4, 3, this._doorText(best), 'T1');
         c.add(main);
         let w = Math.ceil(main.width) + 8, h = 18;
+        const lines = this._doorLines(best);
+        for (let li = 0; li < lines.length; li++) {
+          const lt = txt(s, 4, h - 1, lines[li], 'T1', { color: best.risk && li === lines.length - 1 ? C.gold : C.dim });
+          c.add(lt);
+          w = Math.max(w, Math.ceil(lt.width) + 8); h += 13;
+        }
         if (hint) {
           const line = promptRow(s, hint, this.router, 'T1', 220);
-          line.setPosition(4, 17); c.add(line);
-          w = Math.max(w, line._w + 8); h = 17 + line._h + 3;
+          line.setPosition(4, h - 1); c.add(line);
+          w = Math.max(w, line._w + 8); h = h - 1 + line._h + 3;
         }
         drawDarkPanel(g, 0, 0, w, h);
         c._w = w; c._h = h; c.door = best;

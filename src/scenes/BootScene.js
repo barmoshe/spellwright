@@ -58,6 +58,7 @@ export class BootScene extends Phaser.Scene {
     const tr = installTunables([this.cache.text.get('feel-spec'), this.cache.text.get('motion-spec')]);
     errors.push(...tr.errors);
     this.registry.get('router').applyTunables(T);
+    const rb = this.registry.get('rumble'); if (rb) rb.setBigRadius(T('bigExplosionRadiusPx'));
 
     // Designer data tables: verbatim, validated, frozen.
     for (const [table] of DB.filesFromIndex(DB.index)) DB.install(table, this.cache.json.get(`data:${table}`));

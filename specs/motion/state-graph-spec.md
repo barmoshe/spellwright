@@ -30,6 +30,7 @@
 |---|---|---|
 | 1 | dying flash / boss unravel strobe | `FILL` · `flash` (`#ffffff`) |
 | 2 | hit flash (`enemyHitFlashMs`) | `FILL` · `flash` |
+| 2a | **v2** armour clang (a hit that lands in the armour bar, §8.1) | `FILL` · `defence-armour` (proposed token, steel `#b6cbcf`) for 1 step, then the normal flash is skipped. Shield blocks and ward absorbs **never tint the body**: their read lives on the defence overlay, because the body took no damage. |
 | 3 | frozen | `MULTIPLY` · `frost-tint` (`#8fd8ff`) |
 | 4 | telegraph glow (windup, §R3 progress-driven) | `ADD` · `telegraph-hot`: ramps `#000000` → `#4a1526` across the signal, then **peak `#9f294e` in the lock window** |
 | 5 | invulnerable (boss intro / phase-shift, spawn) | `MULTIPLY` · `invuln` (`#b8b8c8`) |
@@ -58,7 +59,7 @@ The player's hurtbox (`playerHurtboxRadius`) is centred on `core`, and the Arcad
 
 **R8 — Reduced motion and photosensitivity** (UX `accessibility-spec.md` §4, binding): with reduced motion on, shakes are zeroed (feel-spec §0), squash/stretch pulses and jitter are disabled, and strobes become a steady tint. **Dash afterimages, hit particles and the cast kick are unchanged** (accessibility §4.1: actor-local feedback, not screen motion). I-frame flicker becomes alpha 1.0 ↔ 0.45. The boss intro pan becomes UX's cut (150 ms fade, hold, 150 ms fade back), and the boss rise keys on the fade-in completing instead of the pan arrival. **Telegraph decals, lock outlines and damage feedback are never removed**: they are information, not decoration. Always on: **no full-screen white flash anywhere** (§4.3), so every flash in the motion specs is sprite-local. **`flashIntensity` < 1:** the dev renders FILL-`flash` requests as `ADD` with tint `#ffffff × flashIntensity` (partial brighten), and as nothing at 0. The telegraph (ADD `telegraph-hot`) and the lock rim are not scaled.
 
-**R10 — Elite treatment (mechanic-spec §9.4, style-guide §4.4).** Elites render at sprite scale **×1.0** with two markers. (1) A **baked 1 px `elite-gold` (`#facb3e`) outline**: the TA exports an elite variant of each candidate sheet, and it plays the same clips at the same rates. (2) A **gold ground ring**, an authored ellipse in `elite-gold` at α 0.5, drawn one depth step under the regular shadow at the feet anchor and sized to the actor class's shadow + 4 px (14×5 small/tall, 26×7 boss-class). It follows the feet with no bob (it stays grounded under flyers too) and is static: no pulse, so it never competes with telegraphs. Lifecycle: it fades in with the spawn portal (§3.2), stays through every alive state, and on death collapses to 0 width over `corpseCollapseMs` while the outline shatters (`telegraphs.md` §4.3). Elites use the same telegraphs and windups as normal enemies (mechanic §9.4). The outline is part of the sprite, so the R5 tint rules apply to it unchanged.
+**R10 — Elite treatment (mechanic-spec §9.4, style-guide §4.4; v2 update in §8.2).** Elites render at sprite scale **×1.0**. **v2:** every elite carries ≥ 1 affix, and its outline is the **affix outline overlay** (§8.2: `outlineKey` token, pulsing), replacing v1's baked `elite-gold` outline. The **gold ground ring** below stays as the elite marker under any affix. The ring: an authored ellipse in `elite-gold` at α 0.5, drawn one depth step under the regular shadow at the feet anchor and sized to the actor class's shadow + 4 px (14×5 small/tall, 26×7 boss-class). It follows the feet with no bob (it stays grounded under flyers too) and is static: no pulse, so it never competes with telegraphs. Lifecycle: it fades in with the spawn portal (§3.2), stays through every alive state, and on death collapses to 0 width over `corpseCollapseMs` while the outline overlay shatters (`telegraphs.md` §4.3). Elites use the same telegraphs and windups as normal enemies (mechanic §9.4). The outline overlay carries its own tint, so the body's R5 tint channel is unaffected.
 
 **R9 — Transition type.** Every runtime is frame-by-frame, so **every transition is `cut`** (schema: no `blend` for frame-by-frame). Continuity across a cut comes from the procedural layer: scale and offsets ease back to rest over the `on_entry` durations given, so no transition snaps a squash from 0.875 to 1.0 in one frame. Notation: a `from:` list (`from: [idle, move]`) is shorthand for one identical row per listed source, and `to:` is always a single state.
 
@@ -101,12 +102,28 @@ motion-tunables:
     - { param: playerDeathFallMs, value: 300, unit: ms, source_ref: Isaac-death, range: [200, 450] }
     - { param: playerDeathDissolveMs, value: 400, unit: ms, source_ref: Isaac-death, range: [250, 600] }
     - { param: playerDeathHoldMs, value: 700, unit: ms, source_ref: Isaac-death, range: [400, 1200] }
-    - { param: bossDeathHitstopMs, value: 200, unit: ms, source_ref: SmashBros-hitlag-heavy, range: [120, 300] }
+    - { param: bossDeathHitstopMs, value: 300, unit: ms, source_ref: Sakurai-hitstop-scaling, range: [120, 300] }   # v2: the single boss-kill hit-stop key (design-v2 §10; traumaBossKill fires on the same step)
     - { param: bossDeathUnravelMs, value: 1400, unit: ms, source_ref: EtG-boss-death, range: [900, 2000] }
     - { param: bossDeathBurstIntervalMs, value: 200, unit: ms, source_ref: EtG-boss-death, range: [120, 300] }
     - { param: bossPhaseShockwaveMs, value: 300, unit: ms, source_ref: EtG-boss-phase, range: [200, 450] }
     - { param: bossPhaseShockwaveRadiusPx, value: 120, unit: px, source_ref: EtG-boss-phase, range: [80, 180] }
     - { param: bossRisePx, value: 6, unit: px, source_ref: boss-intro-rise, range: [3, 10] }
+    # ---- v2 (Wave A2) rows. Consumers: EnemyView / bosses.js / DefenceView (Wave D). Each row must be read by code, and __SW__.tunables.unread() lists any that aren't yet.
+    - { param: miniBossDeathHitstopMs, value: 160, unit: ms, source_ref: SmashBros-hitlag-heavy, range: [90, 220] }
+    - { param: miniBossDeathUnravelMs, value: 700, unit: ms, source_ref: EtG-boss-death, range: [400, 1000] }
+    - { param: defenceReadCooldownMs, value: 120, unit: ms, source_ref: flash-duty-cap, range: [66, 250] }
+    - { param: defenceRecoilPx, value: 1, unit: px, source_ref: Hades-armor-clang, range: [0, 2] }
+    - { param: defenceBreakFreezeMs, value: 66, unit: ms, source_ref: Hades-armor-break, range: [33, 120] }
+    - { param: defenceBreakShards, value: 6, unit: count, source_ref: Hades-armor-break, range: [3, 10] }
+    - { param: armourChipParticles, value: 2, unit: count, source_ref: Hades-armor-clang, range: [0, 4] }
+    - { param: wardOrbitPeriodMs, value: 1200, unit: ms, source_ref: ward-mote-orbit, range: [800, 2000] }
+    - { param: wardPopMs, value: 150, unit: ms, source_ref: ward-mote-orbit, range: [100, 250] }
+    - { param: wardRegrowStepMs, value: 130, unit: ms, source_ref: ward-mote-orbit, range: [80, 250] }
+    - { param: guardEndBlinkMs, value: 500, unit: ms, source_ref: hazard-end-blink, range: [300, 800] }
+    - { param: affixPulsePeriodMs, value: 1600, unit: ms, source_ref: attention-tier-T2, range: [1000, 2400] }
+    - { param: affixPulseAlphaMin, value: 0.45, unit: ratio, source_ref: attention-tier-T2, range: [0.3, 0.8] }
+    - { param: introLetterboxMs, value: 200, unit: ms, source_ref: EtG-boss-intro, range: [120, 300] }
+    - { param: phaseBannerMs, value: 1500, unit: ms, source_ref: EtG-boss-phase, range: [1000, 2500] }
 ```
 
 ---
@@ -361,7 +378,7 @@ graph:
 
   states:
     - id: spawning
-      description: spawnPortalMs (rules, 700) inert and invulnerable. Visual only (the sim holds the entity inert).
+      description: spawnPortalMs (rules; 850 in v2, 1100 for the ambush twist's wave 0) inert and invulnerable. Visual only (the sim holds the entity inert).
       animation_key: <actor>_idle
       loop: true
       interrupt_priority: terminal     # nothing interrupts a spawn; the sim guarantees invulnerability
@@ -415,7 +432,7 @@ graph:
       interrupt_priority: medium
       on_entry:
         - "anims paused; ±telegraphJitterPx x jitter at stunJitterHz (shock variant), yellow spark overlay 3 motes"
-        - "wall variant: impact squash toward the wall (scale on the hit axis 0.75 for 83 ms), heavyImpactShakePx/heavyImpactShakeMs (feel), dust burst; then the dizzy overlay: 3 star motes orbiting head at dizzyOrbitPeriodMs"
+        - "wall variant: impact squash toward the wall (scale on the hit axis 0.75 for 83 ms), `traumaHeavyImpact` (feel, trauma² shake), dust burst; then the dizzy overlay: 3 star motes orbiting head at dizzyOrbitPeriodMs"
     - id: frozen
       description: freezeMs (rules) immobile, encased.
       animation_key: <actor>_idle
@@ -492,7 +509,7 @@ graph:
       interrupt_priority: terminal
       on_entry:
         - "0 ms: sprite at spawn, anims paused on f0, tint MULTIPLY invuln, y-offset +bossRisePx (crouched low)"
-        - "on camera-pan arrival (bossIntroPanMs/2): rise: y-offset +bossRisePx → 0, Back.easeOut 300 ms (integer px; no scaleY on 36 px sprites, R4); anims resume; `boss_intro` cue (proposed); name card (motion-spec `boss-name-card`)"
+        - "on camera-pan arrival (bossIntroPanMs/2; minis: at 0 ms, no pan): rise: y-offset +bossRisePx → 0, Back.easeOut 300 ms (integer px; no scaleY on 36 px sprites, R4); anims resume; `stg_boss_intro` + `boss_roar_<id>` / `stg_miniboss_intro` + `miniboss_roar_<id>` cues (cue-spec); v2 intro card with the adapt line (motion-spec `boss-intro-card`, §8.4 here)"
         - "last 150 ms: 1-step FILL `flash`, tint clears: the 'awake' read"
     - id: phase-shift
       description: invulnMs from onEnter (1200 / 1500). Power-up beat. Pattern restarts at pattern[0] after it.
@@ -631,3 +648,146 @@ FX ids used across the motion specs are the slot map's `fx.*` names (`fx.enemy_s
 | **O-ANIM-2** ✔ accepted (glint 2.5 s, random phase) | `hud-layout.md` §6 pedestal sparkle "every 1.5 s" (UX Designer) | A T3 pickup glint more often than once per 2 s over-draws attention against T2 hazards and breaks the `object-and-environmental-animation` DOG (glint ≤ 1 per 2–4 s). | Glint every **2.5 s**, randomly phased per pedestal (motion-spec `world-pickup-bob`). The reduced-motion static glint pixel is unchanged. |
 
 Resolved without objection: the held-wand geometry (2D Artist adopted the 8×10 crop), elite scale (O-ART-1 accepted by the Game Designer: `elite.scale` removed, elites ×1.0 + gold marker), crit number scale (Animator concurs with UX O-UX-3: integer ×2), telegraph colours (style-guide §2.4 tokens adopted).
+
+---
+
+## §8 v2 (Wave A2): defences, affixes, mini-bosses, intro card and phase banner
+
+Sources: `design-v2.md` §4/§6/§7, `mechanic-spec.md` §9.6–9.7/§10.1–10.2, `data/enemies.json` / `bosses.json` / `affixes.json`, `rules.defences`, UX `hud-layout.md` §9.6, `mobile-touch-spec.md` §11. Art tokens proposed here (`defence-shield` bone `#d3bfa9`, `defence-armour` steel `#b6cbcf`, `defence-ward` cyan `#72d6ce`) mirror `affixes.json` `outline.bone / .steel / .cyan`. The 2D Artist's `style-guide.md` names are final: the dev maps names, and if the Artist renames them, only this paragraph changes.
+
+### 8.1 `enemy-defence` graph (a parallel region on any actor with a defence)
+
+A defence is **not** a body state. It runs as a third orthogonal region (next to the body graph and the overlays). The body never changes clip for a block. Everything is drawn on a **defence overlay** that shares the body's anchor and facing (R6/R7). The region is entered at spawn with the actor's `defence` (enemy data, affix `grantsDefence`, mini/boss `defence`) and is driven only by `EV.DEFENCE {type, event: block | wear | break | absorb | strip | regrow | grant | reduce}` from the sim (mechanic §9.6). **Per-enemy visual throttle:** repeat reads of the same event on the same enemy within `defenceReadCooldownMs` are coalesced into the one already playing (a 20-hit/s stream shows ≤ 8 reads/s). `break` and `strip` are never throttled.
+
+```yaml
+graph:
+  id: enemy-defence
+  runtime: phaser-frame-by-frame   # overlay sprites + TelegraphLayer-free (drawn on the actor, depth actors+1)
+  default_state: none
+  composite_states:
+    - id: shield
+      children: [shield-up, shield-worn-1, shield-worn-2]
+      default_child: shield-up
+      inherited_transitions:
+        - { to: shield-broken, on: defence-break, type: cut, transition_priority: high }   # pierce from the front, or wear reached wearBlocks
+    - id: ward
+      children: [warded]
+      default_child: warded
+      inherited_transitions:
+        - { to: ward-stripped, on: defence-strip, type: cut, transition_priority: high }   # shock hit: strips all and lands
+        - { to: none, on: ward-empty, type: cut }                                          # last charge absorbed
+  states:
+    - id: none
+      animation_key: none
+      loop: false
+      interrupt_priority: low
+    - id: shield-up
+      description: "Front plate overlay (2D Artist: `defence_shield_<class>`, 3 crack frames). It follows facing (R6), so it is always on the player-facing side. The plate is the *front arc* read: frontArcDeg 150 is drawn only as the plate's placement, never as a floor decal (it isn't a danger)."
+      animation_key: defence_shield_f0
+      loop: false
+      interrupt_priority: medium
+      on_entry: [ "plate α 1; on spawn, the plate slides up from the feet 4 px over spawnEmergeMs with the body" ]
+    - { id: shield-worn-1, animation_key: defence_shield_f1, loop: false, interrupt_priority: medium, description: "blocks ≥ ⌈wearBlocks/3⌉: 1 crack" }
+    - { id: shield-worn-2, animation_key: defence_shield_f2, loop: false, interrupt_priority: medium, description: "blocks ≥ ⌈2·wearBlocks/3⌉: 2 cracks. Uses the effective wearBlocks (the mercy adapt lowers it, and the cracks re-derive at activation)." }
+    - id: shield-broken
+      animation_key: none
+      loop: false
+      interrupt_priority: high
+      on_entry: [ "telegraphs.md §3.7 break read (shards, freeze, `shield_shatter`)" ]
+    - id: warded
+      description: "`hits` cyan motes (3 px) orbiting `core` at r = body radius + 5, one revolution per wardOrbitPeriodMs; the count shown = charges left (≤ 6 motes; above 6, 6 motes + a T1 digit)."
+      animation_key: ward_mote
+      loop: true
+      interrupt_priority: medium
+    - id: ward-stripped
+      animation_key: none
+      loop: false
+      interrupt_priority: high
+      on_entry: [ "telegraphs.md §3.7 strip read" ]
+    - id: armoured
+      description: "Plate overlay (`defence_armour_<class>`, 3 frames: intact > 66 % / dented > 33 % / cracked > 0 % of the armour bar). Elite and boss armour also has its bar (UX)."
+      animation_key: defence_armour_f0
+      loop: false
+      interrupt_priority: medium
+    - id: armour-broken
+      animation_key: none
+      loop: false
+      interrupt_priority: high
+      on_entry: [ "telegraphs.md §3.7 break read" ]
+    - id: guard
+      description: "Boss `guard` attack (Knight `shield_wall`): a temporary shield for the attack's durationMs. Same plate art at boss scale + a front-arc rim (telegraphs.md §2.13)."
+      animation_key: defence_shield_boss_f0
+      loop: false
+      interrupt_priority: medium
+  transitions:
+    - { from: none, to: shield-up,   on: spawn-with-shield, type: cut }
+    - { from: none, to: warded,      on: spawn-with-ward, type: cut }
+    - { from: none, to: armoured,    on: spawn-with-armour, type: cut }
+    - { from: none, to: warded,      on: defence-grant, type: cut }        # ward_allies / veil: motes arrive (telegraphs.md §2.14)
+    - { from: none, to: guard,       on: guard-start, type: cut }
+    - { from: guard, to: none,       on: guard-end, type: cut }            # plate dissolves (Stepped alpha 3 over 150 ms)
+    - { from: guard, to: shield-broken, on: defence-break, type: cut, transition_priority: high }
+    - { from: shield-up, to: shield-worn-1, on: wear-stage-1, type: cut }
+    - { from: shield-worn-1, to: shield-worn-2, on: wear-stage-2, type: cut }
+    - { from: shield, on: defence-block, ignore: true }                    # state unchanged; the block read plays on the overlay (§3.7)
+    - { from: warded, to: warded, on: defence-absorb, type: cut }          # one mote pops (wardPopMs); the ring re-spaces
+    - { from: warded, to: warded, on: defence-grant, type: cut }           # refill up to rules cap: motes re-form one per wardRegrowStepMs
+    - { from: armoured, to: armoured, on: defence-reduce, type: cut }      # clang read; the frame re-derives from the bar fraction
+    - { from: armoured, to: armour-broken, on: defence-break, type: cut, transition_priority: high }
+    - { from: shield-broken, to: none, on: break-read-complete, type: cut }
+    - { from: ward-stripped, to: none, on: break-read-complete, type: cut }
+    - { from: armour-broken, to: none, on: break-read-complete, type: cut }
+    - { from: none, to: shield-up, on: defence-regrow, condition: "type == shield", type: cut }   # Warden P2 regrowDefence 1.0: plate rebuilds bottom-up over 300 ms
+    - { from: none, to: armoured, on: defence-regrow, condition: "type == armour", type: cut }   # Colossus P2 regrowDefence 0.5: plates re-seat with a 1 px drop each
+    - { from: none, to: warded, on: defence-regrow, condition: "type == ward", type: cut }       # warded elites after eliteRegrowMs, Matron P2
+    - { from: any, to: none, on: owner-dying, type: cut, transition_priority: terminal }         # the overlay falls with the corpse (collapse with it) — no break read on death
+```
+
+Coverage: every region state reaches `none`. `none` is the rest state (not terminal, because regrow and grant re-enter). Hits on a state whose defence doesn't apply (a flank hit on a shield, a DoT on a shield with `blocksStatus`) are sim decisions and produce either a normal hit read or a `block`.
+
+### 8.2 Elite affix region (outline pulse + nameplate)
+
+- **Every elite shows its affix(es)** (`affixes.json`: one; two from Heat 2): (1) the **affix outline**, (2) the affix **glyph** nameplate (UX §9.6), (3) the gold **ground ring** (R10, kept as the "this is an elite" read under any affix).
+- **Outline = overlay, not a baked body variant.** The TA exports one white **outline-only** frame per body frame (`<enemy>_outline_fN`, same trimmed rect and origin as the body frame). EnemyView draws it over the body, syncs its frame index to the body every step, and tints it NORMAL-mode with the affix's `outlineKey` token. One export per elite candidate serves all five affixes, and the body keeps R5's single tint channel free. (This supersedes R10's "baked gold outline": the elite outline is now the affix outline, and R10's ground ring stays.)
+- **Pulse:** the overlay alpha runs `affixPulseAlphaMin ↔ 1.0`, Sine.easeInOut, period `affixPulsePeriodMs`, phase randomised per elite (fx stream). With **two affixes** the overlay alternates tokens each half-period, and the swap happens at the α minimum, so there is never a hard colour cut. During the attacker's windup **lock window** the pulse holds at α 1 (the outline never fades during the peak read).
+- **Hasted:** plus 1 `dash-ghost` afterimage every 200 ms while moving (reused player afterimage pool, α 0.35 → 0 over 150 ms). Windups are unchanged (`affixes.hasted.params.windupMult` 1.0), so no telegraph changes.
+- **Volatile:** the death ring is telegraphed (telegraphs.md §2.16).
+- **Reduced motion:** the pulse becomes a static α 1 outline. The glyph, title and ring are unchanged.
+- **Reuse:** the same outline-only export serves the **dark twist**'s `rules.twists.dark.enemyOutline` (tint `#fdf7ed`, α 1, no pulse), so one export pays for two features.
+- **Fallback** if the TA ships baked outline variants instead of overlays: no alpha pulse (it would dim the body). The pulse moves to the ground ring's alpha, same numbers.
+
+### 8.3 `miniboss` graph (Grave Warden, Lantern Matron, Iron Colossus)
+
+`miniboss` = the §4 `boss` graph with these deltas (tier `"mini"`, mechanic §10.1):
+
+| State | Boss | **Mini** |
+|---|---|---|
+| `intro` | `bossActivateDelayMs` 1200 + camera pan | `miniBossActivateDelayMs` **800**, **no pan** (the arena is one screen): the rise starts at 0 ms, card per §8.4 |
+| `phase-shift` | `invulnMs` 1200–1500 | `invulnMs` 800 / 900 (data). Same beat compressed: stop → burst → shockwave → aura pulses fit `invulnMs − 300` → **defence regrow** read (§8.1 `defence-regrow`) plays inside the invulnerable window, so the player sees the guard come back while nothing can hit it |
+| `dying` | `bossDeathHitstopMs` 300 → `bossDeathUnravelMs` → big burst | `miniBossDeathHitstopMs` **160** → `miniBossDeathUnravelMs` **700** (bursts every `bossDeathBurstIntervalMs`, 3 bursts) → medium burst (`traumaBigExplosion`, not `traumaBossKill`) → reward rise. **No floor end**: the step-5 doors open (motion-spec `world-door-open`) |
+
+The shorter stop is deliberate. The mini is a mid-floor exam, and the 300 ms boss stop must stay the run's biggest freeze (Sakurai: hit-stop scales with the weight of the moment).
+
+**Per-mini bindings and signature motion** (sprites: `art-slot-map` v2 minis. Until they land, assume 32×36 class A and boss-class anchors, R7):
+
+| Mini | Defence overlay | Idle signature | Attack tells (telegraphs.md §2.17) |
+|---|---|---|---|
+| Grave Warden | shield (boss plate, cracks at 1/3 and 2/3 of the effective `wearBlocks`) | plate held forward; a 1 px plate bob in sync with idle f0/f2 | `shield_bash` = charge with the plate leading; `bone_toss` = shoot; `raise_sentinel` = summon |
+| Lantern Matron | ward, 6 motes at r = 16 (the most visible ward in the game) | a lantern overlay glow pulses 0.6 ↔ 1.0 at 0.8 Hz | `lantern_ring` = ring; `kindle_choir` = ward_allies; `call_acolytes` = summon; `ember_fan` = shoot |
+| Iron Colossus | armour plates at boss scale + UX armour bar | idle at `enemyIdleFps` × 0.75; a 1 px dust puff per footfall | `quake` = slam self (heavy); `rock_volley` = shoot; `iron_charge` = charge (heavy) |
+
+### 8.4 Intro card and phase banner (bosses and minis)
+
+Timeline for the activation window `A` (`bossActivateDelayMs` 1200 / `miniBossActivateDelayMs` 800). All card motion is HUD-scene (not frozen by hit-stop), and the boss rise is RunScene. Card text and layout are UX's (`hud-layout.md` §9.6). Entries are in motion-spec `boss-intro-card` / `boss-phase-banner`.
+
+| t (ms) | Boss (A = 1200) | Mini (A = 800) |
+|---|---|---|
+| 0 | letterbox bars slide in (`introLetterboxMs`); HUD dims to 40 % | same |
+| 0 / pan arrival | pan starts; the boss rise plays at pan arrival (`bossIntroPanMs`/2 = 450) | rise at 0 |
+| 150 | name (T2) in | 100 |
+| 300 | subtitle (T1) in | 200 |
+| 450 | **adapt line** (T1) in, if a rule applied at activation, with `stg_boss_adapt` cue | 300 |
+| A − 200 | card + bars out | A − 200 |
+| A | boss active; HUD back to 100 % over 150 ms | same |
+
+**Phase banner** (`boss:phase`, both tiers): shown after the phase-shift hit-stop ends (never during a freeze), for `phaseBannerMs`, under the boss bar. The banner's motion and the bar-frame flash are in motion-spec `boss-phase-banner`. Mid-fight adapts (none in v2 data, but the schema allows them) use the same slot.

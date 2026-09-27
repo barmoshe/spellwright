@@ -1,15 +1,25 @@
 # Spellwright
 
 A Magicraft-style top-down pixel-art roguelite built with Phaser 4. Craft wands by slotting spells and modifiers
-(multicast, triggers, homing, pierce, split…), fight room by room through three floors, collect relics, and defeat
-the Ossuary Knight, the Mire Queen and Vorn, the Archlich.
+(multicast, triggers, homing, pierce, split…) and fight through three worlds — the Sunken Crypt, the Drowned Halls
+and the Last Library — each with its own look, enemies, twist, mini-boss and boss. Shielded, armoured and warded
+enemies demand the right counter (pierce, blast, shock), so how you build your wand matters. A run takes about
+18–20 minutes.
 
-**Play:** https://barmoshe.github.io/spellwright/
+Also: a forge (merge, evolve, +1 slot), relic duos and corrupted relics, reward skip/reroll, Heat difficulty tiers,
+Gentle mode, a Daily run with a share line, and goals that unlock new content.
+
+**Play:** https://barmoshe.github.io/spellwright/ — desktop, gamepad (Xbox/PS5) and mobile (landscape touch).
 
 ## Controls
 
-WASD move · mouse aim · hold LMB cast · Space/RMB dash · E interact · 1–3 / Q / wheel switch wand ·
-Tab wand editor · Esc pause. Gamepad twin-stick supported. Full table in [`HOW-TO-RUN.md`](HOW-TO-RUN.md).
+- **Desktop:** WASD move · mouse aim · hold LMB cast · Space/RMB dash · E interact · 1–3 / Q / wheel switch wand ·
+  Tab wand editor · Esc pause.
+- **Gamepad:** twin-stick; PlayStation and Xbox button prompts auto-detected.
+- **Touch (landscape):** left thumb moves, the wand auto-fires at the nearest enemy, drag the right side to aim and
+  cast yourself (e.g. to break crates); DASH / SWAP buttons bottom-right.
+
+Full table in [`HOW-TO-RUN.md`](HOW-TO-RUN.md).
 
 ## Run locally
 

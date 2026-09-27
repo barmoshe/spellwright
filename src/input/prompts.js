@@ -43,6 +43,25 @@ const PROMPT_ALIAS = new Set([17]);
 
 let atlasByIdx = {};
 
+// controller-prompts §9.2: the `touch` family. Token → touch glyph id (+ text fallback). Pictures match the
+// on-screen controls. Atlas frames `prompt.touch.<id>` are bound when the TA packs them; until then HudKit
+// draws the procedural 12×12 pictogram (TOUCH_MASK there), and text-only contexts use `text`.
+const TOUCH = {
+  move: { id: 'stick_l', text: 'Left side' }, aim: { id: 'stick_r', text: 'Right side' },
+  dash: { id: 'dash', text: 'DASH' }, wandNext: { id: 'swap', text: 'SWAP' }, wandPrev: { id: 'swap', text: 'SWAP' }, wand13: { id: 'swap', text: 'SWAP' },
+  interact: { id: 'use', text: 'USE' }, inventory: { id: 'edit', text: 'EDIT' }, pause: { id: 'pause', text: 'PAUSE' },
+  confirm: { id: 'tap', text: 'Tap' }, back: { id: 'back', text: 'Back' }, dpad: { id: 'drag', text: 'Drag' },
+  tabPrev: { id: 'tap', text: 'Tap a tab' }, tabNext: { id: 'tap', text: 'Tap a tab' },
+  quickMove: { id: null, text: 'To bag' }, salvage: { id: null, text: 'Salvage' },
+  editorWandPrev: { id: 'tap', text: 'Tap a wand' }, editorWandNext: { id: 'tap', text: 'Tap a wand' },
+};
+/** Touch glyph entry for a token: { touch: id|null, text, atlas? }. `[cast]` depends on touchFire. */
+export function touchEntry(token, touchFire = 'auto') {
+  const e = token === 'cast' ? (touchFire === 'stick' ? { id: 'stick_r', text: 'Right side' } : { id: 'auto', text: 'Auto' }) : TOUCH[token];
+  if (!e) return null;
+  return { touch: e.id, text: e.text, atlas: e.id ? `prompt.touch.${e.id}` : null };
+}
+
 /** Boot: adopt the TA's `prompts.byStdIndex` (family → frame key). Missing block ⇒ procedural fallback everywhere. */
 export function installPromptAtlas(manifestPrompts) {
   atlasByIdx = (manifestPrompts && manifestPrompts.byStdIndex) || {};

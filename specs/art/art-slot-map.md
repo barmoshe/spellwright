@@ -46,30 +46,27 @@ Kenney Pixel 16 (body) · Kenney High 16 (headings; ×3 wordmark) · Kenney Mini
 
 ---
 
+## §7 v2 (Wave A2) — what changed in the map
+- **Coverage is now validated for 13 tables** (G9): enemies 15, bosses 6, spells 42, modifiers 25, relics 37, wands 10, loadouts 4, affixes 5, modes 3, goal features 6, forge recipes 25 (every base/result/catalyst mapped), door threat icon keys 8 (incl. `door.risk`), twists 2. The builder exits 1 on any miss.
+- **Spells:** the 18 level-2 cards reuse their base's projectile, impact and icon (one identity; the card shows `lvl_pips` + "II"). The 6 evolutions get new bodies from admitted packs (simplefx large fireball / lightning strip / big crystals / slash; DevWizard Plant Missle / Arcane Bolt via `L_DW_PRISM`), new 7Soul1 icons, a double glow, a ★ and gold card corners.
+- **Relics:** the 10 cut ids are removed; 21 new relics map to 7Soul1 item icons (4 icons freed by the cuts are reused where the meaning matches: I_Mirror → full_focus, Ac_Ring01 → misers_ring, P_Blue05 → deepening_well, I_Crystal01 → overflow_cell). Duo / corrupted treatment: JSON `relic_treatment`.
+- **New enemies:** `tomb_sentinel` (orc_warrior + `L_SENTINEL` + steel shield + spear), `lantern_acolyte` (pumpkin_dude + lantern glow).
+- **Mini-bosses (×2 captains, style-guide E1):** `grave_warden` (orc_warrior ×2 + `L_WARDEN` + shield/spear ×2), `lantern_matron` (pumpkin_dude ×2 + `L_MATRON`), `iron_colossus` (masked_orc ×2 + `L_IRON`). Boss telegraph grammar gains `guard`, `ward_allies`, `mirror`, heat attacks.
+- **Defences, affixes, twists:** JSON `defences`, `affixes`, `affix_outline_recipe` (the TA bakes `ring1`/`ring2` outline frames with `outline_rings()` in `scripts/author-art.py`), `twists` (Dark twist light cookies + everyone's ring1).
+- **Authored additions:** `spellwright_authored.png` gains 11 px enemy bullets, shield arcs (6 radii × normal/hit), ward runes, armour chips, bone shard, light cookies (canvas now 352×288; every v1 rect unchanged). `spellwright_ui.png` gains defence/keyword/affix glyphs, level/evolved/corrupted badges, heat numerals, goal glyphs, door threat icons, touch buttons/icons/stick/ghost hand/rotate/share (v1 rects unchanged). `icons16.png` covers every new card, relic, mode and feature icon.
+- **Enemy bullet rule:** nearest size **up** (radius 5 → `ebullet.<element>.11`).
+- **Checked:** `scripts/build-assets.py` ran cleanly on a scratch copy of the project with this map (world 1024², ui 1024×512); the real run is the TA's in Wave B.
+
+## §8 Worlds addendum
+- JSON `worlds` (per world: tileset recipe, floor/wall/pit materials, water, bookshelf states, props with frame lists, light) and `world_cards`; G9 now validates the 3 world ids, every world's natives and every world twist (`candlelight`, `flooded`, `bookshelves`).
+- Natives: `bone_archer` (skelet + `L_ARCHER` + bow), `drowned_thrall` (zombie_anim + `L_DROWNED`), `mire_leech` (tiny_slug + `L_LEECH`), `animated_armor` (knight_m + `L_ARMOR` + halberd), `bound_tome` (authored), `ink_imp` (imp + `L_INK`).
+- New authored frames (appended; every earlier rect unchanged; canvas 352×432): candles, bone pile, cobweb, shallow/deep water (3 f each), water edge, moss ×2, drips (4 f), bookshelves (2 + burning 3 f + collapsed), wall shelf, candelabra (3 f), scroll/book piles, lectern, rune circle, parquet ×3, bound tome ×2.
+- **TA (Wave B) asks:** build `tiles_f2` / `tiles_f3` from the recipes (W2 pits → deep water, water tiles + edges; W3 floor → parquet, wall faces → `wall_shelf`); pack the world props into `world`.
+- `build-assets.py` ran cleanly on a scratch copy with this map (world atlas still 1024², VRAM 6.6 MB).
+
 ## §Objections
 
-```yaml
-objection:
-  skill_or_agent: 2d-artist (style-definition-and-guide)
-  against_artifact: data/rules.json → rules.enemies.elite.scale (1.25) + state-graph-spec R4 "elite ×1.25 base scale"
-  reason: |
-    A sustained ×1.25 nearest-neighbour scale on a 16 px outlined 0x72 sprite duplicates 4 of every
-    16 texel rows and columns (16 → 20 px). The 1 px #222222 outline becomes 1–2 px unevenly and the
-    duplicated rows shimmer as the sprite moves sub-pixel (roundPixels) — on exactly the enemies the
-    player is told to prioritise. It violates the style-guide's single-pixel-density rule (§3.3) and
-    the style-definition DOG (no outlined sprite at a sustained non-integer scale). Animator R4's
-    1/8 quantisation fixes frame size, not texel duplication.
-  proposed_alternative: |
-    Keep the gameplay effect, change the visual carrier:
-      - rules.enemies.elite.scale → 1.0 for the SPRITE; if the designer wants the bigger body, add
-        rules.enemies.elite.radiusMult 1.25 (collision only — invisible, player-favourable since the
-        outline below adds +2 px of visible size).
-      - Elite read = TA-baked 1 px `elite-gold` #facb3e outline around every eliteCandidates sheet
-        (+2 px each axis, origin unchanged) + a gold ground ellipse under the shadow + 3× coins
-        already in data. This is louder at 640×360 than +25 % size (a gold ring on a #483b3a floor is
-        6.97:1) and costs one baked variant per candidate sheet (≤ 8 sheets, ~10 KB of atlas).
-      - Animator R4 drops "elite ×1.25" from its sustained-scale exceptions.
-```
+None open. **O-ART-1 (elite ×1.25 scale) — resolved:** the Game Designer removed `rules.enemies.elite.scale` (elites ×1.0) and the Animator adopted it (state-graph R4/R10). v2 replaces the baked elite-gold outline with the affix outline rings + glyph + title (§7); the gold ground ring stays.
 
 ## §Resolved objections (UX Designer → 2D Artist, this pass)
 
@@ -84,7 +81,7 @@ No other objection: every enemy, boss, spell, modifier, relic, wand and loadout 
 
 <!-- GENERATED by scripts/build-art-slot-map.py — edit the script, not this block -->
 
-### G1. Enemies (13/13 data ids)
+### G1. Enemies (21/21 data ids)
 
 | id | idle | move | class | frame | LUT | notes |
 |---|---|---|---|---|---|---|
@@ -101,16 +98,27 @@ No other objection: every enemy, boss, spell, modifier, relic, wand and loadout 
 | `necromancer` | 0x72 necromancer_anim_f0..f3 (4 f) | 0x72 necromancer_anim_f0..f3 (4 f) | B | 16x23 | — | summon_sigil: fx.summon_sigil |
 | `skull` | 0x72 skull | 0x72 skull | D (flyer) | 16x16 | — | flying: True; trail: authored glow_16 ADD tint #9f294e alpha 0.35 behind it (reads "possessed") |
 | `stone_golem` | 0x72 big_demon_idle_anim_f0..f3 (4 f) | 0x72 big_demon_run_anim_f0..f3 (4 f) | A | 32x36 | L_GOLEM | bullet: ebullet.arcane.9; stomp_fx: fx.explosion (radius 44, hostile) |
+| `tomb_sentinel` | 0x72 orc_warrior_idle_anim_f0..f3 (4 f) | 0x72 orc_warrior_run_anim_f0..f3 (4 f) | A | 16x23 | L_SENTINEL | overlays: ; thrust_fx: fx.enemy_slash frames 1-3 only, narrow (arcDeg 40); defence: shield; note: grey tomb-stone guard; unique silhouette = body + oversized tower shield + spear |
+| `lantern_acolyte` | 0x72 pumpkin_dude_idle_anim_f0..f3 (4 f) | 0x72 pumpkin_dude_run_anim_f0..f3 (4 f) | A | 16x23 | — | light: authored glow_16 ADD tint torch-light #ee8e2e alpha 0.35 at head (it carries a lantern; also lights the dark twist); ward_cast_fx: fx.ward_kindle; defence: ward 2; note: the lantern-headed support; orange head never carries a projectile (it does not shoot), so it cannot be misread as fire magic |
+| `bone_archer` | 0x72 skelet_idle_anim_f0..f3 (4 f) | 0x72 skelet_run_anim_f0..f3 (4 f) | A | 16x16 | L_ARCHER | overlays: ; bullet: ebullet.arcane.7; world: w1; note: same body as skeleton but dustier + a bow taller than itself: melee vs ranged skeleton reads at a glance |
+| `drowned_thrall` | 0x72 zombie_anim_f0..f3 (4 f) | 0x72 zombie_anim_f0..f3 (4 f) | B | 16x16 | L_DROWNED | world: w2; defence: ward 2 (rune pips); water: body y-offset +2 px and a 1 px #cae6f5 ripple ring (Graphics) while standing in water |
+| `mire_leech` | 0x72 tiny_slug_anim_f0..f3 (4 f) | 0x72 tiny_slug_anim_f0..f3 (4 f) | B (flyer) | 16x16 | L_LEECH | flying: True; world: w2; note: 0x72 slug in native style (not trashmobz): a swarm "swimmer"; bob per flyer rule |
+| `animated_armor` | 0x72 knight_m_idle_anim_f0..f3 (4 f) | 0x72 knight_m_run_anim_f0..f3 (4 f) | A | 16x28 | L_ARMOR | overlays: ; defence: armour 36 (plate bar); world: w3; swipe_fx: fx.enemy_slash; note: 16x28 like the player, so it is kept maximally unlike the wizard: grey steel, no hat, dark visor, crimson plume, halberd |
+| `bound_tome` | authored bound_tome_f0 | authored bound_tome_f0 | D | 16x16 | — | windup_frame: authored bound_tome_f1; world: w3; bullet: ebullet.arcane.7 (page_storm) · ebullet.poison.7 (ink_bolt); note: authored floating grimoire (plum cover, gilt clasp); opens and glares for every windup |
+| `ink_imp` | 0x72 imp_idle_anim_f0..f3 (4 f) | 0x72 imp_run_anim_f0..f3 (4 f) | A | 16x16 | L_INK | world: w3; blast_fx: fx.explosion (radius 34) with expl16 through L_EXPL_INK; ring = telegraph-rim |
 
-### G2. Bosses (3/3)
+### G2. Bosses (6/6)
 
 | id | idle / move | LUT | scale | overlay | bullets / hazards | hitbox fit |
 |---|---|---|---|---|---|---|
 | `ossuary_knight` | 0x72 big_zombie_idle_anim_f0..f3 (4 f) / big_zombie_run_anim_f0..f3 | L_KNIGHT | x1 | boss_knight_blade = 0x72 weapon_knight_sword | ebullet.arcane.9  | radius 12 vs content 18x27: OK |
 | `mire_queen` | 0x72 ogre_idle_anim_f0..f3 (4 f) / ogre_run_anim_f0..f3 | native | x1 | — | ebullet.poison.9 (aimed_glob radius 6 -> ebullet.poison.13) hazard.acid_pool | radius 14 vs content 20 wide: contact reads ~1 px early — note to Game Designer (radius 12 would fit); not blocking |
 | `archlich` | 0x72 necromancer_anim_f0..f3 (4 f) / necromancer_anim_f0..f3 | L_LICH | x2 | boss_lich_staff = 0x72 weapon_green_magic_staff · LUT L_GEM_VIOLET | ebullet.arcane.9 / ebullet.frost.9 hazard.fire_zone | — |
+| `grave_warden` | 0x72 orc_warrior_idle_anim_f0..f3 (4 f) / orc_warrior_run_anim_f0..f3 | L_WARDEN | x2 | warden_shield = simplefx rect [50, 66, 12, 12] · LUT L_SFX_STEEL, warden_spear = 0x72 weapon_spear | ebullet.arcane.9 (bone_toss)  | radius 10 vs content 24x32: OK |
+| `lantern_matron` | 0x72 pumpkin_dude_idle_anim_f0..f3 (4 f) / pumpkin_dude_run_anim_f0..f3 | L_MATRON | x2 | — | ebullet.fire.9 (ember_fan) · ebullet.arcane.9 (lantern_ring)  | radius 11 vs content 26x30: OK |
+| `iron_colossus` | 0x72 masked_orc_idle_anim_f0..f3 (4 f) / masked_orc_run_anim_f0..f3 | L_IRON | x2 | — | ebullet.arcane.11 (rock_volley radius 5)  | radius 13 vs content 24x32: ~1 px generous, OK |
 
-### G3. Spells (18/18)
+### G3. Spells (42/42)
 
 | id | projectile body | fps | rotate | glow (ADD) | impact / expire | icon |
 |---|---|---|---|---|---|---|
@@ -132,6 +140,30 @@ No other objection: every enemy, boss, spell, modifier, relic, wand and loadout 
 | `blink_bolt` | devwizard `Pure Bolt 2` cells [0, 0]..[5, 0] (6 f) · LUT L_DW_PURE_ARCANE | 15 | no | glow_16 #cfc0ff a0.6 | onExpire teleport: fx.blink_puff at origin and destination (tint #cfc0ff) | `S_Magic05` |
 | `comet` | simplefx rect [208, 34, 16, 11] · LUT L_SFX_BASE+L_DELETE_OUTLINE | static | yes | glow_32 #ee8e2e a0.6 | onExpire explode r48 -> fx.explosion (fire, large) | `S_Fire05` |
 | `vortex` | codemanu `13_vortex` frames every 5th of 0..60 (13 f) · LUT L_GREY_BAKE · tint #8b7cf0 | 20 | no | glow_16 #cfc0ff a0.8 at centre (the bright core) | onExpire explode r36 -> fx.explosion (arcane) | `S_Shadow02` |
+| `spark_bolt_2` | devwizard `Arcane Bolt` cells [0, 0]..[5, 0] (6 f) · LUT L_DW_ARCANE | 15 | yes | glow_16 #8b7cf0 a0.5 (+0.15 alpha: level 2) | fx.hit_ring (arcane) | `S_Shadow08` |
+| `magic_missile_2` | devwizard `Magic Orb` cells [0, 0]..[5, 0] (6 f) · LUT L_DW_ARCANE | 12 | no | glow_16 #8b7cf0 a0.5 (+0.15 alpha: level 2) | fx.hit_ring (arcane) | `S_Shadow10` |
+| `bouncing_burst_2` | simplefx rect [118, 37, 6, 6] · LUT L_SFX_ARCANE+L_DELETE_OUTLINE | static | no | glow_16 #8b7cf0 a0.5 (+0.15 alpha: level 2) | fx.hit_ring (arcane); on wall bounce: 1-step FILL flash #fdf7ed | `S_Shadow04` |
+| `fire_bolt_2` | devwizard `Fireball` cells [0, 0]..[5, 0] (6 f) | 15 | yes | glow_16 #ee8e2e a0.5 (+0.15 alpha: level 2) | fx.hit_ring (fire) + 2 ember motes | `S_Fire01` |
+| `fireball_2` | devwizard `Firebomb` cells [0, 0]..[5, 0] (6 f) | 15 | yes | glow_32 #ee8e2e a0.45 (+0.15 alpha: level 2) | onExpire explode r32 -> fx.explosion (fire) | `S_Fire03` |
+| `ice_shard_2` | simplefx rect [5, 35, 5, 9] · LUT L_SFX_BASE+L_DELETE_OUTLINE | static | yes | glow_16 #5fcde4 a0.5 (+0.15 alpha: level 2) | fx.hit_ring (frost) | `S_Ice03` |
+| `frost_nova_2` | simplefx rect [5, 35, 5, 9] · LUT L_SFX_BASE+L_DELETE_OUTLINE | static | yes | glow_16 #5fcde4 a0.4 (+0.15 alpha: level 2) | fx.hit_ring (frost); cast burst: simplefx r2 c9-c10 snow burst 2 f @ 20 fps at caster | `S_Ice02` |
+| `frost_lance_2` | devwizard `Ice Lance` cells [0, 0]..[3, 0] (4 f) | 15 | yes | glow_16 #5fcde4 a0.5 (+0.15 alpha: level 2) | fx.hit_ring (frost) | `S_Ice09` |
+| `chain_lightning_2` | devwizard `Light Bolt` cells [0, 0]..[5, 0] (6 f) · LUT L_DW_LIGHT_SHOCK | 20 | yes | glow_16 #facb3e a0.6 (+0.15 alpha: level 2) | fx.hit_ring (shock); each jump = fx.chain_arc | `S_Thunder01` |
+| `thunder_orb_2` | simplefx cells [[14, 4], [15, 4]] · LUT L_SFX_SHOCK+L_DELETE_OUTLINE | 12 | no | glow_32 #facb3e a0.55 (+0.15 alpha: level 2) | each tick zap: fx.zap_bolt on the target + fx.chain_arc from orb | `S_Thunder03` |
+| `venom_dart_2` | simplefx rect [3, 54, 10, 3] · LUT L_SFX_POISON_DART+L_DELETE_OUTLINE | static | yes | glow_16 #97da3f a0.4 (+0.15 alpha: level 2) | fx.hit_ring (poison) | `S_Poison08` |
+| `toxic_flask_2` | 0x72 flask_green | static | spin | glow_16 #97da3f a0.4 (+0.15 alpha: level 2) | shatter: fx.poison_burst; zone: zone.player_poison (radius 26) | `S_Poison05` |
+| `boomerang_blade_2` | simplefx rect [40, 110, 22, 10] · LUT L_SFX_WHITE_ARCANE | static | spin | glow_16 #8b7cf0 a0.4 (+0.15 alpha: level 2) | fx.hit_ring (arcane) per pass | `S_Physic02` |
+| `arcane_orbit_2` | simplefx rect [132, 35, 10, 10] · LUT L_SFX_ARCANE+L_DELETE_OUTLINE | static | no | glow_16 #8b7cf0 a0.6 (+0.15 alpha: level 2) | fx.hit_ring (arcane) | `S_Shadow12` |
+| `rune_mine_2` | simplefx cells [[12, 0], [13, 0]] · LUT L_SFX_FIRE_STAR+L_DELETE_OUTLINE | static | no | glow_16 #ee8e2e a0.3 (settling) -> a0.7 (armed) (+0.15 alpha: level 2) | onExpire explode r40 -> fx.explosion (fire) | `S_Fire08` |
+| `blink_bolt_2` | devwizard `Pure Bolt 2` cells [0, 0]..[5, 0] (6 f) · LUT L_DW_PURE_ARCANE | 15 | no | glow_16 #cfc0ff a0.6 (+0.15 alpha: level 2) | onExpire teleport: fx.blink_puff at origin and destination (tint #cfc0ff) | `S_Magic05` |
+| `comet_2` | simplefx rect [208, 34, 16, 11] · LUT L_SFX_BASE+L_DELETE_OUTLINE | static | yes | glow_32 #ee8e2e a0.6 (+0.15 alpha: level 2) | onExpire explode r48 -> fx.explosion (fire, large) | `S_Fire05` |
+| `vortex_2` | codemanu `13_vortex` frames every 5th of 0..60 (13 f) · LUT L_GREY_BAKE · tint #8b7cf0 | 20 | no | glow_16 #cfc0ff a0.8 at centre (the bright core) (+0.15 alpha: level 2) | onExpire explode r36 -> fx.explosion (arcane) | `S_Shadow02` |
+| `sunburst` | simplefx rect [224, 16, 16, 16] · LUT L_SFX_BASE+L_DELETE_OUTLINE | static | yes | glow_32 #facb3e a0.6 + glow_16 #fdf7ed a0.4 (double glow = evolved) | onExpire explode r44 -> fx.explosion (fire, k=3) + zone.player_fire r36 | `S_Light02` |
+| `tempest_chain` | simplefx rect [160, 0, 32, 16] · LUT L_SFX_SHOCK+L_DELETE_OUTLINE | 20 | yes | glow_16 #facb3e a0.6 + glow_16 #fdf7ed a0.4 | fx.hit_ring (shock); 7 jumps of fx.chain_arc | `S_Thunder02` |
+| `glacier_spike` | simplefx cells [[3, 1], [4, 1]] · LUT L_SFX_BASE+L_DELETE_OUTLINE | 10 | yes | glow_16 #5fcde4 a0.6 + glow_16 #fdf7ed a0.4 | fx.hit_ring (frost); onExpire split 4 -> ice_shard bodies | `S_Ice04` |
+| `blight_needle` | devwizard `Plant Missle` cells [0, 0]..[5, 0] (6 f) | 15 | yes | glow_16 #97da3f a0.5 + glow_16 #fdf7ed a0.3 | fx.hit_ring (poison) + zone.player_poison r16 | `S_Bow12` |
+| `prism_spark` | devwizard `Arcane Bolt` cells [0, 0]..[5, 0] (6 f) · LUT L_DW_PRISM | 15 | yes | glow_16 #cae6f5 a0.6 + glow_16 #fdf7ed a0.4 | fx.hit_ring (arcane); onExpire split 4 -> spark_bolt bodies (L_DW_PRISM) | `S_Light03` |
+| `reaper_disc` | simplefx rect [72, 110, 22, 17] · LUT L_SFX_WHITE_ARCANE | static | spin | glow_16 #8b7cf0 a0.5 + glow_16 #fdf7ed a0.3 | fx.hit_ring (arcane); chain 2 via fx.chain_arc tinted #cfc0ff | `S_Shadow09` |
 
 ### G4. Modifiers (25/25)
 
@@ -163,24 +195,14 @@ No other objection: every enemy, boss, spell, modifier, relic, wand and loadout 
 | `infuse_shock` | `S_Axe03` | infuse | ui_authored card_modifier_36 / card_modifier_18 (bronze) | — |
 | `infuse_poison` | `S_Axe07` | infuse | ui_authored card_modifier_36 / card_modifier_18 (bronze) | — |
 
-### G5. Relics (26/26)
+### G5. Relics (37/37)
 
 | id | icon | LUT |
 |---|---|---|
-| `arcane_whetstone` | `I_SilverBar` | L_OUTLINE |
-| `winged_boots` | `A_Shoes04` | L_OUTLINE |
-| `magnet_charm` | `Ac_Necklace04` | L_OUTLINE |
-| `mana_font` | `I_Crystal01` | L_OUTLINE |
-| `deep_well` | `P_Blue05` | L_OUTLINE |
-| `heart_vessel` | `P_Red07` | L_OUTLINE |
-| `greed_ring` | `Ac_Ring01` | L_OUTLINE |
 | `ember_heart` | `I_Ruby` | L_OUTLINE |
 | `frost_crown` | `I_Diamond` | L_OUTLINE |
 | `storm_battery` | `I_Cannon04` | L_OUTLINE |
 | `plague_vial` | `P_Green05` | L_OUTLINE |
-| `glass_lens` | `I_Mirror` | L_OUTLINE |
-| `quickened_quill` | `I_Feather01` | L_OUTLINE |
-| `sand_hourglass` | `I_Clock` | L_OUTLINE |
 | `echo_chamber` | `I_SnailShell` | L_OUTLINE |
 | `blast_boots` | `A_Shoes07` | L_OUTLINE |
 | `merchant_seal` | `Ac_Medal01` | L_OUTLINE |
@@ -193,6 +215,27 @@ No other objection: every enemy, boss, spell, modifier, relic, wand and loadout 
 | `prism_shard` | `I_Opal` | L_OUTLINE |
 | `warding_sigil` | `Ac_Medal04` | L_OUTLINE |
 | `phoenix_feather` | `I_Feather02` | L_OUTLINE |
+| `last_stand` | `C_Elm03` | L_OUTLINE |
+| `first_light` | `P_Yellow05` | L_OUTLINE |
+| `still_hand` | `W_Fist001` | L_OUTLINE |
+| `crowd_reader` | `I_Book` | L_OUTLINE |
+| `full_focus` | `I_Mirror` | L_OUTLINE |
+| `tally_stone` | `I_Rock01` | L_OUTLINE |
+| `unbroken_seal` | `Ac_Medal03` | L_OUTLINE |
+| `misers_ring` | `Ac_Ring01` | L_OUTLINE |
+| `deepening_well` | `P_Blue05` | L_OUTLINE |
+| `hollow_runes` | `I_Rock03` | L_OUTLINE |
+| `echoing_payload` | `I_Cannon03` | L_OUTLINE |
+| `endless_page` | `I_Scroll` | L_OUTLINE |
+| `overflow_cell` | `I_Crystal01` | L_OUTLINE |
+| `steam_engine` | `I_Cannon01` | L_OUTLINE |
+| `storm_furnace` | `I_Cannon02` | L_OUTLINE |
+| `plague_bloom` | `I_Clover` | L_OUTLINE |
+| `thorn_blaze` | `I_ScorpionClaw` | L_OUTLINE |
+| `cracked_crown` | `C_Elm04` | L_OUTLINE |
+| `hungry_rune` | `E_Bones03` | L_OUTLINE |
+| `blood_ink` | `I_Ink` | L_OUTLINE |
+| `unstable_core` | `I_Coal` | L_OUTLINE |
 
 ### G6. Wands (10/10)
 
@@ -217,6 +260,45 @@ No other objection: every enemy, boss, spell, modifier, relic, wand and loadout 
 | `pyromancer` | 0x72 wizzard_f_idle_anim_f0..f3 (4 f) | wands.ember_rod.icon |
 | `stormcaller` | 0x72 wizzard_m_idle_anim_f0..f3 (4 f) | wands.stormcaller_staff.icon |
 | `hexer` | 0x72 wizzard_f_idle_anim_f0..f3 (4 f) | wands.glass_needle.icon |
+
+### G7b. v2 — affixes, defences, door threats, modes, features
+
+| affix | outline token | hex | glyph (never colour-only) |
+|---|---|---|---|
+| `armoured` | outline.steel | `#b6cbcf` | ui_authored def_armour (shield-plate) + title `affix.armoured` |
+| `warded` | outline.cyan | `#72d6ce` | ui_authored def_ward (ward-rune) + title `affix.warded` |
+| `shielded` | outline.bone | `#e2b694` | ui_authored def_shield (tower-shield) + title `affix.shielded` |
+| `hasted` | outline.gold | `#facb3e` | ui_authored affix_wing (wing) + title `affix.hasted` |
+| `volatile` | outline.ember | `#ffad3b` | ui_authored affix_burst (burst = its death ring) + title `affix.volatile` |
+
+| threat iconKey | UI frame (16 px) |
+|---|---|
+| `threat.none` | `door_none` |
+| `threat.swarm` | `door_swarm` |
+| `threat.shield` | `door_shield` |
+| `threat.armour` | `door_armour` |
+| `threat.ward` | `door_ward` |
+| `threat.ranged` | `door_ranged` |
+| `threat.summoner` | `door_summoner` |
+| `door.risk` | `door_risk` |
+| `door.unknown` | `door_unknown` |
+
+| mode / feature | icon |
+|---|---|
+| mode `standard` | `C_Hat01` |
+| mode `gentle` | `I_Feather01` |
+| mode `daily` | `I_Scroll02` |
+| feature `daily` | I_Scroll02 |
+| feature `forge` | I_GoldBar |
+| feature `duos` | Ac_Necklace04 |
+| feature `corrupted` | E_Bones02 |
+| feature `heat` | ui_authored heat_1 |
+| feature `startCapacity` | composite |
+
+| relic class | ids | treatment |
+|---|---|---|
+| duo | steam_engine, storm_furnace, plague_bloom, thorn_blaze | DUO chip (UX, procedural) + both parent icon16 with ✔ (g_ok) per owned parent · world: pedestal glow = two glow_16 (one per parent element) offset 3 px |
+| corrupted | cracked_crown, hungry_rune, blood_ink, unstable_core | ui_authored g_corrupt_7 badge top-right on the icon cell (cracked plum seal; shape, not hue) · world: pedestal glow_16 MULTIPLY #5f2d56 (a dim, not a glow) + slow 1 px jitter (Animator) |
 
 ### G8. Palette-remap LUTs (TA bakes; exact hex -> hex)
 
@@ -256,14 +338,36 @@ No other objection: every enemy, boss, spell, modifier, relic, wand and loadout 
 | `L_ICON_OAK` | icon W_Staff04 -> oak brown | #bbcde8→#d8a57d, #809cb3→#b58057, #687576→#8a503e, #3c6161→#62232f |
 | `L_ICON_ARCHMAGE` | icon W_Staff06 -> gold + violet crystal | #e7f5ff→#fdf7ed, #e7f9ff→#fdf7ed, #d5e1e9→#facb3e, #b8bfc4→#ee8e2e, #6f818d→#8f4029, #00a2d5→#5956bd, #3acfff→#8b7cf0, #baeeff→#cfc0ff |
 | `L_ICON_SHADOW` | icon A_Clothing01 -> shadow cloak | #fcfbfb→#cfc0ff, #e8e5e5→#8b7cf0, #cfc7c7→#5956bd, #b0a3a3→#5f2d56, #988787→#2a2a3a, #776161→#2a2a3a |
+| `L_SENTINEL` | 0x72 orc_warrior_* -> Tomb Sentinel (grey tomb-stone skin, iron darks) | #3d734f→#aa8d7a, #8f4029→#483b3a, #62232f→#2a2a3a |
+| `L_WARDEN` | 0x72 orc_warrior_* x2 -> Grave Warden (bone skin, gold belt; captain of the sentinels) | #3d734f→#d3bfa9, #8f4029→#facb3e, #62232f→#8f4029 |
+| `L_MATRON` | 0x72 pumpkin_dude_* x2 -> Lantern Matron (brighter lantern head, plum robe) | #ee8a2e→#facb3e, #c56025→#ee8e2e, #8f4029→#5f2d56, #62232f→#2a2a3a |
+| `L_IRON` | 0x72 masked_orc_* x2 -> Iron Colossus (steel plates, pale mask) | #3d734f→#417089, #8f4029→#314152, #62232f→#2a2a3a, #fdf7ed→#b6cbcf, #d3bfa9→#fdf7ed, #314152→#1a2230 |
+| `L_SFX_STEEL` | simplefx grey shields -> held shield overlay (steel), NORMAL blend, outlined (enemy-owned) | #7f7f7f→#417089, #c3c3c3→#b6cbcf, #ffffff→#fdf7ed, #000000→#222222 |
+| `L_DW_PRISM` | DevWizard Arcane Bolt -> prism_spark (evolved spark: white-lavender-cyan) | #76428a→#8b7cf0, #d77bba→#cae6f5, #5b6ee1→#fdf7ed |
+| `L_ARCHER` | 0x72 skelet_* -> Bone Archer (dustier, darker bone than the melee skeleton) | #fdf7ed→#d3bfa9, #d3bfa9→#aa8d7a |
+| `L_BOW` | 0x72 weapon_bow (its crimson string/grip leaves the reserved hostile band) | #550f0a→#62232f, #9b1a0a→#8f4029 |
+| `L_DROWNED` | 0x72 zombie_anim_* (TA fix f10->f0) -> Drowned Thrall (waterlogged slate skin, algae) | #d3bfa9→#6f8fa0, #aa8d7a→#4a6272, #97da3f→#4ba747, #4ba747→#3d734f |
+| `L_LEECH` | 0x72 tiny_slug_anim_* -> Mire Leech (brown leech, red mouth) | #4ba747→#8a503e, #3d734f→#62232f, #323e4f→#2a2a3a, #62232f→#da4e38, #483b3a→#314152 |
+| `L_ARMOR` | 0x72 knight_m_* -> Animated Armour (dull steel, empty dark visor, crimson plume) — the ONLY 0x72 hero sheet allowed as an enemy (style-guide §12.4) | #72d6ce→#6f8fa0, #417089→#314152, #da4e38→#62232f, #ee8e2e→#9f294e, #fdf7ed→#1a2230 |
+| `L_HALBERD` | 0x72 weapon_waraxe -> Animated Armour halberd | #72d6ce→#b6cbcf, #55a894→#6f8fa0 |
+| `L_INK` | 0x72 imp_* -> Ink Imp (violet-black ink; same silhouette as fire_imp = same archetype and telegraph) | #da4e38→#5956bd, #5f2d56→#314152, #62232f→#2a2a3a |
+| `L_EXPL_INK` | BitingChaos explosion -> Ink Imp blast (hostile ring colour still telegraph-rim) | #ff004d→#2a2a3a, #7e2553→#1a2230, #ffa300→#314152, #ffec27→#5956bd, #fff1e8→#cfc0ff, #5f574f→#222222 |
+| `L_PUNY_DRAIN` | Puny sewer-drain wall tiles (cols 8-15, rows 1-4) -> W2 wall decor in the f2 slate ramp; sludge becomes algae, the drip highlight becomes water | #525252→#4a6272, #474747→#2f3b47, #3f3f3f→#27313b, #3a3a3a→#1a2230, #777777→#6f8fa0, #686868→#6f8fa0, #585652→#4a6272, #406d44→#3d734f, #548257→#4ba747, #3c6133→#3d734f, #3e673b→#3d734f, #384c33→#27313b, #2c382a→#1a2230, #7ea56e→#72d6ce |
 
 ### G9. Coverage check
 
-- `enemies`: 13/13 mapped · missing none · stale none
-- `bosses`: 3/3 mapped · missing none · stale none
-- `spells`: 18/18 mapped · missing none · stale none
+- `enemies`: 21/21 mapped · missing none · stale none
+- `bosses`: 6/6 mapped · missing none · stale none
+- `spells`: 42/42 mapped · missing none · stale none
 - `modifiers`: 25/25 mapped · missing none · stale none
-- `relics`: 26/26 mapped · missing none · stale none
+- `relics`: 37/37 mapped · missing none · stale none
 - `wands`: 10/10 mapped · missing none · stale none
 - `loadouts`: 4/4 mapped · missing none · stale none
+- `affixes`: 5/5 mapped · missing none · stale none
+- `modes`: 3/3 mapped · missing none · stale none
+- `features`: 6/6 mapped · missing none · stale none
+- `forge`: 25/25 mapped · missing none · stale none
+- `threat_icons`: 8/8 mapped · missing none · stale none
+- `worlds`: 3/3 mapped · missing none · stale none
+- `twists`: 5/5 mapped · missing none · stale none
 - icon identity duplicates: none

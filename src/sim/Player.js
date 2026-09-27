@@ -21,6 +21,9 @@ export class Player {
     const T = ctx.T;
     this.r = T('playerBodyRadius');
     this.hurtR = T('playerHurtboxRadius');
+    // v2 hurt capsule (feel-spec §hurt, plan Addendum 4): segment waist→head above the feet, radius hurtR
+    this.capBot = T('playerHurtCapsuleBottomPx');
+    this.capTop = T('playerHurtCapsuleTopPx');
     this.body = s.physics.add.body(x - this.r, y - this.r, this.r * 2, this.r * 2);
     this.body.setCircle(this.r);
     this.body.setCollideWorldBounds(false);
@@ -58,6 +61,13 @@ export class Player {
   get isAirborne() { return false; }
   get speed() { return Math.hypot(this.body.velocity.x, this.body.velocity.y); }
   canBeHit() { return this.alive && this.iframesMs <= 0 && this.dashIframesMs <= 0; }
+  /** Circle (x, y, r) vs the hurt capsule: distance to the waist→head segment ≤ r + hurtR (enemy bullets, contact). */
+  hurtOverlap(x, y, r) {
+    const fy = this.feetY, top = fy - this.capTop, bot = fy - this.capBot;
+    const cy = y < top ? top : y > bot ? bot : y;
+    const dx = x - this.feetX, dy = y - cy, rr = r + this.hurtR;
+    return dx * dx + dy * dy < rr * rr;
+  }
 
   setPosition(x, y) { this.body.reset(x - this.r, y - this.r); }
   teleport(x, y) { this.setPosition(x, y); this.syncView(); }
@@ -111,7 +121,8 @@ export class Player {
     let mx = ctrl ? it.moveX : 0, my = ctrl ? it.moveY : 0;
     const mag = Math.hypot(mx, my);
     const pm = run.playerMods;
-    let spd = T('moveSpeed') * pm.moveSpeedMult * (it.castHeld && ctrl ? T('castMoveMult') : 1) * (this.slowMs > 0 ? 1 - run.statusTable.status.playerSlow.slowFrac : 1);
+    let spd = T('moveSpeed') * pm.moveSpeedMult * (it.castHeld && ctrl ? T('castMoveMult') : 1) * (this.slowMs > 0 ? 1 - run.statusTable.status.playerSlow.slowFrac : 1)
+      * this._waterMult();
     const tx = mx * spd, ty = my * spd;
     const v = this.body.velocity;
     const cur = Math.hypot(v.x, v.y), tgt = Math.hypot(tx, ty);
@@ -156,6 +167,14 @@ export class Player {
     this.slowMs = Math.max(this.slowMs, ms);
   }
 
+  /** Worlds W2 flooded (worlds.md §3.2): walking in shallow water × twist.moveMult; a splash cue on entering (+4 dB, cue-spec). */
+  _waterMult() {
+    const w = this.ctx.world;
+    const wet = !!(w && w.water && w.inWater(this.feetX, this.feetY - 1));
+    if (wet && !this._inWater) this.ctx.mixer.fire('water_splash', { x: this.feetX, gainDb: 4 });
+    this._inWater = wet;
+    return wet ? w.waterMoveMult : 1;
+  }
   knock(ix, iy) { if (this.alive && this.dashMs <= 0) this.body.setVelocity(this.body.velocity.x + ix, this.body.velocity.y + iy); }
 
   /**
@@ -177,6 +196,15 @@ export class Player {
       this.ctx.bus.emit(EV.PLAYER_HURT, { damage: 0, source, shieldBroke: true });
       return true;
     }
+    // Gentle (modes.json gentle.rule): a chance to shrug the hit off entirely, grown by lost Gentle runs.
+    // Same i-frames as a hurt (set above), no HP loss, no hurt flash / relic 'hurt' event (so no PLAYER_HURT);
+    // its own RNG stream (never shifts loot/ai rolls).
+    if (run.gentle && run.gentle.absorbChance > 0 && run.gentleRng.chance(run.gentle.absorbChance)) {
+      fx.particles('shard', this.coreX, this.coreY, 5, { color: 0xfdf7ed, speed: 50 });
+      this.ctx.mixer.fire('shield_block');
+      run.stats.gentleShrugs = (run.stats.gentleShrugs | 0) + 1;
+      return true;
+    }
     const dead = run.damage(damage);
     this.ctx.bus.emit(EV.DAMAGE_NUMBER, { x: this.coreX, y: this.coreY - 14, amount: damage, crit: false, element: null, target: 'player' });
     if (dead) {
@@ -195,7 +223,7 @@ export class Player {
       return true;
     }
     fx.hitstop(T('hurtHitstopMs'));
-    fx.shake(T('hurtShakePx'), T('hurtShakeMs'));
+    fx.addTrauma(T('traumaHurt', 0.82));
     this.body.setVelocity((kx / kl) * T('hurtKnockback'), (ky / kl) * T('hurtKnockback'));
     this._setBody('hurt');
     this.ctx.mixer.fire('player_hurt');
@@ -211,6 +239,7 @@ export class Player {
     this.body.setVelocity(0, 0);
     this.body.enable = false;
     this.ctx.flags.lethalOccurred = true;
+    this.ctx.deathAt = performance.now();      // feel-spec §flow: death slow-mo + run-end timing (RunScene)
     this._setBody('dead');
     this._setWand('hidden');
     this.ctx.fx.hitstop(this.T('hurtHitstopMs'));

@@ -96,7 +96,7 @@ Table rows (T1, 14 px pitch), columns: **Action** · **Keyboard / mouse** (2 cel
 
 | Region | Box (x, y, w, h) | Content |
 |---|---|---|
-| Title | 16, 8, 608, 14 | "Settings" (T2) · parent breadcrumb, T-small: "Title ›" or "Paused ›" |
+| Title | 16, 8, 608, 14 | "Settings" (T2) · parent breadcrumb, T1: "Title ›" or "Paused ›" |
 | Group rail | 16, 30, 120, 6 × 20 | 6 groups, 20 px rows, T1. The selected group has a 2 px bar on its left edge plus bright text. |
 | Content | 152, 30, 472, 280 | rows at 18 px pitch: label T1 at x 160; control right-aligned to x 616 (slider track 100×4 at x 470 with a 6×10 thumb, value "80%" T1 right-aligned at 616; toggle = two chips "On | Off" with the active one **filled and underlined**; enum = "◂ Follow system ▸"). Focused row: the focus ring around the whole row. |
 | **Preview box** (Comfort and Gameplay groups only) | 480, 200, 136, 90 | a live sample: a floor tile, a crate and an enemy dummy. On any change to Screen shake / Flash / Damage numbers / Enemy projectile emphasis / Show hitbox / Reduced motion, the dummy takes a scripted hit: the box shakes at `explosionShakePx × value`, the dummy flashes at the flash intensity, a sample damage number rises (or holds, under reduced motion), and a sample enemy shot crosses in Standard or High emphasis. |
@@ -126,3 +126,23 @@ Table rows (T1, 14 px pitch), columns: **Action** · **Keyboard / mouse** (2 cel
 - **Defaults correct for the median player:** they match the design numbers (100% shake as authored, 100% aim assist = the feel-spec value, Hold cast, hints on). ✔
 - **Related options grouped:** Audio / Display / Comfort / Gameplay / Controls / Language & Data. ✔
 - **Every gameplay-affecting setting previews immediately:** the §3 preview box, audio previews, and live scaling. The two that can't be previewed (cast mode, aim assist) get an exact description plus an in-run indicator. ✔
+
+---
+
+## §6 v2 delta: touch rows (additive keys; no schema bump)
+
+**Status:** v2 Wave A1. The rows below are **added**. Missing keys take their defaults on load (`save-schema.md`: "adding a field with a default needs no migration"). The **Touch** rows are shown only when the device can touch (`matchMedia('(any-pointer: coarse)')`) **or** a touch has been seen this session. A desktop without touch never sees them, so the row budget for desktop players is unchanged.
+
+| Group | Row (label, T1) | Control | Values | **Default** | Save key | Description bar |
+|---|---|---|---|---|---|---|
+| **Controls** (a "Touch" sub-heading above the bindings table) | Touch controls | enum | **Auto** · On · Off | **Auto** | `touchControls` (`'auto'\|'on'\|'off'`) | Auto: "Sticks and buttons appear once you touch the screen." · On: "Always show them." · Off: "Never show them (for touchscreen laptops played with a mouse)." |
+| | Touch firing | enum | **Auto-fire** · Right stick | **Auto-fire** | `touchFire` (`'auto'\|'stick'`) | Auto: "Your wand fires at the nearest enemy you can see. Drag the right side to aim it yourself." · Stick: "Drag the right side to aim and fire; let go to stop." |
+| | Stick side | enum | **Standard** · Swapped | **Standard** | `touchStickSide` (`'standard'\|'swapped'`) | Standard: "Move with your left thumb, aim and dash with your right." · Swapped: "Move right, aim and dash left (the buttons move too)." |
+| **Comfort** (after Vibration) | Haptics (phone) | enum | Off · **Low** · High | **Low** | `haptics` (`'off'\|'low'\|'high'`) | "Phone buzz when you're hit, a boss changes phase, or you press a button. High adds dashes, blasts and broken defences." When `navigator.vibrate` is missing, the row is disabled with: "Not supported by this browser (e.g. iPhone Safari)." |
+
+- **Preview:** *Touch controls* and *Stick side* apply live. The HUD layout rebuilds behind the translucent settings panel (`hud-layout.md` §9.1), and when opened from Pause, the DASH/SWAP positions are visible through the backdrop. *Touch firing*: the description is exact, and it is reversible in 2 taps. *Haptics*: changing the value plays the **Player hurt** pattern once at the new level (the same rule as Vibration, `controller-prompts.md` §6 rule 5).
+- **Semantics** are in `mobile-touch-spec.md`: §3.3 (touchFire), §5.1 (touchControls), §3.1 / §4.1 (stickSide), §8.2 (haptics).
+- **Touch profile layout:** in the touch profile, the content row pitch becomes **24 px** (from 18) so every row is a ≥ 24 px target. Groups keep ≤ 8 rows except Controls, which scrolls (a vertical drag, `mobile-touch-spec.md` §5.2). The group rail rows become 24 px.
+- **Controls table on touch:** a third column, **Touch**, shows the touch mapping read-only: Move = left side · Aim = right side · Cast = auto / right stick · Dash = DASH · Next wand = SWAP · Interact = USE · Wand editor = EDIT · Pause = PAUSE. Touch remapping is not offered; stick side and firing mode are the adjustable parts.
+- **Rows:** 22 become 26 on touch devices (still 22 on desktop). Each new row is justified: the first three are motor and preference needs with no other channel, and haptics is its own sensory channel.
+- **Localization:** "Auto-fire" / "Right stick" / "Swapped" fit the 18-character enum budget. The descriptions are ≤ 2 lines in the 472 px bar.

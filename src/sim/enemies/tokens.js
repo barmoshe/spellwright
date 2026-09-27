@@ -63,7 +63,23 @@ export const ACTOR = Object.freeze({
   ossuary_knight: { cls: 'boss', clip: 'A', family: 'bone', death: 'boss', weapon: 'blade', roar: 'boss_roar_knight' },
   mire_queen: { cls: 'boss', clip: 'A', family: 'flesh', death: 'boss', roar: 'boss_roar_queen' },
   archlich: { cls: 'lich', clip: 'B', family: 'caster', death: 'boss', base: 2, weapon: 'staff', roar: 'boss_roar_lich' },
+  // v2 (Wave D): new enemies (16×23 class A) and the ×2 mini-boss captains (art-slot-map v2; style-guide E1 integer ×2)
+  tomb_sentinel: { cls: 'tall', clip: 'A', family: 'bone', death: 'ground' },
+  lantern_acolyte: { cls: 'tall', clip: 'A', family: 'caster', death: 'ground', lantern: true },
+  grave_warden: { cls: 'lich', clip: 'A', family: 'bone', death: 'boss', base: 2, roar: 'miniboss_roar_warden' },
+  lantern_matron: { cls: 'lich', clip: 'A', family: 'caster', death: 'boss', base: 2, lantern: true, roar: 'miniboss_roar_matron' },
+  iron_colossus: { cls: 'lich', clip: 'A', family: 'construct', death: 'boss', base: 2, heavySteps: true, idleFpsMult: 0.75, roar: 'miniboss_roar_colossus' },
+  // Worlds natives (worlds.md §2): data variants of existing archetypes — bindings follow their base pattern's actor
+  bone_archer: { cls: 'small', clip: 'A', family: 'bone', death: 'ground' },                        // skeleton sheet + bow
+  drowned_thrall: { cls: 'small', clip: 'A', family: 'drowned', death: 'ground' },
+  mire_leech: { cls: 'small', clip: 'C', family: 'drowned', death: 'flyer' },                       // swarm (bat pattern), skims water
+  animated_armor: { cls: 'tall', clip: 'A', family: 'construct', death: 'ground', heavySteps: true }, // knight_m 16×28 (style-guide §12.4)
+  bound_tome: { cls: 'small', clip: 'D', family: 'paper', death: 'ground', windupFrame: true },      // eye-turret pattern (windup frame)
+  ink_imp: { cls: 'small', clip: 'A', family: null, death: 'ground', mote: 0x5956bd, moteMs: 300 },  // fire_imp re-inked
 });
+/** v2 defence / affix colour tokens (art-slot-map G7b: affixes.json outline keys; state-graph §8 defence tokens). */
+export const OUTLINE = Object.freeze({ 'outline.steel': 0xb6cbcf, 'outline.cyan': 0x72d6ce, 'outline.bone': 0xe2b694, 'outline.gold': 0xfacb3e, 'outline.ember': 0xffad3b, dark: 0xfdf7ed });
+export const DEF_COL = Object.freeze({ shield: 0xd3bfa9, armour: 0xb6cbcf, ward: 0x72d6ce });
 export const actorOf = (id) => ACTOR[id] || { cls: 'small', clip: 'A', family: 'flesh', death: 'ground' };
 
 // ---------------------------------------------------------------- math helpers (no allocation)

@@ -1,16 +1,16 @@
 {
-  "version": 1,
-  "$comment": "Times in ms (engine converts to 60 Hz steps: round(ms*60/1000)). rarity 'starter' = never in loot pools.",
+  "version": 2,
+  "$comment": "Times in ms. rarity 'starter' = never in loot. tier 0-3 = capacity growth 3 -> 5 -> 7+.",
   "wands": [
     {
       "id": "apprentice_wand",
       "name": "Apprentice Wand",
-      "desc": "A reliable first wand. Two empty slots to grow into.",
+      "desc": "A reliable first wand: three slots and a thin mana pool. Add a modifier and watch the mana bar.",
       "rarity": "starter",
       "minFloor": 0,
-      "capacity": 4,
-      "manaMax": 60,
-      "manaRegen": 25,
+      "capacity": 3,
+      "manaMax": 50,
+      "manaRegen": 18,
       "castDelayMs": 250,
       "rechargeMs": 400,
       "spreadDeg": 3,
@@ -24,7 +24,8 @@
       ],
       "visual": {
         "shape": "wand-short"
-      }
+      },
+      "tier": 0
     },
     {
       "id": "ember_rod",
@@ -32,9 +33,9 @@
       "desc": "Quick and warm. Loves fire.",
       "rarity": "common",
       "minFloor": 1,
-      "capacity": 4,
-      "manaMax": 80,
-      "manaRegen": 28,
+      "capacity": 5,
+      "manaMax": 70,
+      "manaRegen": 22,
       "castDelayMs": 220,
       "rechargeMs": 450,
       "spreadDeg": 4,
@@ -43,12 +44,12 @@
       "shuffle": false,
       "alwaysCast": [],
       "presetCards": [
-        "fire_bolt",
         "fire_bolt"
       ],
       "visual": {
         "shape": "rod"
-      }
+      },
+      "tier": 1
     },
     {
       "id": "glass_needle",
@@ -56,9 +57,9 @@
       "desc": "Tiny deck, blistering cast rate.",
       "rarity": "common",
       "minFloor": 1,
-      "capacity": 3,
-      "manaMax": 50,
-      "manaRegen": 34,
+      "capacity": 4,
+      "manaMax": 45,
+      "manaRegen": 26,
       "castDelayMs": 90,
       "rechargeMs": 300,
       "spreadDeg": 1,
@@ -67,12 +68,12 @@
       "shuffle": false,
       "alwaysCast": [],
       "presetCards": [
-        "venom_dart",
         "venom_dart"
       ],
       "visual": {
         "shape": "needle"
-      }
+      },
+      "tier": 1
     },
     {
       "id": "twin_fork",
@@ -81,8 +82,8 @@
       "rarity": "uncommon",
       "minFloor": 1,
       "capacity": 5,
-      "manaMax": 100,
-      "manaRegen": 32,
+      "manaMax": 90,
+      "manaRegen": 28,
       "castDelayMs": 300,
       "rechargeMs": 650,
       "spreadDeg": 7,
@@ -96,7 +97,8 @@
       ],
       "visual": {
         "shape": "fork"
-      }
+      },
+      "tier": 1
     },
     {
       "id": "stormcaller_staff",
@@ -105,8 +107,8 @@
       "rarity": "uncommon",
       "minFloor": 1,
       "capacity": 6,
-      "manaMax": 140,
-      "manaRegen": 45,
+      "manaMax": 120,
+      "manaRegen": 36,
       "castDelayMs": 200,
       "rechargeMs": 600,
       "spreadDeg": 4,
@@ -115,14 +117,12 @@
       "shuffle": false,
       "alwaysCast": [],
       "presetCards": [
-        "chain_lightning",
-        "double_cast",
-        "spark_bolt",
-        "spark_bolt"
+        "chain_lightning"
       ],
       "visual": {
         "shape": "staff"
-      }
+      },
+      "tier": 2
     },
     {
       "id": "oak_staff",
@@ -131,8 +131,8 @@
       "rarity": "uncommon",
       "minFloor": 2,
       "capacity": 7,
-      "manaMax": 180,
-      "manaRegen": 28,
+      "manaMax": 150,
+      "manaRegen": 24,
       "castDelayMs": 380,
       "rechargeMs": 900,
       "spreadDeg": 2,
@@ -142,12 +142,12 @@
       "alwaysCast": [],
       "presetCards": [
         "trigger_hit",
-        "spark_bolt",
-        "fireball"
+        "spark_bolt"
       ],
       "visual": {
         "shape": "staff"
-      }
+      },
+      "tier": 2
     },
     {
       "id": "grave_scepter",
@@ -156,8 +156,8 @@
       "rarity": "rare",
       "minFloor": 2,
       "capacity": 6,
-      "manaMax": 220,
-      "manaRegen": 36,
+      "manaMax": 180,
+      "manaRegen": 30,
       "castDelayMs": 450,
       "rechargeMs": 350,
       "spreadDeg": 0,
@@ -166,12 +166,12 @@
       "shuffle": false,
       "alwaysCast": [],
       "presetCards": [
-        "heavy",
         "fireball"
       ],
       "visual": {
         "shape": "scepter"
-      }
+      },
+      "tier": 2
     },
     {
       "id": "chaos_branch",
@@ -180,8 +180,8 @@
       "rarity": "rare",
       "minFloor": 2,
       "capacity": 8,
-      "manaMax": 160,
-      "manaRegen": 55,
+      "manaMax": 140,
+      "manaRegen": 44,
       "castDelayMs": 110,
       "rechargeMs": 280,
       "spreadDeg": 10,
@@ -192,13 +192,12 @@
       "presetCards": [
         "spark_bolt",
         "fire_bolt",
-        "ice_shard",
-        "venom_dart",
-        "bouncing_burst"
+        "ice_shard"
       ],
       "visual": {
         "shape": "branch"
-      }
+      },
+      "tier": 2
     },
     {
       "id": "echo_wand",
@@ -206,9 +205,9 @@
       "desc": "Always casts Double Cast for free.",
       "rarity": "rare",
       "minFloor": 2,
-      "capacity": 4,
-      "manaMax": 110,
-      "manaRegen": 40,
+      "capacity": 5,
+      "manaMax": 90,
+      "manaRegen": 32,
       "castDelayMs": 300,
       "rechargeMs": 600,
       "spreadDeg": 6,
@@ -219,12 +218,12 @@
         "double_cast"
       ],
       "presetCards": [
-        "spark_bolt",
-        "magic_missile"
+        "spark_bolt"
       ],
       "visual": {
         "shape": "wand-ring"
-      }
+      },
+      "tier": 2
     },
     {
       "id": "archmage_scepter",
@@ -233,8 +232,8 @@
       "rarity": "legendary",
       "minFloor": 3,
       "capacity": 10,
-      "manaMax": 320,
-      "manaRegen": 70,
+      "manaMax": 260,
+      "manaRegen": 55,
       "castDelayMs": 180,
       "rechargeMs": 700,
       "spreadDeg": 3,
@@ -244,13 +243,12 @@
       "alwaysCast": [],
       "presetCards": [
         "triple_cast",
-        "spark_bolt",
-        "fire_bolt",
-        "ice_shard"
+        "spark_bolt"
       ],
       "visual": {
         "shape": "scepter-gem"
-      }
+      },
+      "tier": 3
     }
   ]
 }

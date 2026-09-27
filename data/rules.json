@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "$comment": "Designer rule constants (non-feel). One record per section.",
   "rules": [
     {
@@ -145,8 +145,8 @@
     },
     {
       "id": "enemies",
-      "spawnPortalMs": 700,
-      "minSpawnDistPx": 64,
+      "spawnPortalMs": 850,
+      "minSpawnDistPx": 104,
       "aimLockBeforeReleaseMs": 150,
       "telegraphMinMs": 350,
       "heavyTelegraphMinMs": 600,
@@ -170,15 +170,32 @@
         "hpMult": 2.5,
         "coinMult": 3,
         "kbResistAdd": 0.3
-      }
+      },
+      "spawnAimConeDeg": 35,
+      "spawnAimConeRangePx": 220,
+      "enemyShotCap": 36,
+      "miniBossActivateDelayMs": 800
     },
     {
       "id": "waves",
       "roomEnterGraceMs": 500,
-      "nextWaveWhenAliveAtMost": 2,
-      "nextWaveMinElapsedMs": 8000,
+      "nextWaveWhenAliveAtMost": 1,
+      "nextWaveMinElapsedMs": 3000,
       "waveGrowth": 0.25,
-      "maxPerWave": 8
+      "maxPerWave": 8,
+      "nextWaveKilledFrac": 0.65,
+      "grammar": {
+        "firstWaveOfRunAnchors": 0,
+        "anchorsPerWave": 1,
+        "doubleAnchorFromStep": 5,
+        "doubleAnchorFloors": [
+          2,
+          3
+        ],
+        "supportChance": 0.35,
+        "supportMinFloor": 2,
+        "threatAnchorWave": "first_anchored"
+      }
     },
     {
       "id": "curses",
@@ -204,7 +221,177 @@
           "playerMaxHpAdd": -2,
           "eliteExtraBudget": 4
         }
+      ],
+      "$deprecated": "Superseded by `heat` (v2). Kept only until the Wave E save migration (meta.curseLevel → heat); do not read in new code."
+    },
+    {
+      "id": "defences",
+      "shield": {
+        "frontArcDeg": 150,
+        "wearBlocks": 7,
+        "breakKeyword": "pierce",
+        "blocksStatus": true
+      },
+      "armour": {
+        "blastMult": 2.5,
+        "directMult": 0.4,
+        "dotMult": 0.25,
+        "otherMult": 0.4,
+        "breakKeyword": "blast",
+        "pointsScaleWithFloorHp": true
+      },
+      "ward": {
+        "hits": 3,
+        "breakKeyword": "shock",
+        "blocksDot": true,
+        "eliteRegrowMs": 7000,
+        "wardAlliesMaxHits": 3
+      },
+      "firstBlockTipOncePerType": true
+    },
+    {
+      "id": "keywords",
+      "pierce": "direct hit from a shot whose composed pierce >= 1, or any boomerang/orbit shot",
+      "blast": "damage from explode (spell, modifier or relic), Overload, or a self-destruct",
+      "shock": "damage whose element is shock, or from a chain or zap effect",
+      "defenceBreaking": [
+        "pierce",
+        "blast",
+        "shock"
+      ],
+      "descriptive": [
+        "burn",
+        "chill",
+        "poison",
+        "homing",
+        "bounce",
+        "split",
+        "chain",
+        "multicast",
+        "trigger",
+        "crit",
+        "zone",
+        "orbit",
+        "mine",
+        "mobility"
       ]
+    },
+    {
+      "id": "heat",
+      "levels": [
+        {
+          "level": 1,
+          "enemyHpMult": 1.15,
+          "eliteAffixes": 1,
+          "extraBudgetPerWave": 0,
+          "enemyProjSpeedMult": 1.0,
+          "shopPriceMult": 1.0,
+          "healRewardAdd": 0,
+          "bossHeatAttack": false,
+          "bossAdaptAlways": false,
+          "windupMult": 1.0,
+          "playerMaxHpAdd": 0
+        },
+        {
+          "level": 2,
+          "enemyHpMult": 1.15,
+          "eliteAffixes": 2,
+          "extraBudgetPerWave": 2,
+          "enemyProjSpeedMult": 1.0,
+          "shopPriceMult": 1.0,
+          "healRewardAdd": 0,
+          "bossHeatAttack": false,
+          "bossAdaptAlways": false,
+          "windupMult": 1.0,
+          "playerMaxHpAdd": 0
+        },
+        {
+          "level": 3,
+          "enemyHpMult": 1.2,
+          "eliteAffixes": 2,
+          "extraBudgetPerWave": 2,
+          "enemyProjSpeedMult": 1.1,
+          "shopPriceMult": 1.2,
+          "healRewardAdd": -1,
+          "bossHeatAttack": false,
+          "bossAdaptAlways": false,
+          "windupMult": 1.0,
+          "playerMaxHpAdd": 0
+        },
+        {
+          "level": 4,
+          "enemyHpMult": 1.25,
+          "eliteAffixes": 2,
+          "extraBudgetPerWave": 3,
+          "enemyProjSpeedMult": 1.1,
+          "shopPriceMult": 1.2,
+          "healRewardAdd": -1,
+          "bossHeatAttack": true,
+          "bossAdaptAlways": true,
+          "windupMult": 1.0,
+          "playerMaxHpAdd": 0
+        },
+        {
+          "level": 5,
+          "enemyHpMult": 1.3,
+          "eliteAffixes": 2,
+          "extraBudgetPerWave": 3,
+          "enemyProjSpeedMult": 1.15,
+          "shopPriceMult": 1.2,
+          "healRewardAdd": -1,
+          "bossHeatAttack": true,
+          "bossAdaptAlways": true,
+          "windupMult": 0.9,
+          "playerMaxHpAdd": -2
+        }
+      ],
+      "unlockNextOnWinAt": true,
+      "maxLevel": 5,
+      "excludesGentle": true
+    },
+    {
+      "id": "goals",
+      "earlyMaxOrder": 6,
+      "earlyPayoutPerRun": 1,
+      "queueUnpaid": true,
+      "note": "Goals whose order <= earlyMaxOrder pay at most one per run end (earliest satisfied first); satisfied goals queue and pay on later run ends. Later goals pay immediately."
+    },
+    {
+      "id": "twists",
+      "ambush": {
+        "spawnRingPx": 88,
+        "portalMs": 1100,
+        "appliesToWave": 0,
+        "bannerKey": "twist.ambush"
+      },
+      "dark": {
+        "lightRadiusPx": 72,
+        "spellLightRadiusPx": 28,
+        "enemyOutline": true,
+        "bannerKey": "twist.dark"
+      },
+      "maxPerFloor": 1,
+      "neverOn": [
+        "miniboss",
+        "boss",
+        "shop",
+        "treasure",
+        "start"
+      ],
+      "neverOnPuzzle": true
+    },
+    {
+      "id": "risk",
+      "maxPerRun": 1,
+      "extraElites": 1,
+      "rewardDraft": 2,
+      "doorIconKey": "door.risk"
+    },
+    {
+      "id": "boss",
+      "adaptResistFloor": 0.6,
+      "adaptMaxRulesApplied": 1,
+      "miniBossBarScale": 0.6
     }
   ]
 }
