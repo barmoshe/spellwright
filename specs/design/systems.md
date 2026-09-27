@@ -94,7 +94,19 @@ DPS = Σ shot damage per cycle ÷ cycle time. Cycle = Σ cast delays + final max
 
 Note the twin_fork row: putting damage_up *last* (e.g. [triple, fire, fire, ice, damage_up]) wastes it, because the second group wraps, finds every card drawn, and fizzles with the modifier pending. The editor preview (§7) must show "Empower: no spell follows" for this case.
 
-Target band per floor (median build): **F1 15 → 40 · F2 50 → 90 · F3 100 → 180**. Enemy HP bands per floor (pool-weighted average): 18.5 / 35.8 / 77.3. So the average enemy TTK stays ≈ 0.4–1.0 s on a median build across the whole run: the flow channel holds (`progression-and-pacing.md` §4).
+~~Target band per floor (median build): F1 15 → 40 · F2 50 → 90 · F3 100 → 180~~ — **v1, retired 2026-09-27.** Those bands were never re-derived after v2 trimmed found-wand mana 15–25 %, cut the flat-stat relics (whetstone, mana_font, quill, hourglass) and made mana the binding constraint. In v2 **sustained DPS ≈ wand regen × damage-per-mana** (≈ 1.0 for spark, ≈ 1.75 for a forged spark II), so no build the reward economy can deliver by F3 reaches 100 — even a legendary archmage with two forged cards sustains ≈ 64.
+
+**v2 band (sustained DPS = damage in the first 20 s from full mana ÷ 20; median counter-aware build; `scripts/balance-calc.mjs`):**
+
+| | F1 | F2 | F3 |
+|---|---|---|---|
+| Band | **14 → 26** | **26 → 44** | **40 → 64** |
+| Reference build (calc) | starter [double_cast, ice_shard, spark_bolt] = 16.3 (peak 26.3, dry 3 s) | stormcaller [double, fire, spark II, chain, ice, damage_up] = 32.6 | grave_scepter [spark II, chain, damage_up, triple, fireball, fire II] + tally_stone ×1.18 = 48.1 |
+| Where the growth comes from | tutorial modifier + the pierce card | a tier-2 wand (regen 36) + one F1-shop merge | a rare F3 wand (regen 38) + a second merge + triple_cast + one scaling relic |
+| Pool-weighted enemy HP (× floor hpMult 1.0 / 1.65 / 2.1) | 17.9 | 33.6 | 62.3 |
+| Average enemy TTK at the reference build | 1.1 s | 1.0 s | 1.3 s |
+
+The run's power curve is ≈ ×3 (16 → 48) and the per-enemy TTK holds ≈ 1.0–1.3 s on every floor: rooms grow by **count** (F2 and F3 run 3 waves), not by sponginess. That is the flow-channel claim (`progression-and-pacing.md` §4); F3 `hpMult` was cut 2.5 → 2.1 to keep it (at 2.5 the F3 enemy TTK was ≈ 1.6 s). The never-edits starter (16.2, flat all run) is *in* the F1 band on purpose — progression §14: the non-editor clears F1 sometimes.
 
 ---
 
@@ -183,15 +195,17 @@ Each defence punishes a **different** archetype, so no single build shape is saf
 
 ## §10 v2 economy steady-state (computed from data, typical path)
 
+> Re-computed 2026-09-27 after the balance pass (F1 combat budget 8 + 1.5/step; F2 combat back to 3 waves with coinMult 1.3 → 0.95 so F2 coin flow rises only ≈ 10 %; F3 hpMult 2.1, 0.7/step). Coin yield per threat point is unchanged on F1/F3, so the rate cliffs below still hold.
+
 Threat per room = the `floors.json` budgets. Coin yield per threat point is pool-weighted from `enemies.json`: 0.47 / 0.50 / 0.53. Combat rooms at steps 1, 2, 3, 5 and 7 (the puzzle uses fixed waves), with 1 elite per floor.
 
 | | F1 | F2 | F3 |
 |---|---|---|---|
-| Room HP totals (combat) | 79 → 172 | 250 → 396 | 698 → 1,100 |
-| Threat before the shop | 59 | 113 | 188 |
+| Room HP totals (combat, pool) | 164 → 225 | 484 → 601 | 429 → 673 (+ armour 76 pts per animated armour) |
+| Threat before the shop (combat s1–3 + elite) | 102 | 192 | 176 |
 | + mini-boss coins | 25 | 35 | 45 |
-| **Coins at the shop** (with carry) | **≈ 53** | **≈ 187** | **≈ 366** |
-| What that buys | 1 common card + skip coins, **or** 1 forge slot (45) | ≈ 3 items, or 2 + a merge | cash-out before the final boss (stock ≈ 570) |
+| **Coins at the shop** (with carry) | **≈ 69** | **≈ 200** | **≈ 350** |
+| What that buys | 1 common card + a merge (15), **or** 1 forge slot (45) | ≈ 3 items, or 2 + a merge | cash-out before the final boss (stock ≈ 570) |
 | Skip pay per skipped draft | 10 | 14 | 18 |
 | Draft reroll | 8 → 16 | 8 → 16 | 8 → 16 |
 

@@ -157,7 +157,7 @@
       "minFloor": 2,
       "capacity": 6,
       "manaMax": 180,
-      "manaRegen": 30,
+      "manaRegen": 38,
       "castDelayMs": 450,
       "rechargeMs": 350,
       "spreadDeg": 0,

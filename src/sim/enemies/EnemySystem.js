@@ -43,7 +43,7 @@ function newAi() {
     state: 'spawning', t: 0, idx: 0, cool: 0, atk: null, impl: null,
     wElapsed: 0, wTotal: 1, locked: false, aim: 0, tx: 0, ty: 0, sx0: 0, sy0: 0,
     actT: 0, actDur: 0, recMs: 0, n: 0, base: 0, hit: false, relStep: -99, lockStep: -99,
-    dec: new Array(8).fill(null), decN: 0, ticks: null, pts: new Float32Array(10), ptsN: 0,
+    dec: new Array(8).fill(null), decN: 0, ticks: null, pts: new Float32Array(16), ptsN: 0,   // ≤ 8 hazard marks (bone_rain: 6)
     mvx: 0, mvy: 0, fleeMs: 0, strafeDir: 1, strafeMs: 0, wobbleT: 0, wobblePhase: 0, retreatMs: 0, driftAng: 0, driftMs: 0,
     wallStunMs: 0, stunKind: '', seq: null, seqIdx: 0, air: 0, blinkX: 0, blinkY: 0, blinkInAt: -1, exploded: false,
     phase: 0, pi: 0, idleMs: 0, approachMs: 0, invulnMs: 0, knockPending: 0, roseCue: false,
@@ -188,7 +188,8 @@ export class EnemySystem {
     const elite = !!opts.elite && !isBoss;
     const curse = ctx.curse;
     e.uid = UID++; e.id = def.id; e.def = def; e.actor = actor; e.anchor = anc;
-    e.flying = !!def.flying; e.r = def.radius; e.speed = def.speed || 0;
+    e.flying = !!def.flying; e.r = def.radius;
+    e.speed = (def.speed || 0) * ((ctx.run && ctx.run.runRules && ctx.run.runRules.enemy_speed_mult) || 1);   // Daily "Haste" run rule
     e.isBoss = isBoss; e.elite = elite;
     e.stationary = def.movement && def.movement.type === 'stationary';
     // never spawn inside a blocker (robustness against bad markers)
@@ -245,12 +246,19 @@ export class EnemySystem {
   /**
    * mechanic-spec §9.4 v2: every elite rolls ONE affix from affixes.json (ai stream). Affixes that grant a
    * defence (excludesDefence) are skipped when the base enemy already has one. hasted: move × moveSpeedMult,
-   * cooldowns × cooldownMult, windups unchanged. volatile: a telegraphed death ring. (Heat's second affix: Wave E.)
+   * cooldowns × cooldownMult, windups unchanged. volatile: a telegraphed death ring. Heat 2+ (run.heat.eliteAffixes)
+   * rolls that many DISTINCT affixes; the pool is re-filtered after each roll, so at most one grants a defence.
    */
   _rollAffixes(e, def) {
+    const heat = this.ctx.run && this.ctx.run.heat;
+    const count = Math.max(1, (heat && heat.eliteAffixes) | 0 || 1);
+    for (let k = 0; k < count; k++) this._rollAffix(e, def);
+  }
+
+  _rollAffix(e, def) {
     const list = this.ctx.cat.affixList || [];
     const pool = [];
-    for (let i = 0; i < list.length; i++) { const a = list[i]; if (!(a.excludesDefence && (def.defence || e.defence))) pool.push(a); }
+    for (let i = 0; i < list.length; i++) { const a = list[i]; if (!e.affixes.includes(a.id) && !(a.excludesDefence && (def.defence || e.defence))) pool.push(a); }
     if (!pool.length) return;
     const a = this.rng.pick(pool);
     e.affixes.push(a.id);

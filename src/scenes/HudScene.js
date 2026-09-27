@@ -91,6 +91,7 @@ export class HudScene extends Phaser.Scene {
     this._buildHearts();
     this._buildRelics();
     this._buildTrack();
+    this._buildModeBadge();
     this._buildBoss();
     this._buildTopRight();
     this._buildWand();
@@ -318,6 +319,33 @@ export class HudScene extends Phaser.Scene {
     this.trackFade = this._fade([this.trackLabel, this.pipCurrent], 0.4);
   }
 
+  /**
+   * hud-layout §9.2 mode badge: "Heat 3" · "Gentle +2<half-heart> 10%" · "Daily" (RunState.modeBadge; null = Heat 0,
+   * nothing drawn). T1, right-aligned at L.modeBadge, inside the tc cluster (so it hides with the boss bar and
+   * rides the occlusion fade) and C2 (fades to 40% with the floor track). The baked fonts have no U+2665, so
+   * Gentle's heart is the HUD half-heart glyph (the bonus is counted in half-hearts).
+   */
+  _buildModeBadge() {
+    this.modeBadgeObjs = [];
+    const mb = this.run && this.run.modeBadge, R = LAYOUT.modeBadge;
+    if (!mb || !R) return;
+    const y = R.y - 1, parts = [];
+    if (mb.mode === 'gentle') {
+      const pct = txt(this, R.x, y, t('hud.mode.gentlePct', { p: mb.absorbPct | 0 }), 'T1', { origin: [1, 0] });
+      const hx = R.x - pct.width - 13;
+      const heart = hudImage(this, hx, R.y - 1, 'ui_heart_half').setScale(0.75);
+      const name = txt(this, hx - 1, y, t('hud.mode.gentle', { h: mb.bonusHalfHearts | 0 }), 'T1', { origin: [1, 0] });
+      parts.push(name, heart, pct);
+    } else {
+      const s = mb.mode === 'daily' ? t('hud.mode.daily') : t('hud.mode.heat', { n: mb.heat | 0 });
+      parts.push(txt(this, R.x, y, s, 'T1', { origin: [1, 0] }));
+    }
+    this.cl.tc.c.add(parts);
+    this.modeBadgeObjs = parts;
+    this.trackFade.objs.push(...parts);
+    for (const o of parts) o.setAlpha(this.trackFade.a);
+  }
+
   _setTrack() {
     const r = this.run;
     const floor = r ? r.floor : 1;
@@ -338,7 +366,7 @@ export class HudScene extends Phaser.Scene {
     }
     this.pipCurrent.moveBox(PIP_X + PIP_DX * Math.min(step, n - 1) - 1, PIP_Y - 1).setVisible(true);
     this.cl.tc.c.bringToTop(this.pipCurrent);
-    this.trackFade.objs = [this.trackLabel, this.pipCurrent, ...this.pips];
+    this.trackFade.objs = [this.trackLabel, this.pipCurrent, ...this.pips, ...(this.modeBadgeObjs || [])];
     for (const o of this.trackFade.objs) o.setAlpha(this.trackFade.a);
   }
 

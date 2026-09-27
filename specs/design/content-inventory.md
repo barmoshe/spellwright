@@ -87,9 +87,9 @@
 | bosses | `grave_warden` | **NEW** |  | 2D · Anim · Audio · UX (intro/banner) · Dev |
 | bosses | `lantern_matron` | **NEW** |  | 2D · Anim · Audio · UX (intro/banner) · Dev |
 | bosses | `iron_colossus` | **NEW** |  | 2D · Anim · Audio · UX (intro/banner) · Dev |
-| bosses | `ossuary_knight` | **CHANGED** | HP 700→520; +shield_wall, +bone_rain (heat); adapt; intro/banners | 2D · Anim · Audio · UX (intro/banner) · Dev |
-| bosses | `mire_queen` | **CHANGED** | HP 1500→1100; +veil, +bog_surge (heat); adapt; intro/banners | 2D · Anim · Audio · UX (intro/banner) · Dev |
-| bosses | `archlich` | **CHANGED** | HP 2600→2000; +mirror_volley, +grand_spiral (heat); adapt; intro/banners | 2D · Anim · Audio · UX (intro/banner) · Dev |
+| bosses | `ossuary_knight` | **CHANGED** | HP 700→650; +shield_wall, +bone_rain (heat); adapt; intro/banners | 2D · Anim · Audio · UX (intro/banner) · Dev |
+| bosses | `mire_queen` | **CHANGED** | HP 1500→1400; +veil, +bog_surge (heat); adapt; intro/banners | 2D · Anim · Audio · UX (intro/banner) · Dev |
+| bosses | `archlich` | **CHANGED** | HP 2600 (kept); +mirror_volley, +grand_spiral (heat); adapt; intro/banners | 2D · Anim · Audio · UX (intro/banner) · Dev |
 | rooms | `crypt_arena` | **NEW** |  | TA (tilemap) · Dev |
 | rooms | `sentinel_gate` | **NEW** |  | TA (tilemap) · Dev |
 | rooms | `choir_of_wards` | **NEW** |  | TA (tilemap) · Dev |
@@ -322,7 +322,7 @@ Reactions are discovered, not tutorialized: the first time one fires, a toast na
 | `twin_fork` | Twin Fork | 1 | uncommon | 5 | 90/28 | 300/650 | 2 | fire_bolt, ice_shard | — | — |
 | `stormcaller_staff` | Stormcaller Staff | 2 | uncommon | 6 | 120/36 | 200/600 | 1 | chain_lightning | — | — |
 | `oak_staff` | Old Oak Staff | 2 | uncommon | 7 | 150/24 | 380/900 | 1 | trigger_hit, spark_bolt | — | — |
-| `grave_scepter` | Grave Scepter | 2 | rare | 6 | 180/30 | 450/350 | 1 | fireball | — | — |
+| `grave_scepter` | Grave Scepter | 2 | rare | 6 | 180/38 | 450/350 | 1 | fireball | — | — |
 | `chaos_branch` | Chaos Branch | 2 | rare | 8 | 140/44 | 110/280 | 1 | spark_bolt, fire_bolt, ice_shard | shuffle | locked |
 | `echo_wand` | Echo Wand | 2 | rare | 5 | 90/32 | 300/600 | 1 | spark_bolt | always: double_cast | locked |
 | `archmage_scepter` | Archmage's Scepter | 3 | legendary | 10 | 260/55 | 180/700 | 1 | triple_cast, spark_bolt | — | locked |
@@ -399,12 +399,12 @@ Reactions are discovered, not tutorialized: the first time one fires, a toast na
 
 | id | name | tier | floor | hp | defence | phases | attacks | test keyword | heat attack |
 |---|---|---|---|---|---|---|---|---|---|
-| `grave_warden` | The Grave Warden | mini | 1 | 260 | shield | 2 | 3 | pierce | bone_toss |
-| `lantern_matron` | The Lantern Matron | mini | 2 | 600 | ward | 2 | 4 | shock | ember_fan |
-| `iron_colossus` | The Iron Colossus | mini | 3 | 900 | armour | 2 | 3 | blast | rock_volley |
-| `ossuary_knight` | The Ossuary Knight | boss | 1 | 520 | — | 2 | 8 | — | bone_rain |
-| `mire_queen` | The Mire Queen | boss | 2 | 1100 | — | 2 | 9 | — | bog_surge |
-| `archlich` | Vorn, the Archlich | boss | 3 | 2000 | — | 3 | 11 | — | grand_spiral |
+| `grave_warden` | The Grave Warden | mini | 1 | 380 | shield | 2 | 3 | pierce | bone_toss |
+| `lantern_matron` | The Lantern Matron | mini | 2 | 850 | ward | 2 | 4 | shock | ember_fan |
+| `iron_colossus` | The Iron Colossus | mini | 3 | 1200 | armour | 2 | 3 | blast | rock_volley |
+| `ossuary_knight` | The Ossuary Knight | boss | 1 | 650 | — | 2 | 8 | — | bone_rain |
+| `mire_queen` | The Mire Queen | boss | 2 | 1400 | — | 2 | 9 | — | bog_surge |
+| `archlich` | Vorn, the Archlich | boss | 3 | 2600 | — | 3 | 11 | — | grand_spiral |
 
 ### Worlds (3) — `floors[].world` (worlds.md)
 

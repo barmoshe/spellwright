@@ -18,7 +18,7 @@
 // matching rule; mercy rules soften a mini's defence for a player lacking its test keyword), announced on the
 // intro card (EV.BOSS_ADAPT + EV.BOSS_INTRO) so the counter is never hidden. Phase onEnter.regrowDefence
 // restores that fraction of the boss's own defence inside the invulnerable window. Patterns are per-instance
-// copies (data is frozen) so `add_attack` can insert. `heatAttack` is Wave E: read-safe, never scheduled here.
+// copies (data is frozen) so `add_attack` can insert. `heatAttack` joins the last phase at Heat ≥ 4 (bossHeatAttack).
 
 import { EV } from '../../core/ev.js';
 import { track } from '../../core/log.js';
@@ -46,6 +46,13 @@ export class BossBrain {
     e.introMs = e.activateMs;                    // RoomDirector/HUD read this: counts down to 0 at activation
     e.patterns = def.phases.map((p) => p.pattern.slice());
     e.resist = null;
+    // Heat ≥ 4 (rules.heat bossHeatAttack): the boss adds its heatAttack to its LAST phase's pattern (mechanic-spec §10;
+    // idempotent — minis whose heatAttack is already in the pattern are unchanged)
+    const heat = ctx.heat || null;
+    if (heat && heat.bossHeatAttack && def.heatAttack && this._atk(e, def.heatAttack)) {
+      const last = e.patterns[e.patterns.length - 1];
+      if (!last.includes(def.heatAttack)) last.push(def.heatAttack);
+    }
     // build-reading adapt (§10.2), then the (possibly softened) defence
     const spec = def.defence ? { ...def.defence } : null;
     const applied = this._adapt(e, def, spec);

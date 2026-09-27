@@ -32,6 +32,7 @@ export function layoutFor(profile, S = { l: 0, t: 0, r: VIEW_W, b: VIEW_H }, opt
       hearts: { x: 6, dx: 14, y: 6 },
       relics: { x: 6, y: 22, dx: 18, max: 8, moreX: 150, moreY: 24 },
       track: { labelX: 276, pipX: 280, pipDx: 9, pipY: 8 },
+      modeBadge: { x: 258, y: 6, w: 80 },                 // §9.2 desktop addition: T1 right-aligned at (258, 6); tc cluster
       boss: { x: 170, y: 17, w: 300, h: 6 },
       miniBoss: { x: 230, y: 17, w: 180, h: 6 },          // §9.2 desktop: 300 × miniBossBarScale 0.6, centred on 320
       bossName: { x: 320, y: 3 },
@@ -47,7 +48,7 @@ export function layoutFor(profile, S = { l: 0, t: 0, r: VIEW_W, b: VIEW_H }, opt
       auto: { x: 76, y: 312 },
       toast: { mode: 'column', x: 434, w: 200, bottom: 354, max: 2 },
       banner: { y: 70 },
-      clusters: { tl: [6, 6, 144, 34], tc: [262, 6, 110, 12], tr: [560, 6, 74, 24], bl: [6, 312, 264, 42] },
+      clusters: { tl: [6, 6, 144, 34], tc: [178, 6, 194, 12], tr: [560, 6, 74, 24], bl: [6, 312, 264, 42] },   // tc: mode badge (178–258) + track
       bossCluster: [170, 4, 300, 20],
       buttons: {},
       zones: null,
@@ -60,6 +61,7 @@ export function layoutFor(profile, S = { l: 0, t: 0, r: VIEW_W, b: VIEW_H }, opt
     hearts: { x: sl + 6, dx: 14, y: st + 6 },
     relics: { x: sr - 100 - 18 * 5, y: st + 34, dx: 18, max: 5, moreX: sr - 100 - 18 * 5 - 3, moreY: st + 36, moreRight: true },
     track: { labelX: 352, pipX: 356, pipDx: 9, pipY: st + 8 },
+    modeBadge: { x: 334, y: st + 6, w: 77 },             // §9.2: T1 right-aligned at x 334 (257–334), hidden with the boss bar
     boss: { x: 300, y: st + 19, w: 196, h: 6 },
     miniBoss: { x: 339, y: st + 19, w: 118, h: 6 },       // §9.2: × miniBossBarScale 0.6, centred on 398
     bossName: { x: 398, y: st + 3 },
@@ -76,7 +78,7 @@ export function layoutFor(profile, S = { l: 0, t: 0, r: VIEW_W, b: VIEW_H }, opt
     toast: { mode: 'top', x: 320 - 140, w: 280, top: st + 56, max: 1 },
     banner: { y: st + 100 },
     // cluster keys follow the HudScene containers: tl = hearts/shield (+ relics' container), bl = the wand cluster (now top-left)
-    clusters: { tl: [sl + 6, st + 4, 100, 16], tc: [300, st + 4, 196, 22], tr: [452, st + 4, sr - 100 - 452, 48], bl: [sl + 6, st + 20, 264, 34] },
+    clusters: { tl: [sl + 6, st + 4, 100, 16], tc: [257, st + 4, 239, 22], tr: [452, st + 4, sr - 100 - 452, 48], bl: [sl + 6, st + 20, 264, 34] },
     bossCluster: [300, st + 2, 196, 24],
     buttons: {
       dash: circ('dash', bx(30), sb - 30),
@@ -117,6 +119,7 @@ export function validateLayout(L) {
   const persistent = Object.entries(L.clusters).filter(([, r]) => r[2] > 0).map(([k, r]) => ({ name: `cluster.${k}`, x: r[0], y: r[1], w: r[2], h: r[3] }));
   persistent.push({ name: 'boss', x: L.bossCluster[0], y: L.bossCluster[1], w: L.bossCluster[2], h: L.bossCluster[3] });
   if (L.counters) persistent.push({ name: 'counters', x: L.counters.x, y: L.counters.y, w: L.counters.dx * 2 + 7, h: 7 });
+  if (L.modeBadge) persistent.push({ name: 'modeBadge', x: L.modeBadge.x - L.modeBadge.w, y: L.modeBadge.y, w: L.modeBadge.w, h: 10 });
   if (L.miniBoss) persistent.push({ name: 'miniBoss', x: L.miniBoss.x, y: L.miniBoss.y, w: L.miniBoss.w, h: L.miniBoss.h });
   for (const b of [...btns, ...persistent]) if (!inside(b, S)) out.push(`(a) ${b.name} outside safe rect`);
   for (let i = 0; i < btns.length; i++) for (let j = i + 1; j < btns.length; j++) {

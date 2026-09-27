@@ -244,7 +244,8 @@ export class RoomDirector {
   _stepWorld(dt) {
     const ctx = this.ctx, w = ctx.world;
     if (!w || !w.shelves || !w.shelves.size) return;
-    w.stepShelves(dt, ctx.T('shelfBurnAuraTickMs', 250), (x, y, r) => ctx.combat.shelfAura(x, y, r), (x, y) => ctx.combat.shelfCollapsed(x, y));
+    w.stepShelves(dt, w.shelfCfg.auraTickMs,   // floors.json world.twist.burnAuraTickMs (World.shelfCfg)
+      (x, y, r) => ctx.combat.shelfAura(x, y, r), (x, y) => ctx.combat.shelfCollapsed(x, y));
   }
   /** Presentation hook (RunScene.update, per render frame): world tile animation + the darkness layer. */
   render() {
@@ -294,7 +295,8 @@ export class RoomDirector {
 
       // elite room, wave 0: the elite(s) first (a threat anchor if it is an elite candidate), each at threat × eliteThreatMult
       if (kind === 'elite' && w === 0) {
-        const n = (wc.elites || 1) + (room.risk ? (rules.risk && rules.risk.extraElites) || 0 : 0);
+        const n = (wc.elites || 1) + (room.risk ? (rules.risk && rules.risk.extraElites) || 0 : 0)
+          + ((run.runRules && run.runRules.elite_rooms_extra_elite) | 0);                  // Daily Double Elites rule
         for (let e = 0; e < n; e++) {
           let id = null;
           if (!threatPlaced) { const c = threatAnchors.filter((a) => fd.eliteCandidates.includes(a)); if (c.length) { id = rng.pick(c); threatPlaced = true; } }
@@ -485,6 +487,12 @@ export class RoomDirector {
     this._checkDoors();
   }
 
+  /** A heal REWARD (heal door heart, mini/boss rewards.heal) after Heat's healRewardAdd; never below 1 half-heart. */
+  _healReward(n) {
+    const add = (this.run.heat && this.run.heat.healRewardAdd) | 0;
+    return add ? Math.max(1, n + add) : n;
+  }
+
   _bossCleared() {
     const ctx = this.ctx, fd = this.floorDef;
     if (fd.index >= 3 || this.run.floor >= 3) { ctx.onVictory(); return; }
@@ -492,7 +500,7 @@ export class RoomDirector {
     this.cleared = true; this.combatActive = false;
     const c = { x: ctx.world.w / 2, y: ctx.world.h / 2 };
     if (rw.coins) ctx.pickups.coin(c.x, c.y, rw.coins);
-    if (rw.heal) this.run.heal(rw.heal);
+    if (rw.heal) this.run.heal(this._healReward(rw.heal));
     this._placeRewardPedestal('bossRelic', c.x, c.y + 16);
     ctx.pickups.vacuumAll();
     this.room && (this.run.route[this.run.route.length - 1].cleared = true);
@@ -547,7 +555,7 @@ export class RoomDirector {
         const b = this.cat.bosses[this.floorDef.miniBoss];
         const rw = (b && b.rewards) || {};
         if (rw.coins) ctx.pickups.coin(c.x, c.y + 16, rw.coins);
-        if (rw.heal) run.heal(rw.heal);
+        if (rw.heal) run.heal(this._healReward(rw.heal));
         this._placeRewardPedestal('relic', c.x, c.y);
         break;
       }
@@ -555,7 +563,7 @@ export class RoomDirector {
         this._placeRewardPedestal('relic', c.x, c.y, null, { risk: true });
         break;
       case 'coins': ctx.pickups.coin(c.x, c.y, eco.rewards.coinsBase + eco.rewards.coinsPerFloor * run.floor); break;
-      case 'heal': ctx.pickups.heart(c.x, c.y, eco.rewards.healAmount); break;
+      case 'heal': ctx.pickups.heart(c.x, c.y, this._healReward(eco.rewards.healAmount)); break;
       default: break;
     }
     if (kind === 'heal') run.floorLimits.heal++;

@@ -368,19 +368,21 @@ All windups still clear the floors (≥ 450 on bosses, ≥ 600 for 2-damage atta
 
 ## §14 Per-encounter tuning targets v2 (pacing DOG 4; median build)
 
-| Encounter | Enemies / HP | dps_out (median) | Fight time median (p10/p90) | HP lost (median) |
+> Re-derived 2026-09-27 from `scripts/balance-calc.mjs` (fight s = dead time + TTK ÷ 0.75 uptime; sustained DPS = the systems.md §4 v2 band). "Counter" = the calc's counter-aware reference build; p10/p90 are the band edges.
+
+| Encounter | Enemies / HP | Sustained dps_out (counter ref · band) | Fight time counter (band-mid) | HP lost (median) |
 |---|---|---|---|---|
-| F1 combat s1–3 | 5–7 / 79–108 HP | 15 → 25 | 25 s (18/40) | 0.5 |
-| F1 mini: Warden | 260 (+1 sentinel) | 22 | 35 s (25/55) | 1 |
-| F1 puzzle: Sentinel Gate | 9 / 158 HP | 25 | 30 s (20/50) | 0.5 |
-| F1 boss: Knight | 520 | 28 | 45 s (35/70) | 2 |
-| F2 combat | 8–12 / 250–396 HP | 40 → 70 | 28 s (20/45) | 1 |
-| F2 mini: Matron | 600 + acolytes | 50 | 40 s (30/60) | 1.5 |
-| F2 boss: Queen | 1,100 | 65 | 50 s (40/75) | 2.5 |
-| F3 combat | 12–18 / 698–1,100 HP | 80 → 130 | 32 s (22/50) | 1.25 |
-| F3 mini: Colossus | 900 + armour 260 | 95 | 40 s (30/60) | 1.5 |
-| F3 boss: Archlich | 2,000 (3 phases, 2 × 1.5 s invulnerable) | 120 | **65 s (50/95)**, the longest fight ✔ | 3 |
+| F1 combat s1–3 (pool; run 1 uses the fixed tutorial rooms) | 8–10 / 164–181 HP | 16 · 14–26 | 14–16 s (13–14) | 0.5 |
+| F1 mini: Warden | 380 (+1 sentinel) | 16 · 14–26 | 33 s (27) | 1 |
+| F1 puzzle: Sentinel Gate | 9 / 158 HP | 16 · 14–26 | 14 s (13) | 0.5 |
+| F1 boss: Knight | 650 | 16 · 14–26 | 59 s (46) | 2 |
+| F2 combat (3 waves) | 14–18 / 484–601 HP | 33 · 26–44 | 22–27 s (21–26) | 1 |
+| F2 mini: Matron | 850 + acolytes | 33 · 26–44 | 38 s (34) | 1.5 |
+| F2 boss: Queen | 1,400 | 33 · 26–44 | 65 s (56) | 2.5 |
+| F3 combat (3 waves) | 7–11 / 429–673 HP + armour | 48 · 40–64 | 21–30 s (20–28) | 1.25 |
+| F3 mini: Colossus | 1,200 + armour 260 | 48 · 40–64 | 38 s (35) | 1.5 |
+| F3 boss: Archlich | 2,600 (3 phases, 2 × 1.5 s invulnerable) | 48 · 40–64 | **76 s (71)**, the longest fight ✔ | 3 |
 
 **Flow-channel note:**
 - Defences create **intentional local spikes** for a player without the keyword. The teaching reason is the floor's keyword. The first-failure cost is time, not death, because every defence erodes. The recovery affordance is the counter guarantee in the next draft plus the shop right before the puzzle and boss.
-- The **never-edit** player (the starter plus whatever auto-slots) should be able to clear F1 sometimes and rarely win. The target gap, after Wandcraft's two-bot bench principle (`research/balance-w1.md`), is to be measured by `scripts/balance-calc.mjs` in Wave E.
+- The **never-edit** player (the starter plus whatever auto-slots) should be able to clear F1 sometimes and rarely win. The target gap, after Wandcraft's two-bot bench principle (`research/balance-w1.md`), is measured by `scripts/balance-calc.mjs`: the never-edits starter (sustained 16.2 all run) ties the counter build on F1 open fights, is 1.8× slower in F1 shield rooms, ≈ 2.3× slower on F2, and walls on every F3 armour room (120–210 s); run ≈ 33 min vs ≈ 16 min.

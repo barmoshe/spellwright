@@ -70,7 +70,8 @@ export class RunState {
     this.daily = this.mode === 'daily' && md.daily ? { ...md.daily } : null;
     if (this.daily) {
       this.dailyRule = (cat.modes.daily.rulePool || []).find((r) => r.id === this.daily.ruleId) || null;
-      if (cat.loadouts[this.daily.loadoutId]) this.loadoutId = this.daily.loadoutId;   // daily ignores unlocks
+      const dl = this.daily.loadoutId;                        // modes.json daily.loadoutRespectsUnlocks (false: everyone plays the same run)
+      if (cat.loadouts[dl] && (!cat.modes.daily.loadoutRespectsUnlocks || this.isUnlocked('loadouts', dl))) this.loadoutId = dl;
     }
     this.gentle = this.mode === 'gentle' ? { bonusHalfHearts: md.gentle ? md.gentle.bonusHalfHearts | 0 : 0, absorbChance: md.gentle ? +md.gentle.absorbChance || 0 : 0 } : null;
     this.gentleRng = new RNG((this.seed ^ fnv1a32('gentle')) >>> 0 || 1);   // own stream: shrugs never shift loot/ai

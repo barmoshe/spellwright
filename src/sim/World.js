@@ -138,7 +138,7 @@ export class World {
     for (const i of pillars) if (rng ? rng.chance(p) : false) pick.push(i);
     if (forced && !pick.length && pillars.length) pick.push(pillars[0]);
     if (!pick.length) return;
-    this.shelfCfg = { hp: tw.shelfHp ?? 12, burnMs: tw.burnDurationMs ?? 2500, auraR: tw.burnAuraRadiusPx ?? 24, blast: tw.blastDestroys !== false };
+    this.shelfCfg = { hp: tw.shelfHp ?? 12, burnMs: tw.burnDurationMs ?? 2500, auraR: tw.burnAuraRadiusPx ?? 24, auraTickMs: tw.burnAuraTickMs ?? 250, blast: tw.blastDestroys !== false };
     this.shelves = new Map();
     for (const i of pick) { this.cell[i] = CELL.SHELF; this.shelves.set(i, { hp: this.shelfCfg.hp, burnMs: 0, tickMs: 0, sprite: null, glow: null }); }
   }

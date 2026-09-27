@@ -170,11 +170,11 @@ step  0        1          2          3           4             5            6   
 
 | Mini | HP | Defence | Pattern (loops) | Mercy adapt |
 |---|---|---|---|---|
-| The Grave Warden (F1) | 260 | shield (wears after 7) | P1 bash · toss · toss / P2 (<50%, shield regrows) raise sentinel · bash · toss · bash | lacks pierce → shield wears after 4 |
-| The Lantern Matron (F2) | 600 | ward 6 (regrows at P2) | call acolytes · ring · ember fan · re-ward the choir | lacks shock → ward 3 |
-| The Iron Colossus (F3) | 900 | armour 260 (half regrows at P2) | volley · quake · charge | lacks blast → armour × 0.6 |
+| The Grave Warden (F1) | 380 | shield (wears after 7) | P1 bash · toss · toss / P2 (<50%, shield regrows) raise sentinel · bash · toss · bash | lacks pierce → shield wears after 4 |
+| The Lantern Matron (F2) | 850 | ward 6 (regrows at P2) | call acolytes · ring · ember fan · re-ward the choir | lacks shock → ward 3 |
+| The Iron Colossus (F3) | 1,200 | armour 260 (half regrows at P2) | volley · quake · charge | lacks blast → armour × 0.6 |
 
-**Bosses:** HP 520 / 1,100 / 2,000, reduced from 700/1,500/2,600 because v2 builds are smaller. Each gets new attacks instead of HP, plus an adapt rule that answers a dominant strategy (`mechanic-spec.md` §10.2):
+**Bosses:** HP 650 / 1,400 / 2,600 (balance pass 2026-09-27; the first v2 cut to 520 / 1,100 / 2,000 left every boss at 55–75 % of its step budget). Sized so the calc's counter-aware reference build fights ≈ 59 / 65 / 76 s against budgets 60 / 65 / 80, and the band-mid build ≈ 46 / 56 / 71 s. Minis 380 / 850 / 1,200 → ≈ 33 / 38 / 38 s of a 50 s budget. Each gets new attacks instead of HP, plus an adapt rule that answers a dominant strategy (`mechanic-spec.md` §10.2):
 - **Knight:** new `shield_wall` (guard, pierce); **adapt:** ≥ 3 shots per cast → gains shield_wall in phase 1. Fire-heavy → fire resist × 0.75.
 - **Queen:** new `veil` (self-ward, shock); **adapt:** poison ≥ 40% → poison resist × 0.6. Casting > 5/s → veil in phase 1.
 - **Archlich:** new `mirror_volley` (fires a fan sized by *your* shots per cast, 3–9); **adapt:** any element ≥ 50% → resist × 0.7, otherwise mirror in phase 1. The final boss reads your wand.
@@ -353,7 +353,7 @@ Unlock classes (progression DOG 3): **14 new verb/combination** (forge, duos, co
 ## §14 Open risks
 
 1. **Balance is derived, not played.** Mana-dry times, coin flow and room HP are computed from data. `scripts/balance-calc.mjs` (Wave E review aid) should compare a "never-edits" and a "counter-aware" build per step. The target gap follows Wandcraft's editing-vs-non-editing bench principle: the non-editor can win sometimes, the editor far more.
-2. **F3 room length:** F3 combat rooms carry ≈ 700–1,100 HP. At median F3 DPS (80–130) that is about 30 s of fighting. A weak build could exceed the 45 s budget; the Heat 0 run could reach 20+ minutes for struggling players (acceptable per p90).
+2. **F3 room length (resolved 2026-09-27 balance pass):** F3 combat rooms carry ≈ 430–760 HP plus armour (hpMult 2.1). The counter-aware reference build (sustained ≈ 48) fights 21–32 s against the 33 s fight share; the step-5 elite is a named spike (≈ 36 s). The never-edits starter walls on F3 (120–200 s per room): that is the bench gap, not a bug. Calc run totals: counter-aware ≈ 15:54, never-edits ≈ 33 min (Heat 3: 18:39 / 41 min).
 3. **Interim over-strength** of `last_stand` / `first_light` until conditions are implemented (§12).
 4. **Adapt rules can feel punitive.** They are capped (resist ≥ × 0.6, one rule, always announced), and mini-boss rules are *mercy* rules. Watch the Archlich's `mirror_volley` against 9-shot wands.
 5. **Keyword derivation must stay the single source:** card `keywords[]` are generated from behaviour by `build.py`; a hand edit of a card's keywords would desync UI chips from hits.

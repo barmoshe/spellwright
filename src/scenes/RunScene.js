@@ -59,7 +59,7 @@ export class RunScene extends Phaser.Scene {
     // ---- ctx (sim-contract §1) ----
     const ctx = this.ctx = {
       scene: this, run, cat: C, rules: C.rules, T, bus: this.bus, mixer: this.mixer, rng: run.rng,
-      time: { ms: 0, step: 0, dt: DT_MS }, floor: null, curse: run.curse || null,
+      time: { ms: 0, step: 0, dt: DT_MS }, floor: null, curse: run.curse || null, heat: run.heat || null,   // heat: rules.heat.levels[n] (bosses, director)
       world: null, player: null, enemies: null, shots: null, combat: null, fx: null, cam: null, zones: null, pickups: null, relics: null, director: null,
       flags: { reducedMotion: Save.reducedMotion, lethalOccurred: false, victory: false },
       intent: null, lastElement: 'arcane', emphasis: Save.settings.enemyShotEmphasis === 'high',
@@ -131,7 +131,8 @@ export class RunScene extends Phaser.Scene {
   _floorDef() { return this.ctx.cat.floors[`f${this.run.floor}`]; }
   _setFloor(n) {
     const fd = this.ctx.cat.floors[`f${n}`];
-    this.ctx.floor = { index: n, hpMult: fd.hpMult, enemyProjSpeedMult: fd.enemyProjSpeedMult, coinMult: fd.coinMult, def: fd };
+    const heatShot = (this.run.heat && this.run.heat.enemyProjSpeedMult) || 1;          // Heat 3+: enemy shots faster (design-v2 §11)
+    this.ctx.floor = { index: n, hpMult: fd.hpMult, enemyProjSpeedMult: (fd.enemyProjSpeedMult || 1) * heatShot, coinMult: fd.coinMult, def: fd };
   }
 
   _emitInitial() {

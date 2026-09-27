@@ -7,6 +7,7 @@ export default {
   // ---- HUD / in-world UI / FTUE (UI developer B; hud-layout, ftue-flow). [token] = device glyph from current bindings.
   // The baked Kenney fonts have no U+2013/U+2014 (checked 2026-09-27), so the UX copy's em dashes are spaced hyphens here.
   'hud.floor': 'F{n}',
+  'hud.mode.heat': 'Heat {n}', 'hud.mode.gentle': 'Gentle +{h}', 'hud.mode.gentlePct': '{p}%', 'hud.mode.daily': 'Daily',
   'hud.bagFull': 'FULL',
   'hud.noSpells': 'no spells',
   'hud.auto': 'AUTO',

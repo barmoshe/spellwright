@@ -249,7 +249,7 @@ export class RunSetup {
     const cap = Save.meta.statBonus.startCapacity | 0;
     if (mode === 'daily') {
       armRun({ mode, daily: { date: this.daily.date, seed: this.daily.seed, loadoutId: this.daily.loadoutId, ruleId: this.daily.ruleId } });
-      this.mixer.fire('daily_start');
+      // daily_start replaces run_start at RUN_START (core/audio.js), so the confirm plays no start cue here
       this.onBegin({ loadoutId: this.daily.loadoutId, seed: this.daily.seed });
       return;
     }

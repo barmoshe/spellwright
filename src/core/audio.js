@@ -466,7 +466,8 @@ export class AudioMixer {
       this.states.dead = false; this.floor = 1;
       // a previous run's world group stays resident only if the new run starts in the same world (_enterWorld checks)
       if (this.world) { const old = this.world; this.world = null; this._fadeOut(old.ambience, 600, true); this._worldPrevGroup = old.group; }
-      this.fire('run_start');
+      // cue-spec event_routing.run_start: a Daily run plays daily_start INSTEAD of run_start (one start cue per run)
+      this.fire(run && run.mode === 'daily' && this.cues.has('daily_start') ? 'daily_start' : 'run_start');
     });
     // world switch (FLOOR_ENTER follows RUN_START at run start, and floor_descend on every later floor)
     bus.on(EV.FLOOR_ENTER, ({ floor }) => {
